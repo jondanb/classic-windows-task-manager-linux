@@ -69,7 +69,7 @@ class CWTM_ProcessesTab(CWTM_TabManager):
                 p_cpu, p_mem, p_desc, p_exe) in gtk_running_processes:
             proc_memory_mb = sys_utils.convert_proc_mem_b_to_mb(p_mem.rss)
             proc_desc = shlex.join(p_desc if p_desc is not None else [])
-
+            
             self.append_row_to_table(
                 self.parent.proc_t_proc_list_table, CWTM_ProcessesTabTableColumns,
                 CWTM_TableWidgetItemProperties(item_label=p_name, item_tool_tip=p_name),

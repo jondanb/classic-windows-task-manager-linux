@@ -200,8 +200,6 @@ class CWTM_MenuBarSignalHandler:
             CWTM_MENU_BAR_DYNAMIC_MENU_VISIBILITY_MAPPING[self.default_tab]
         )
 
-
-
     def _set_menu_visibility(self, dynamic_menu_flags):
         self.parent.tm_view_menu_select_columns.setVisible(
             bool(dynamic_menu_flags & CWTM_MenuBarDynamicMenuFlags.SELECT_COLUMNS))

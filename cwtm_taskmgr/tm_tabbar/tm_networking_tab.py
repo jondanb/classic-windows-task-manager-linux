@@ -1,4 +1,3 @@
-import enum
 import psutil
 import functools
 import pyqtgraph

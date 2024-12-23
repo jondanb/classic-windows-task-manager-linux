@@ -118,7 +118,82 @@ class CWTM_ApplicationsInfoRetrievalWorker(QObject):
             gtk_running_apps_icons
         )
 
-# TODODODODODODOTODO OTODODOTODODO FUCKING DO THIS PLEASE
+class CWTM_PerformanceInfoRetrievalWorker(QObject):
+    perf_sig_memory_labels_info = pyqtSignal(psutil._pslinux.svmem)
+    perf_sig_status_bar_labels_info = pyqtSignal(int, float, float)
+    perf_sig_cpu_usage_history_graphs_info = pyqtSignal(list) # percpu or all cpu
+    perf_sig_kernel_mem_labels_info = pyqtSignal(psutil._common.sswap)
+    perf_sig_sys_mem_labels_info = pyqtSignal(int, int, int, str, str)
+
+    perf_sig_graphical_widgets_info = pyqtSignal(float, float, float, float)
+
+    def __init__(self, timeout_interval, parent_tab_widget, *args, per_cpu, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.timeout_interval = timeout_interval
+        self.parent_tab_widget = parent_tab_widget
+        self.per_cpu = per_cpu
+
+    def run(self):
+        self.processes_update_timer = QTimer()
+        self.processes_update_timer.timeout.connect(
+            self.get_all_resource_usage
+        )
+        self.processes_update_timer.start(self.timeout_interval)
+
+    def get_system_memory_labels(self, total_processes, virtual_memory):
+        n_file_descriptors = sys_utils.get_number_of_handle_file_descriptors()
+        n_sys_threads = sys_utils.get_number_of_total_threads(total_processes)
+        n_sys_processes = len(total_processes)
+        commit_mem_total, commit_mem_amount = sys_utils.get_total_system_commit_memory(
+            virtual_memory
+        )
+        total_system_mem_commit = " / ".join(
+            (sys_utils.convert_proc_mem_b_to_mb(commit_mem_amount)[:-2],
+             sys_utils.convert_proc_mem_b_to_mb(commit_mem_total)[:-2])
+        )
+        total_system_uptime = sys_utils.format_seconds_to_timestamp(
+            sys_utils.get_total_uptime_in_seconds()
+        )
+
+        self.perf_sig_sys_mem_labels_info.emit(
+            n_file_descriptors, n_sys_threads, n_sys_processes,
+            total_system_uptime, total_system_mem_commit
+        )
+
+    def get_cpu_usage_history_graphs(self):
+        current_cpu_usage = [psutil.cpu_percent()] if not self.per_cpu \
+                                else psutil.cpu_percent(percpu=True)
+
+        self.perf_sig_cpu_usage_history_graphs_info.emit(current_cpu_usage)
+
+    def get_all_resource_usage(self):
+        current_memory_info = psutil.virtual_memory()
+        sys_swap_memory = psutil.swap_memory()
+        *total_iter_processes, = psutil.process_iter()
+        current_cpu_usage = psutil.cpu_percent()
+        
+        current_memory_usage = current_memory_info.percent
+        memory_total, _ = sys_utils.get_memory_size_info(
+            current_memory_info.total
+        )
+        memory_used, _ = sys_utils.get_memory_size_info(
+            current_memory_info.used
+        )
+
+        self.get_system_memory_labels(total_iter_processes, current_memory_info)
+        self.get_cpu_usage_history_graphs()
+
+        self.perf_sig_kernel_mem_labels_info.emit(sys_swap_memory)
+        self.perf_sig_memory_labels_info.emit(current_memory_info)
+        self.perf_sig_status_bar_labels_info.emit(
+            len(total_iter_processes), current_memory_usage, current_cpu_usage
+        )
+
+        self.perf_sig_graphical_widgets_info.emit(
+            current_cpu_usage, current_memory_usage,
+            memory_used, memory_total
+        )
+
 
 class CWTM_ServicesInfoRetrievalWorker(QObject):
     proc_sig_processes_info = pyqtSignal(list)
