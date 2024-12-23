@@ -1,0 +1,10 @@
+QTableWidget#proc_t_proc_list_table,
+QTableWidget#app_t_task_list_table,
+QTableWidget#svc_t_services_list_table,
+QTableWidget#users_t_users_list_table  {
+	margin: 20px;
+}
+
+QTableWidget::item {
+        border-right: 1px solid #D5D5D5;
+}    

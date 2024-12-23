@@ -1,0 +1,4 @@
+QWidget#button_group_widget {
+	background-color: #F0F0F0;
+	border-top: 1px solid #DFDFDF;
+}
