@@ -140,36 +140,10 @@ class CWTM_TabManager:
         if current_selected_item is not None:
             return current_selected_item.text()
 
-class CWTM_PushButtonSignalHandler:
+
+class CWTM_GlobalUpdateIntervalHanlder:
     def __init__(self, parent):
         self.parent = parent
-
-    def process_signal_svc_t_services_button(self):
-        return NotImplemented
-    
-    def process_signal_perf_resource_monitor_button(self):
-        return NotImplemented
-    
-    def process_signal_users_t_send_message_button(self):
-        return NotImplemented
-    
-    def process_signal_users_t_logoff_button(self):
-        return NotImplemented
-    
-    def process_signal_users_t_disconnect_button(self):
-        return NotImplemented
-
-    def setup_pushbutton_signal_slots(self):
-        self.parent.svc_t_services_button.clicked.connect(
-            self.process_signal_svc_t_services_button)
-        self.parent.perf_resource_monitor_button.clicked.connect(
-            self.process_signal_perf_resource_monitor_button)
-        self.parent.users_t_send_message_button.clicked.connect(
-            self.process_signal_users_t_send_message_button)
-        self.parent.users_t_logoff_button.clicked.connect(
-            self.process_signal_users_t_logoff_button)
-        self.parent.users_t_disconnect_button.clicked.connect(
-            self.process_signal_users_t_disconnect_button)
 
 
 class CWTM_MenuBarSignalHandler:

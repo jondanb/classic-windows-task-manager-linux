@@ -10,10 +10,7 @@ from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QIcon, QImage, QPixmap, QFont, QFontDatabase
 
 from cwtm_taskmgr_ui.cwtm_taskmgr_ui import Ui_CWTM_TaskManagerMainWindow
-from cwtm_taskmgr.qt_components import (
-    CWTM_PushButtonSignalHandler,
-    CWTM_MenuBarSignalHandler
-)
+from cwtm_taskmgr.qt_components import CWTM_MenuBarSignalHandler
 
 from cwtm_taskmgr.tm_tabbar import (
     tm_applications_tab,
@@ -38,7 +35,6 @@ class Win7TaskManager(Ui_CWTM_TaskManagerMainWindow):
         self.users_tab = tm_users_tab.CWTM_UsersTab(self)
         self.networking_tab = tm_networking_tab.CWTM_NetworkingTab(self)
         
-        self.pushbutton_handler = CWTM_PushButtonSignalHandler(self)
         self.menubar_handler = CWTM_MenuBarSignalHandler(self)
 
         # Applications Tab
@@ -81,9 +77,6 @@ class Win7TaskManager(Ui_CWTM_TaskManagerMainWindow):
         )
         self.networking_tab.setup_system_networking_interfaces()
         self.networking_tab.start_networking_page_updater_thread()
-
-        # Buttons
-        self.pushbutton_handler.setup_pushbutton_signal_slots()
 
         # Menu Bar
         self.menubar_handler.setup_menu_bar_status_bar_labels()

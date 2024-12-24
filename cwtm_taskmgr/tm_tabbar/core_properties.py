@@ -112,11 +112,11 @@ class CWTM_MenuBarDynamicMenuFlags(enum.IntFlag):
     SHOW_SCALE                                          = enum.auto()
 
 
-class CWTM_GraphUpdateIntervals(enum.IntEnum):
-    GRAPH_INTERVAL_HIGH                                 = 500 # half second
-    GRAPH_INTERVAL_NORMAL                               = 1000 # second
-    GRAPH_INTERVAL_LOW                                  = 4000 # 4 seconds
-    GRAPH_INTERVAL_PAUSED                               = -1
+class CWTM_GlobalUpdateIntervals(enum.IntEnum):
+    GLOBAL_UPDATE_INTERVAL_HIGH                         = 500 # half second
+    GLOBAL_UPDATE_INTERVAL_NORMAL                       = 1000 # second
+    GLOBAL_UPDATE_INTERVAL_LOW                          = 4000 # 4 seconds
+    GLOBAL_UPDATE_INTERVAL_PAUSED                       = -1
     
 
 CWTM_MENU_BAR_DYNAMIC_MENU_VISIBILITY_MAPPING = {

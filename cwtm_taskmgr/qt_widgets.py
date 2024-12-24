@@ -60,8 +60,8 @@ class CWTM_ResourceGraphWidget(pg.PlotWidget):
         if percentage:
             self.setYRange(0, 100, padding=0)
 
-    def get_all_data_axes(self):
-        return [i for i in range(100)], [0 for _ in range(100)] # x, y
+    def get_all_data_axes(self, x_range=100):
+        return [i for i in range(x_range)], [0 for _ in range(x_range)] # x, y
 
     def get_equal_tick_spacing(self, n_ticks):
         min_y, max_y = self.viewRange()[1]

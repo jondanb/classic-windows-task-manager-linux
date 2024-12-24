@@ -1,4 +1,5 @@
 import copy
+import math
 import psutil
 import pyqtgraph
 
@@ -12,7 +13,7 @@ from ..qt_widgets import (
 from ..qt_components import CWTM_TabManager
 from .core_properties import (
     CWTM_ResourceLevelBarParameters,
-    CWTM_GraphUpdateIntervals
+    CWTM_GlobalUpdateIntervals
 )
 from ..thread_workers import CWTM_PerformanceInfoRetrievalWorker
 
@@ -26,12 +27,14 @@ class CWTM_PerformanceTab(CWTM_TabManager):
         self.parent = parent
 
         self.PERF_RESOURCE_USAGE_HISTORY_UPDATE_FREQUENCY = \
-            CWTM_GraphUpdateIntervals.GRAPH_INTERVAL_NORMAL
+            CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_NORMAL
 
         self.PERF_RESOURCE_USAGE_TOTAL_BARS = 20
         self.PERF_RESOURCE_USAGE_BAR_HEIGHT = 1
         self.PERF_RESOURCE_USAGE_BAR_WIDTH = 20
         self.PERF_RESOURCE_USAGE_BAR_SPACING = 2
+        self.PERF_RESOURCE_USAGE_GRID_SIZE = 8 # 200:8 ratio
+        self.PERF_RESOURCE_USAGE_X_RANGE = 200 # 200:8 ratio 
 
         self.PERF_CPU_USAGE_HISTORY_GRAPHS = []
         self.graphing_mode_per_cpu = False
@@ -91,14 +94,14 @@ class CWTM_PerformanceTab(CWTM_TabManager):
         self.parent.tm_view_menu_cpu_one_graph_per_cpu.triggered.connect(
             self.switch_to_per_cpu_graphing)
 
-        self.parent.tm_view_menu_us_menu_high.triggered.connect(
-            partial(self.switch_performance_update_speed, CWTM_GraphUpdateIntervals.GRAPH_INTERVAL_HIGH))
-        self.parent.tm_view_menu_us_menu_normal.triggered.connect(
-            partial(self.switch_performance_update_speed, CWTM_GraphUpdateIntervals.GRAPH_INTERVAL_NORMAL))
-        self.parent.tm_view_menu_us_menu_low.triggered.connect(
-            partial(self.switch_performance_update_speed, CWTM_GraphUpdateIntervals.GRAPH_INTERVAL_LOW))
-        self.parent.tm_view_menu_us_menu_paused.triggered.connect(
-            partial(self.switch_performance_update_speed, CWTM_GraphUpdateIntervals.GRAPH_INTERVAL_PAUSED))
+        self.parent.tm_view_menu_us_menu_high.triggered.connect(partial(
+            self.switch_performance_update_speed, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_HIGH))
+        self.parent.tm_view_menu_us_menu_normal.triggered.connect(partial(
+            self.switch_performance_update_speed, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_NORMAL))
+        self.parent.tm_view_menu_us_menu_low.triggered.connect(partial(
+            self.switch_performance_update_speed, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_LOW))
+        self.parent.tm_view_menu_us_menu_paused.triggered.connect(partial(
+            self.switch_performance_update_speed, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED))
 
         self.parent.tm_view_menu_refresh_now.triggered.connect(
             self.update_refresh_performance_page)
@@ -109,14 +112,19 @@ class CWTM_PerformanceTab(CWTM_TabManager):
     def switch_performance_update_speed(self, update_interval):
         self.performance_page_worker.timeout_interval = update_interval
 
-    def register_cpu_core(self):
+    def register_cpu_core(self, *, per_cpu=False):
         cpu_core_count = psutil.cpu_count()
+        grid_size_x = self.PERF_RESOURCE_USAGE_GRID_SIZE \
+            if not self.graphing_mode_per_cpu \
+            else self.PERF_RESOURCE_USAGE_GRID_SIZE // (cpu_core_count / 2)
         cpu_grid_widget = CWTM_ResourceGraphWidget(
-            grid_color='g', percentage=True, dotted_grid_lines=self.parent.old_style,
-            grid_size_x=4 if not self.graphing_mode_per_cpu else 4 * cpu_core_count,
+            grid_color='g', percentage=True, 
+            dotted_grid_lines=self.parent.old_style, grid_size_x=grid_size_x,
         )
+        cpu_graph_x_range = self.PERF_RESOURCE_USAGE_X_RANGE \
+            if not per_cpu else self.PERF_RESOURCE_USAGE_X_RANGE // (cpu_core_count * 2)
         cpu_grid_usage_data_x, cpu_grid_usage_data_y = \
-                                    cpu_grid_widget.get_all_data_axes()
+            cpu_grid_widget.get_all_data_axes(x_range=cpu_graph_x_range)
         cpu_grid_usage_plot_pen = pyqtgraph.mkPen(color="g", width=1)
         cpu_grid_usage_plot_item = cpu_grid_widget.plot(
             cpu_grid_usage_data_x, cpu_grid_usage_data_y,
@@ -140,7 +148,7 @@ class CWTM_PerformanceTab(CWTM_TabManager):
 
         self.setup_switch_cpu_graphing_modes(per_cpu=True)
         for _ in range(psutil.cpu_count()):
-            self.cpu_usage_history_layout.addWidget(self.register_cpu_core())
+            self.cpu_usage_history_layout.addWidget(self.register_cpu_core(per_cpu=True))
 
     def switch_to_all_cpu_graphing(
         self, *, no_graphing_mode_check=False, include_thread_switch=True):
@@ -173,7 +181,7 @@ class CWTM_PerformanceTab(CWTM_TabManager):
             grid_color='g', percentage=True, dotted_grid_lines=self.parent.old_style
         )
         self.mem_grid_usage_data_x, self.mem_grid_usage_data_y = \
-                                    self.memory_grid_widget.get_all_data_axes()
+                                    self.memory_grid_widget.get_all_data_axes(x_range=100)
         self.mem_grid_usage_plot_pen = pyqtgraph.mkPen(color="#007FFD", width=2)
         self.mem_grid_usage_plot_item = self.memory_grid_widget.plot(
             self.mem_grid_usage_data_x, self.mem_grid_usage_data_y,

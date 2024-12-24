@@ -4,7 +4,7 @@ import functools
 from . import sys_utils
 from .tm_tabbar.core_properties import (
     CWTM_TabWidgetColumnEnum,
-    CWTM_GraphUpdateIntervals
+    CWTM_GlobalUpdateIntervals
 )
 
 from PyQt5.QtCore import (
@@ -138,17 +138,6 @@ class CWTM_PerformanceInfoRetrievalWorker(QObject):
         self.per_cpu = per_cpu
 
     def run(self):
-        """
-        self.performance_update_timer = QTimer(self)
-        self.performance_update_timer.timeout.connect(
-            self.get_all_resource_usage
-        )
-        self.performance_update_timer.start(self.timeout_interval)
-        """
-        """
-        while True:
-            self.get_all_resource_usage()
-            QThread.msleep(self.timeout_interval)"""
         self.get_all_resource_usage_loop()
 
     def get_system_memory_labels(self, total_processes, virtual_memory):
@@ -206,7 +195,7 @@ class CWTM_PerformanceInfoRetrievalWorker(QObject):
         )
 
     def get_all_resource_usage_loop(self):
-        if self.timeout_interval == CWTM_GraphUpdateIntervals.GRAPH_INTERVAL_PAUSED:
+        if self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
             QTimer.singleShot(100, self.get_all_resource_usage_loop) # wait 100 ms until it is not paused
         else:
             self.get_all_resource_usage_frame()
