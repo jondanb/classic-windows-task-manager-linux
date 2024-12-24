@@ -241,9 +241,9 @@ class CWTM_MenuBarSignalHandler:
             CWTM_MenuBarStatusBarLabels.LABEL_PAUSED)
         self.parent.tm_view_menu_select_columns.setStatusTip(
             CWTM_MenuBarStatusBarLabels.LABEL_SELECT_COLUMNS)
-        self.parent.tm_view_menu_cpuh_one_graph_all_cpus.setStatusTip(
+        self.parent.tm_view_menu_cpu_one_graph_all_cpus.setStatusTip(
             CWTM_MenuBarStatusBarLabels.LABEL_ONE_GRAPH_ALL_CPUS)
-        self.parent.tm_view_menu_cpuh_one_graph_per_cpu.setStatusTip(
+        self.parent.tm_view_menu_cpu_one_graph_per_cpu.setStatusTip(
             CWTM_MenuBarStatusBarLabels.LABEL_ONE_GRAPH_PER_CPU)
         self.parent.tm_view_menu_show_kernel_times.setStatusTip(
             CWTM_MenuBarStatusBarLabels.LABEL_SHOW_KERNEL_TIMES)

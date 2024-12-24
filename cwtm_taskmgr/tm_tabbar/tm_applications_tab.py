@@ -72,6 +72,9 @@ class CWTM_ApplicationsTab(CWTM_TabManager):
         self.parent.app_t_task_list_table.setRowCount(0)
         
         for gtk_app_name, gtk_app_pid, gtk_app_icon in gtk_running_apps_icons:
+            if not gtk_app_name:
+                continue
+            
             self.append_row_to_table(
                 self.parent.app_t_task_list_table, CWTM_ApplicationsTabTableColumns,
                 CWTM_TableWidgetItemProperties(item_label=gtk_app_name, item_icon=gtk_app_icon),

@@ -2,17 +2,22 @@ import copy
 import psutil
 import pyqtgraph
 
+from functools import partial
+
 from .. import sys_utils
 from ..qt_widgets import (
     CWTM_ResourceLevelBarWidget,
     CWTM_ResourceGraphWidget
 )
 from ..qt_components import CWTM_TabManager
-from .core_properties import CWTM_ResourceLevelBarParameters
+from .core_properties import (
+    CWTM_ResourceLevelBarParameters,
+    CWTM_GraphUpdateIntervals
+)
 from ..thread_workers import CWTM_PerformanceInfoRetrievalWorker
 
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout
-from PyQt5.QtCore import Qt, QTimer, QThread
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QApplication
+from PyQt5.QtCore import Qt, QTimer, QThread, QMetaObject
 from PyQt5.QtGui import QColor
 
 
@@ -20,7 +25,8 @@ class CWTM_PerformanceTab(CWTM_TabManager):
     def __init__(self, parent):
         self.parent = parent
 
-        self.PERF_RESOURCE_USAGE_HISTORY_UPDATE_FREQUENCY = 1000
+        self.PERF_RESOURCE_USAGE_HISTORY_UPDATE_FREQUENCY = \
+            CWTM_GraphUpdateIntervals.GRAPH_INTERVAL_NORMAL
 
         self.PERF_RESOURCE_USAGE_TOTAL_BARS = 20
         self.PERF_RESOURCE_USAGE_BAR_HEIGHT = 1
@@ -34,10 +40,6 @@ class CWTM_PerformanceTab(CWTM_TabManager):
         self.parent.perf_cpu_usage_history.setLayout(
             self.cpu_usage_history_layout
         )
-        self.parent.tm_view_menu_cpuh_one_graph_all_cpus.triggered.connect(
-            self.switch_to_all_cpu_graphing)
-        self.parent.tm_view_menu_cpuh_one_graph_per_cpu.triggered.connect(
-            self.switch_to_per_cpu_graphing)
 
     def setup_performance_tab_bars(self):
         cpu_resource_bar_parameters = CWTM_ResourceLevelBarParameters(
@@ -83,6 +85,30 @@ class CWTM_PerformanceTab(CWTM_TabManager):
 
         memory_usage_bar_layout.addWidget(self.memory_bar_widget)
 
+    def setup_performance_tab_menu_bar_slots(self):
+        self.parent.tm_view_menu_cpu_one_graph_all_cpus.triggered.connect(
+            self.switch_to_all_cpu_graphing)
+        self.parent.tm_view_menu_cpu_one_graph_per_cpu.triggered.connect(
+            self.switch_to_per_cpu_graphing)
+
+        self.parent.tm_view_menu_us_menu_high.triggered.connect(
+            partial(self.switch_performance_update_speed, CWTM_GraphUpdateIntervals.GRAPH_INTERVAL_HIGH))
+        self.parent.tm_view_menu_us_menu_normal.triggered.connect(
+            partial(self.switch_performance_update_speed, CWTM_GraphUpdateIntervals.GRAPH_INTERVAL_NORMAL))
+        self.parent.tm_view_menu_us_menu_low.triggered.connect(
+            partial(self.switch_performance_update_speed, CWTM_GraphUpdateIntervals.GRAPH_INTERVAL_LOW))
+        self.parent.tm_view_menu_us_menu_paused.triggered.connect(
+            partial(self.switch_performance_update_speed, CWTM_GraphUpdateIntervals.GRAPH_INTERVAL_PAUSED))
+
+        self.parent.tm_view_menu_refresh_now.triggered.connect(
+            self.update_refresh_performance_page)
+
+    def update_refresh_performance_page(self):
+        self.performance_page_worker.get_all_resource_usage_frame()
+
+    def switch_performance_update_speed(self, update_interval):
+        self.performance_page_worker.timeout_interval = update_interval
+
     def register_cpu_core(self):
         cpu_core_count = psutil.cpu_count()
         cpu_grid_widget = CWTM_ResourceGraphWidget(
@@ -104,32 +130,40 @@ class CWTM_PerformanceTab(CWTM_TabManager):
 
         return cpu_grid_widget
 
-
-    def switch_to_per_cpu_graphing(self, *, no_graphing_mode_check=False):
+    def switch_to_per_cpu_graphing(
+        self, *, no_graphing_mode_check=False, include_thread_switch=True):
         if self.graphing_mode_per_cpu and not no_graphing_mode_check:
             return
 
-        self._setup_switch_cpu_graphing_modes(per_cpu=True)
+        if include_thread_switch:
+            self.performance_page_worker.per_cpu = True
+
+        self.setup_switch_cpu_graphing_modes(per_cpu=True)
         for _ in range(psutil.cpu_count()):
             self.cpu_usage_history_layout.addWidget(self.register_cpu_core())
 
-    def switch_to_all_cpu_graphing(self, *, no_graphing_mode_check=False):
+    def switch_to_all_cpu_graphing(
+        self, *, no_graphing_mode_check=False, include_thread_switch=True):
         if not self.graphing_mode_per_cpu and not no_graphing_mode_check:
             return
+
+        if include_thread_switch:
+            self.performance_page_worker.per_cpu = False
             
-        self._setup_switch_cpu_graphing_modes(per_cpu=False)
+        self.setup_switch_cpu_graphing_modes(per_cpu=False)
         self.cpu_usage_history_layout.addWidget(self.register_cpu_core())
 
-    def _setup_switch_cpu_graphing_modes(self, *, per_cpu):
+    def setup_switch_cpu_graphing_modes(self, *, per_cpu):
         self.graphing_mode_per_cpu = per_cpu
         self.PERF_CPU_USAGE_HISTORY_GRAPHS.clear()
 
         for cpu_core in reversed(range(self.cpu_usage_history_layout.count())): 
             self.cpu_usage_history_layout.itemAt(cpu_core).widget().setParent(None)
 
-
     def setup_performance_tab_graphs(self):
-        self.switch_to_all_cpu_graphing(no_graphing_mode_check=True)
+        self.switch_to_all_cpu_graphing(
+            no_graphing_mode_check=True, include_thread_switch=False
+        ) # since the thread has not been initialized yet
 
         memory_usage_history_layout = QVBoxLayout()
         self.parent.perf_mem_usage_history.setLayout(
@@ -159,56 +193,41 @@ class CWTM_PerformanceTab(CWTM_TabManager):
         
     def update_kernel_memory_labels(self, sys_swap_memory):
         memory_paged_no_label_mb = sys_utils.convert_proc_mem_b_to_mb(
-            sys_swap_memory.used
-        )[:-2]
+            sys_swap_memory.used)[:-2]
         memory_non_paged_no_label_mb = sys_utils.convert_proc_mem_b_to_mb(
-            sys_swap_memory.free
-        )[:-2]
+            sys_swap_memory.free)[:-2]
 
         self.parent.perf_kernel_mem_paged_value.setText(
-            memory_paged_no_label_mb
-        )
+            memory_paged_no_label_mb)
         self.parent.perf_kernel_mem_non_paged_value.setText(
-            memory_non_paged_no_label_mb
-        )
+            memory_non_paged_no_label_mb)
 
     def update_physical_memory_labels(self, virtual_memory):        
         memory_total_no_label_mb = sys_utils.convert_proc_mem_b_to_mb(
-            virtual_memory.total
-        )[:-2] # truncate MB label
+            virtual_memory.total)[:-2] # truncate MB label
         memory_cached_no_label_mb = sys_utils.convert_proc_mem_b_to_mb(
-            virtual_memory.cached
-        )[:-2] # truncate MB label
+            virtual_memory.cached)[:-2] # truncate MB label
         memory_available_no_label_mb = sys_utils.convert_proc_mem_b_to_mb(
-            virtual_memory.available
-        )[:-2] # truncate MB label
+            virtual_memory.available)[:-2] # truncate MB label
         memory_free_no_label_mb = sys_utils.convert_proc_mem_b_to_mb(
-            virtual_memory.free
-        )[:-2] # truncate MB label
+            virtual_memory.free)[:-2] # truncate MB label
 
         self.parent.perf_physical_mem_total_value.setText(
-            memory_total_no_label_mb
-        )
+            memory_total_no_label_mb)
         self.parent.perf_physical_mem_cached_value.setText(
-            memory_cached_no_label_mb
-        )
+            memory_cached_no_label_mb)
         self.parent.perf_physical_mem_available_value.setText(
-            memory_available_no_label_mb
-        )
+            memory_available_no_label_mb)
         self.parent.perf_physical_mem_free_value.setText(
-            memory_free_no_label_mb
-        )
+            memory_free_no_label_mb)
 
     def update_status_bar_labels(self, n_processes, v_mem_percent, cpu_usage):        
         self.parent.status_bar_processes_label.setText(
-            f"Processes: {n_processes}"
-        )
+            f"Processes: {n_processes}")
         self.parent.status_bar_cpu_usage_label.setText(
-            f"CPU Usage: {cpu_usage}%"
-        )
+            f"CPU Usage: {cpu_usage}%")
         self.parent.status_bar_physical_memory_label.setText(
-            f"Physical Memory: {v_mem_percent}%"
-        )
+            f"Physical Memory: {v_mem_percent}%")
 
     def update_cpu_usage_history_graphs(self, current_cpu_usage):
         for cpu_core, cpu_usage in enumerate(current_cpu_usage):
@@ -221,7 +240,7 @@ class CWTM_PerformanceTab(CWTM_TabManager):
                 cpu_grid_usage_plot_item, cpu_usage,
                 cpu_grid_usage_data_x, cpu_grid_usage_data_y
             )
-            
+
     def update_graphical_widgets(self, current_cpu_usage, current_memory_usage, memory_used, memory_total):
         self.cpu_bar_widget.set_resource_value(current_cpu_usage, 100)
         self.memory_bar_widget.set_resource_value(memory_used, memory_total)
@@ -253,10 +272,8 @@ class CWTM_PerformanceTab(CWTM_TabManager):
         self.performance_page_worker.perf_sig_graphical_widgets_info.connect(
             self.update_graphical_widgets)
 
-        self.performance_page_worker.get_all_resource_usage()
         self.performance_page_worker.moveToThread(
             self.performance_page_thread)
-
         self.performance_page_thread.started.connect(
             self.performance_page_worker.run)
         self.performance_page_thread.start()

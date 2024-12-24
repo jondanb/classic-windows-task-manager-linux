@@ -2,12 +2,16 @@ import psutil
 import functools
 
 from . import sys_utils
-from .tm_tabbar.core_properties import CWTM_TabWidgetColumnEnum
+from .tm_tabbar.core_properties import (
+    CWTM_TabWidgetColumnEnum,
+    CWTM_GraphUpdateIntervals
+)
 
 from PyQt5.QtCore import (
     pyqtSignal, pyqtSlot, Qt,
     QTimer, QThread, QObject
 )
+
 
 class CWTM_PageUpdaterWorkerThread(QObject):    
     def __init__(self, tm_update_function):
@@ -111,11 +115,11 @@ class CWTM_ApplicationsInfoRetrievalWorker(QObject):
             return
         
         gtk_running_apps = sys_utils.get_all_running_applications_names()
-        gtk_running_apps_icons = sys_utils.get_all_running_applications(
+        gtk_running_apps_and_icons = sys_utils.get_all_running_applications(
             gtk_running_apps
         )
         self.app_sig_applications_info.emit(
-            gtk_running_apps_icons
+            gtk_running_apps_and_icons
         )
 
 class CWTM_PerformanceInfoRetrievalWorker(QObject):
@@ -134,11 +138,18 @@ class CWTM_PerformanceInfoRetrievalWorker(QObject):
         self.per_cpu = per_cpu
 
     def run(self):
-        self.processes_update_timer = QTimer()
-        self.processes_update_timer.timeout.connect(
+        """
+        self.performance_update_timer = QTimer(self)
+        self.performance_update_timer.timeout.connect(
             self.get_all_resource_usage
         )
-        self.processes_update_timer.start(self.timeout_interval)
+        self.performance_update_timer.start(self.timeout_interval)
+        """
+        """
+        while True:
+            self.get_all_resource_usage()
+            QThread.msleep(self.timeout_interval)"""
+        self.get_all_resource_usage_loop()
 
     def get_system_memory_labels(self, total_processes, virtual_memory):
         n_file_descriptors = sys_utils.get_number_of_handle_file_descriptors()
@@ -166,7 +177,7 @@ class CWTM_PerformanceInfoRetrievalWorker(QObject):
 
         self.perf_sig_cpu_usage_history_graphs_info.emit(current_cpu_usage)
 
-    def get_all_resource_usage(self):
+    def get_all_resource_usage_frame(self):
         current_memory_info = psutil.virtual_memory()
         sys_swap_memory = psutil.swap_memory()
         *total_iter_processes, = psutil.process_iter()
@@ -193,6 +204,13 @@ class CWTM_PerformanceInfoRetrievalWorker(QObject):
             current_cpu_usage, current_memory_usage,
             memory_used, memory_total
         )
+
+    def get_all_resource_usage_loop(self):
+        if self.timeout_interval == CWTM_GraphUpdateIntervals.GRAPH_INTERVAL_PAUSED:
+            QTimer.singleShot(100, self.get_all_resource_usage_loop) # wait 100 ms until it is not paused
+        else:
+            self.get_all_resource_usage_frame()
+            QTimer.singleShot(self.timeout_interval, self.get_all_resource_usage_loop)
 
 
 class CWTM_ServicesInfoRetrievalWorker(QObject):

@@ -58,6 +58,7 @@ class Win7TaskManager(Ui_CWTM_TaskManagerMainWindow):
         # Performance Tab
         self.performance_tab.setup_performance_tab_bars()
         self.performance_tab.setup_performance_tab_graphs()
+        self.performance_tab.setup_performance_tab_menu_bar_slots()
         self.performance_tab.start_performance_page_updater_thread()
 
         # Services Tab
