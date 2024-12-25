@@ -102,7 +102,7 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
         self.svc_t_services_list_table.setHorizontalHeaderItem(3, __qtablewidgetitem11)
         self.svc_t_services_list_table.setObjectName(u"svc_t_services_list_table")
         self.svc_t_services_list_table.setGeometry(QRect(0, 0, 510, 441))
-        self.svc_t_services_button = QPushButton(self.services_tab)
+        self.svc_t_services_button = QToolButton(self.services_tab)
         self.svc_t_services_button.setObjectName(u"svc_t_services_button")
         self.svc_t_services_button.setGeometry(QRect(390, 450, 120, 24))
         self.task_manager_tab_widget.addTab(self.services_tab, "")
@@ -212,14 +212,17 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
         self.perf_mem_usage = QGroupBox(self.perf_widget)
         self.perf_mem_usage.setObjectName(u"perf_mem_usage")
         self.perf_mem_usage.setGeometry(QRect(10, 150, 91, 140))
-        self.perf_resource_monitor_button = QPushButton(self.perf_widget)
+        self.perf_resource_monitor_button = QToolButton(self.perf_widget)
         self.perf_resource_monitor_button.setObjectName(u"perf_resource_monitor_button")
         self.perf_resource_monitor_button.setGeometry(QRect(200, 430, 181, 24))
 
+        self.perf_resource_monitor_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.perf_resource_monitor_button_icon = QPixmap(":/icons/uac256.png")
         self.perf_resource_monitor_button.setIcon(QIcon(self.perf_resource_monitor_button_icon))
 
+
         self.svc_t_services_button_icon = QPixmap(":/icons/uac256.png")
+        self.svc_t_services_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.svc_t_services_button.setIcon(QIcon(self.svc_t_services_button_icon))
 
 
@@ -296,8 +299,6 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
         self.tm_view_menu_menu_cpu_history = QMenu(self.task_manager_view_menu)
         self.tm_view_menu_menu_cpu_history.setObjectName(u"tm_view_menu_menu_cpu_history")
         self.tm_view_menu_network_adapter_history = QMenu(self.task_manager_view_menu)
-        self.tm_view_menu_network_adapter_history_group = QActionGroup(
-            self.tm_view_menu_network_adapter_history)
         self.tm_view_menu_network_adapter_history.setObjectName(u"tm_view_menu_network_adapter_history")
         self.task_manager_windows_menu = QMenu(self.menubar)
         self.task_manager_windows_menu.setObjectName(u"task_manager_windows_menu")
@@ -325,6 +326,7 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
         self.tm_view_menu_us_menu_normal = QAction(CWTM_TaskManagerMainWindow)
         self.tm_view_menu_us_menu_normal.setObjectName(u"tm_view_menu_us_menu_normal")
         self.tm_view_menu_us_menu_normal.setCheckable(True)
+        self.tm_view_menu_us_menu_normal.setChecked(True)
         self.tm_view_menu_us_menu_low = QAction(CWTM_TaskManagerMainWindow)
         self.tm_view_menu_us_menu_low.setObjectName(u"tm_view_menu_us_menu_low")
         self.tm_view_menu_us_menu_low.setCheckable(True)
@@ -358,9 +360,11 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
         self.tm_view_menu_nas_bytes_sent = QAction(CWTM_TaskManagerMainWindow)
         self.tm_view_menu_nas_bytes_sent.setObjectName(u"tm_view_menu_nas_bytes_sent")
         self.tm_view_menu_nas_bytes_sent.setCheckable(True)
+        self.tm_view_menu_nas_bytes_sent.setChecked(True)
         self.tm_view_menu_nas_bytes_received = QAction(CWTM_TaskManagerMainWindow)
         self.tm_view_menu_nas_bytes_received.setObjectName(u"tm_view_menu_nas_bytes_received")
         self.tm_view_menu_nas_bytes_received.setCheckable(True)
+        self.tm_view_menu_nas_bytes_received.setChecked(True)
         self.tm_view_menu_nas_bytes_total = QAction(CWTM_TaskManagerMainWindow)
         self.tm_view_menu_nas_bytes_total.setObjectName(u"tm_view_menu_nas_bytes_total")
         self.tm_view_menu_nas_bytes_total.setCheckable(True)
@@ -426,9 +430,6 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
         self.tm_view_menu_network_adapter_history.addAction(self.tm_view_menu_nas_bytes_sent)
         self.tm_view_menu_network_adapter_history.addAction(self.tm_view_menu_nas_bytes_received)
         self.tm_view_menu_network_adapter_history.addAction(self.tm_view_menu_nas_bytes_total)
-        self.tm_view_menu_network_adapter_history_group.addAction(self.tm_view_menu_nas_bytes_sent)
-        self.tm_view_menu_network_adapter_history_group.addAction(self.tm_view_menu_nas_bytes_received)
-        self.tm_view_menu_network_adapter_history_group.addAction(self.tm_view_menu_nas_bytes_total)
         self.task_manager_windows_menu.addAction(self.tm_windows_menu_tile_horizontally)
         self.task_manager_windows_menu.addAction(self.tm_windows_menu_tile_vertically)
         self.task_manager_windows_menu.addAction(self.tm_windows_menu_maximize)
@@ -441,7 +442,6 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
 
         self.retranslateUi(CWTM_TaskManagerMainWindow)
         self.tm_view_menu_menu_update_speed_group.setExclusive(True)
-        self.tm_view_menu_network_adapter_history_group.setExclusive(True)
 
         self.task_manager_tab_widget.setCurrentIndex(5)
 

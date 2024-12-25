@@ -31,11 +31,7 @@ class CWTM_NetworkingInterfaceRetrievalWorker(QObject):
         self.last_data = {}
 
     def run(self):
-        self.networking_interface_retrieval_timer = QTimer()
-        self.networking_interface_retrieval_timer.timeout.connect(
-            self.get_networking_interface_usage_frames
-        )
-        self.networking_interface_retrieval_timer.start(self.timeout_interval)
+        self.get_networking_interface_usage_loop()
 
     def check_for_disconnected_network_interface(self, network_data):
         current_network_data_set, last_network_data_set = (
@@ -48,7 +44,7 @@ class CWTM_NetworkingInterfaceRetrievalWorker(QObject):
             self.ni_sig_disconnect_nic.emit(nic_frame_difference)
 
 
-    def get_networking_interface_usage_frames(self):
+    def get_networking_interface_usage_frame(self):
         current_data = psutil.net_io_counters(pernic=True)
         self.check_for_disconnected_network_interface(current_data)
         self.parent.net_t_network_list_table.setRowCount(0)
@@ -68,6 +64,14 @@ class CWTM_NetworkingInterfaceRetrievalWorker(QObject):
 
             self.ni_sig_usage_frame.emit(nic, sent_bytes_per_interval, recv_bytes_per_interval)
             self.last_data[nic] = counters
+
+    def get_networking_interface_usage_loop(self):
+        if self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
+            QTimer.singleShot(100, self.get_networking_interface_usage_loop) # wait 100 ms until it is not paused
+        else:
+            self.get_networking_interface_usage_frame()
+            QTimer.singleShot(self.timeout_interval, self.get_networking_interface_usage_loop)
+
 
 class CWTM_ProcessesInfoRetrievalWorker(QObject):
     proc_sig_processes_info = pyqtSignal(list)

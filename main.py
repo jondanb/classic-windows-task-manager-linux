@@ -76,6 +76,7 @@ class Win7TaskManager(Ui_CWTM_TaskManagerMainWindow):
             QHeaderView.Stretch
         )
         self.networking_tab.setup_system_networking_interfaces()
+        self.networking_tab.setup_performance_tab_menu_bar_slots()
         self.networking_tab.start_networking_page_updater_thread()
 
         # Menu Bar

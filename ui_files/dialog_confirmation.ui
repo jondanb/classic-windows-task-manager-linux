@@ -1,114 +1,1089 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Win7TaskManagerConfirmationDialog</class>
- <widget class="QDialog" name="Win7TaskManagerConfirmationDialog">
+ <class>Win7TaskManagerMainWindow</class>
+ <widget class="QMainWindow" name="Win7TaskManagerMainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>365</width>
-    <height>170</height>
+    <width>530</width>
+    <height>550</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>365</width>
-    <height>170</height>
+    <width>530</width>
+    <height>550</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>365</width>
-    <height>170</height>
+    <width>530</width>
+    <height>550</height>
    </size>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="button_group_widget" native="true">
-   <property name="geometry">
-    <rect>
-     <x>-20</x>
-     <y>130</y>
-     <width>391</width>
-     <height>51</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">QWidget#widget {
-	background-color: #F0F0F0;
-	border-top: 1px solid #DFDFDF;
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <widget class="QTabWidget" name="task_manager_tab_widget">
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+      <property name="currentIndex">
+       <number>3</number>
+      </property>
+      <widget class="QWidget" name="applications_tab">
+       <attribute name="title">
+        <string>Applications</string>
+       </attribute>
+       <widget class="QTableWidget" name="app_t_task_list_table">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>510</width>
+          <height>441</height>
+         </rect>
+        </property>
+        <column>
+         <property name="text">
+          <string>Task</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Status</string>
+         </property>
+        </column>
+       </widget>
+       <widget class="QPushButton" name="app_t_new_task_button">
+        <property name="geometry">
+         <rect>
+          <x>400</x>
+          <y>450</y>
+          <width>111</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>New Task...</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="app_t_switch_to_button">
+        <property name="geometry">
+         <rect>
+          <x>280</x>
+          <y>450</y>
+          <width>111</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Switch To</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="app_t_end_task_button">
+        <property name="geometry">
+         <rect>
+          <x>160</x>
+          <y>450</y>
+          <width>111</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>End Task</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="processes_tab">
+       <attribute name="title">
+        <string>Processes</string>
+       </attribute>
+       <widget class="QTableWidget" name="proc_t_proc_list_table">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>510</width>
+          <height>441</height>
+         </rect>
+        </property>
+        <property name="selectionBehavior">
+         <enum>QAbstractItemView::SelectRows</enum>
+        </property>
+        <column>
+         <property name="text">
+          <string>Image Name</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>PID</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Username</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>CPU</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Memory (MB)</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Description</string>
+         </property>
+        </column>
+       </widget>
+       <widget class="QPushButton" name="proc_t_end_process_button">
+        <property name="geometry">
+         <rect>
+          <x>400</x>
+          <y>450</y>
+          <width>111</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>End Process</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="services_tab">
+       <attribute name="title">
+        <string>Services</string>
+       </attribute>
+       <widget class="QTableWidget" name="svc_t_services_list_table">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>510</width>
+          <height>441</height>
+         </rect>
+        </property>
+        <column>
+         <property name="text">
+          <string>Name</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>PID</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Description</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Status</string>
+         </property>
+        </column>
+       </widget>
+       <widget class="QPushButton" name="svc_t_services_button">
+        <property name="geometry">
+         <rect>
+          <x>390</x>
+          <y>450</y>
+          <width>120</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Services</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="performance_tab">
+       <attribute name="title">
+        <string>Performance</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QWidget" name="perf_widget" native="true">
+          <widget class="QGroupBox" name="perf_cpu_usage">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>10</y>
+             <width>91</width>
+             <height>140</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>CPU Usage</string>
+           </property>
+          </widget>
+          <widget class="QGroupBox" name="perf_cpu_usage_history">
+           <property name="geometry">
+            <rect>
+             <x>110</x>
+             <y>10</y>
+             <width>391</width>
+             <height>141</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>CPU Usage History</string>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout"/>
+          </widget>
+          <widget class="QGroupBox" name="perf_mem_usage_history">
+           <property name="geometry">
+            <rect>
+             <x>110</x>
+             <y>150</y>
+             <width>390</width>
+             <height>140</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>Memory Usage History</string>
+           </property>
+          </widget>
+          <widget class="QGroupBox" name="perf_physical_mem">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>300</y>
+             <width>181</width>
+             <height>101</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>Physical Memory (MB)</string>
+           </property>
+           <widget class="QLabel" name="perf_physical_mem_total_label">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>20</y>
+              <width>49</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Total</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_physical_mem_total_value">
+            <property name="geometry">
+             <rect>
+              <x>78</x>
+              <y>20</y>
+              <width>91</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_physical_mem_cached_label">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>40</y>
+              <width>49</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Cached</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_physical_mem_cached_value">
+            <property name="geometry">
+             <rect>
+              <x>78</x>
+              <y>40</y>
+              <width>91</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_physical_mem_available_value">
+            <property name="geometry">
+             <rect>
+              <x>78</x>
+              <y>60</y>
+              <width>91</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_physical_mem_available_label">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>60</y>
+              <width>49</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Available</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_physical_mem_free_value">
+            <property name="geometry">
+             <rect>
+              <x>78</x>
+              <y>80</y>
+              <width>91</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_physical_mem_free_label">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>80</y>
+              <width>49</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Free</string>
+            </property>
+           </widget>
+          </widget>
+          <widget class="QGroupBox" name="perf_system">
+           <property name="geometry">
+            <rect>
+             <x>200</x>
+             <y>300</y>
+             <width>181</width>
+             <height>121</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>System</string>
+           </property>
+           <widget class="QLabel" name="perf_system_handles_value">
+            <property name="geometry">
+             <rect>
+              <x>78</x>
+              <y>20</y>
+              <width>91</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_system_handles_label">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>20</y>
+              <width>49</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Handles</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_system_threads_value">
+            <property name="geometry">
+             <rect>
+              <x>78</x>
+              <y>40</y>
+              <width>91</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_system_threads_label">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>40</y>
+              <width>61</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Threads</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_system_processes_value">
+            <property name="geometry">
+             <rect>
+              <x>78</x>
+              <y>60</y>
+              <width>91</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_system_processes_label">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>60</y>
+              <width>61</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Processes</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_system_up_time_value">
+            <property name="geometry">
+             <rect>
+              <x>78</x>
+              <y>80</y>
+              <width>91</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_system_up_time_label">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>80</y>
+              <width>49</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Up Time</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_system_commit_value">
+            <property name="geometry">
+             <rect>
+              <x>98</x>
+              <y>100</y>
+              <width>71</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_system_commit_label">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>100</y>
+              <width>81</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Commit (MB)</string>
+            </property>
+           </widget>
+          </widget>
+          <widget class="QGroupBox" name="perf_kernel_memory">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>400</y>
+             <width>181</width>
+             <height>61</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>Kernel Memory (MB)</string>
+           </property>
+           <widget class="QLabel" name="perf_kernel_mem_paged_value">
+            <property name="geometry">
+             <rect>
+              <x>78</x>
+              <y>20</y>
+              <width>91</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_kernel_mem_paged_label">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>20</y>
+              <width>49</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Paged</string>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_kernel_mem_non_paged_value">
+            <property name="geometry">
+             <rect>
+              <x>78</x>
+              <y>40</y>
+              <width>91</width>
+              <height>20</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+           <widget class="QLabel" name="perf_kernel_mem_non_paged_label">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>40</y>
+              <width>61</width>
+              <height>17</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Nonpaged</string>
+            </property>
+           </widget>
+          </widget>
+          <widget class="QGroupBox" name="perf_mem_usage">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>150</y>
+             <width>91</width>
+             <height>140</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>Memory</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="perf_resource_monitor_button">
+           <property name="geometry">
+            <rect>
+             <x>200</x>
+             <y>430</y>
+             <width>181</width>
+             <height>24</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton {
+	qproperty-icon: url(&quot;/home/test/Documents/Classic Windows Task Manager/resources/uac256.png&quot;);
 }</string>
-   </property>
-   <widget class="QPushButton" name="cancel_button">
-    <property name="geometry">
-     <rect>
-      <x>300</x>
-      <y>10</y>
-      <width>71</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Cancel</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="confirm_button">
-    <property name="geometry">
-     <rect>
-      <x>210</x>
-      <y>10</y>
-      <width>80</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>End Process</string>
-    </property>
-   </widget>
+           </property>
+           <property name="text">
+            <string>Resource Monitor...</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>../resources/app_icons/uac256.png</normaloff>../resources/app_icons/uac256.png</iconset>
+           </property>
+          </widget>
+          <widget class="QToolButton" name="toolButton">
+           <property name="geometry">
+            <rect>
+             <x>330</x>
+             <y>370</y>
+             <width>161</width>
+             <height>26</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Resource Monitor</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>../resources/app_icons/uac256.png</normaloff>../resources/app_icons/uac256.png</iconset>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonTextBesideIcon</enum>
+           </property>
+           <property name="arrowType">
+            <enum>Qt::NoArrow</enum>
+           </property>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="networking_tab">
+       <attribute name="title">
+        <string>Networking</string>
+       </attribute>
+       <widget class="QTableWidget" name="net_t_network_list_table">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>350</y>
+          <width>510</width>
+          <height>121</height>
+         </rect>
+        </property>
+        <column>
+         <property name="text">
+          <string>Adapter Name</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Network Utilization</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Link Speed</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>State</string>
+         </property>
+        </column>
+       </widget>
+       <widget class="QWidget" name="verticalLayoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>511</width>
+          <height>341</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="net_t_vbox_layout"/>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="users_tab">
+       <attribute name="title">
+        <string>Users</string>
+       </attribute>
+       <widget class="QTableWidget" name="users_t_users_list_table">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>510</width>
+          <height>441</height>
+         </rect>
+        </property>
+        <column>
+         <property name="text">
+          <string>User</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>ID</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Status</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Client Name</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Session</string>
+         </property>
+        </column>
+       </widget>
+       <widget class="QPushButton" name="users_t_send_message_button">
+        <property name="geometry">
+         <rect>
+          <x>400</x>
+          <y>450</y>
+          <width>111</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Send Message...</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="users_t_logoff_button">
+        <property name="geometry">
+         <rect>
+          <x>280</x>
+          <y>450</y>
+          <width>111</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Logoff</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="users_t_disconnect_button">
+        <property name="geometry">
+         <rect>
+          <x>160</x>
+          <y>450</y>
+          <width>111</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Disconnect</string>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+   </layout>
   </widget>
-  <widget class="QLabel" name="end_process_title_label">
+  <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>20</y>
-     <width>341</width>
-     <height>20</height>
+     <x>0</x>
+     <y>0</y>
+     <width>530</width>
+     <height>22</height>
     </rect>
    </property>
-   <property name="font">
-    <font>
-     <pointsize>13</pointsize>
-    </font>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">QLabel {
-	color: rgb(0, 65, 156);
-}</string>
-   </property>
-   <property name="text">
-    <string>Do you want to end 'PROCESS NAME'?</string>
-   </property>
+   <widget class="QMenu" name="task_manager_file_menu">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="tm_file_menu_new_task_run"/>
+    <addaction name="separator"/>
+    <addaction name="tm_file_menu_exit_task_manager"/>
+   </widget>
+   <widget class="QMenu" name="task_manager_options_menu">
+    <property name="title">
+     <string>Options</string>
+    </property>
+    <addaction name="tm_options_menu_always_on_top"/>
+    <addaction name="tm_options_menu_minimize_on_use"/>
+    <addaction name="tm_options_menu_hide_when_minimized"/>
+    <addaction name="separator"/>
+    <addaction name="tm_options_menu_show_scale"/>
+    <addaction name="tm_options_menu_show_full_account_name"/>
+   </widget>
+   <widget class="QMenu" name="task_manager_view_menu">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <widget class="QMenu" name="tm_view_menu_menu_update_speed">
+     <property name="title">
+      <string>Update Speed</string>
+     </property>
+     <addaction name="tm_view_menu_us_menu_high"/>
+     <addaction name="tm_view_menu_us_menu_normal"/>
+     <addaction name="tm_view_menu_us_menu_low"/>
+     <addaction name="tm_view_menu_us_menu_paused"/>
+    </widget>
+    <widget class="QMenu" name="tm_view_menu_menu_cpu_history">
+     <property name="title">
+      <string>CPU History</string>
+     </property>
+     <addaction name="tm_view_menu_cpu_one_graph_all_cpus"/>
+     <addaction name="tm_view_menu_cpu_one_graph_per_cpu"/>
+    </widget>
+    <widget class="QMenu" name="tm_view_menu_network_adapter_history">
+     <property name="title">
+      <string>Network Adapter History</string>
+     </property>
+     <addaction name="tm_view_menu_nas_bytes_sent"/>
+     <addaction name="tm_view_menu_nas_bytes_received"/>
+     <addaction name="tm_view_menu_nas_bytes_total"/>
+    </widget>
+    <addaction name="tm_view_menu_refresh_now"/>
+    <addaction name="tm_view_menu_menu_update_speed"/>
+    <addaction name="separator"/>
+    <addaction name="tm_view_menu_select_columns"/>
+    <addaction name="tm_view_menu_menu_cpu_history"/>
+    <addaction name="tm_view_menu_show_kernel_times"/>
+    <addaction name="separator"/>
+    <addaction name="tm_view_menu_network_adapter_history"/>
+   </widget>
+   <widget class="QMenu" name="task_manager_windows_menu">
+    <property name="title">
+     <string>Windows</string>
+    </property>
+    <addaction name="tm_windows_menu_tile_horizontally"/>
+    <addaction name="tm_windows_menu_tile_vertically"/>
+    <addaction name="tm_windows_menu_maximize"/>
+    <addaction name="tm_windows_menu_minimize"/>
+    <addaction name="tm_windows_menu_cascade"/>
+    <addaction name="tm_windows_menu_bring_to_front"/>
+   </widget>
+   <widget class="QMenu" name="task_manager_help_menu">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="tm_help_menu_task_manager_help_topics"/>
+    <addaction name="separator"/>
+    <addaction name="tm_help_menu_about_task_manager"/>
+   </widget>
+   <addaction name="task_manager_file_menu"/>
+   <addaction name="task_manager_options_menu"/>
+   <addaction name="task_manager_view_menu"/>
+   <addaction name="task_manager_windows_menu"/>
+   <addaction name="task_manager_help_menu"/>
   </widget>
-  <widget class="QLabel" name="end_proces_information_label">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>50</y>
-     <width>341</width>
-     <height>81</height>
-    </rect>
-   </property>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="tm_file_menu_new_task_run">
    <property name="text">
-    <string>If an open program is associated with this process, it will close and you will lose any unsaved data. If you end a system process, it might result in an unstable system. Are you sure you want to continue?</string>
+    <string>New Task (Run...)</string>
    </property>
-   <property name="alignment">
-    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+  </action>
+  <action name="tm_file_menu_exit_task_manager">
+   <property name="text">
+    <string>Exit Task Manager</string>
    </property>
-   <property name="wordWrap">
+  </action>
+  <action name="tm_options_menu_always_on_top">
+   <property name="checkable">
     <bool>true</bool>
    </property>
-  </widget>
+   <property name="text">
+    <string>Always On Top</string>
+   </property>
+  </action>
+  <action name="tm_options_menu_minimize_on_use">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Minimize On Use</string>
+   </property>
+  </action>
+  <action name="tm_options_menu_hide_when_minimized">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide When Minimized</string>
+   </property>
+  </action>
+  <action name="tm_view_menu_refresh_now">
+   <property name="text">
+    <string>Refresh Now</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+V</string>
+   </property>
+  </action>
+  <action name="tm_view_menu_us_menu_high">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>High</string>
+   </property>
+  </action>
+  <action name="tm_view_menu_us_menu_normal">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Normal</string>
+   </property>
+  </action>
+  <action name="tm_view_menu_us_menu_low">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Low</string>
+   </property>
+  </action>
+  <action name="tm_view_menu_us_menu_paused">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Paused</string>
+   </property>
+  </action>
+  <action name="tm_view_menu_select_columns">
+   <property name="text">
+    <string>Select Columns...</string>
+   </property>
+  </action>
+  <action name="tm_windows_menu_tile_horizontally">
+   <property name="text">
+    <string>Tile Horizontally</string>
+   </property>
+  </action>
+  <action name="tm_windows_menu_tile_vertically">
+   <property name="text">
+    <string>Tile Vertically</string>
+   </property>
+  </action>
+  <action name="tm_windows_menu_maximize">
+   <property name="text">
+    <string>Minimize</string>
+   </property>
+  </action>
+  <action name="tm_windows_menu_minimize">
+   <property name="text">
+    <string>Maximize</string>
+   </property>
+  </action>
+  <action name="tm_windows_menu_cascade">
+   <property name="text">
+    <string>Cascade</string>
+   </property>
+  </action>
+  <action name="tm_windows_menu_bring_to_front">
+   <property name="text">
+    <string>Bring To Front</string>
+   </property>
+  </action>
+  <action name="tm_help_menu_task_manager_help_topics">
+   <property name="text">
+    <string>Task Manager Help Topics</string>
+   </property>
+  </action>
+  <action name="tm_help_menu_about_task_manager">
+   <property name="text">
+    <string>About Task Manager</string>
+   </property>
+  </action>
+  <action name="tm_view_menu_show_kernel_times">
+   <property name="text">
+    <string>Show Kernel Times</string>
+   </property>
+  </action>
+  <action name="tm_view_menu_cpu_one_graph_all_cpus">
+   <property name="text">
+    <string>One Graph, All CPUs</string>
+   </property>
+  </action>
+  <action name="tm_view_menu_cpu_one_graph_per_cpu">
+   <property name="text">
+    <string>One Graph, Per CPU</string>
+   </property>
+  </action>
+  <action name="tm_view_menu_nas_bytes_sent">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Bytes Sent</string>
+   </property>
+  </action>
+  <action name="tm_view_menu_nas_bytes_received">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Bytes Received</string>
+   </property>
+  </action>
+  <action name="tm_view_menu_nas_bytes_total">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Bytes Total</string>
+   </property>
+  </action>
+  <action name="actionAuto_Scale">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Auto Scale</string>
+   </property>
+  </action>
+  <action name="tm_options_menu_show_full_account_name">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Full Account Name</string>
+   </property>
+  </action>
+  <action name="tm_options_menu_show_scale">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Scale</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

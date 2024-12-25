@@ -109,6 +109,7 @@ class CWTM_MenuBarDynamicMenuFlags(enum.IntFlag):
     SHOW_KERNEL_TIMES                                   = enum.auto()
     NETWORK_ADAPTER_HISTORY                             = enum.auto()
     SHOW_SCALE                                          = enum.auto()
+    UPDATE_SPEED                                        = enum.auto()
 
 
 class CWTM_GlobalUpdateIntervals(enum.IntEnum):
@@ -124,27 +125,35 @@ class CWTM_ResourceBarLevelColours:
     BAR_COLOUR_KERNEL_USAGE_TIME_FILLED                 = QColor(255, 0, 0) # red
 
 
+class CWTM_NetworkingBytesLabelsColours:
+    BYTES_LABEL_BYTES_SENT                              = QColor(255, 0, 0) # red
+    BYTES_LABEL_BYTES_RECEIVED                          = QColor(255, 255, 0) # yellow
+    BYTES_LABEL_BYTES_TOTAL                             = QColor(0, 255, 0) # green
+
+
 CWTM_MENU_BAR_DYNAMIC_MENU_VISIBILITY_MAPPING = {
     CWTM_TabWidgetColumnEnum.TASK_MANAGER_NETWORKING_TAB: (
         CWTM_MenuBarDynamicMenuFlags.SELECT_COLUMNS |
         CWTM_MenuBarDynamicMenuFlags.NETWORK_ADAPTER_HISTORY |
-        CWTM_MenuBarDynamicMenuFlags.SHOW_SCALE
+        CWTM_MenuBarDynamicMenuFlags.SHOW_SCALE |
+        CWTM_MenuBarDynamicMenuFlags.UPDATE_SPEED
     ),
     CWTM_TabWidgetColumnEnum.TASK_MANAGER_PERFORMANCE_TAB: (
         CWTM_MenuBarDynamicMenuFlags.CPU_HISTORY |
-        CWTM_MenuBarDynamicMenuFlags.SHOW_KERNEL_TIMES
+        CWTM_MenuBarDynamicMenuFlags.SHOW_KERNEL_TIMES |
+        CWTM_MenuBarDynamicMenuFlags.UPDATE_SPEED
     ),
     CWTM_TabWidgetColumnEnum.TASK_MANAGER_USERS_TAB: (
         CWTM_MenuBarDynamicMenuFlags.SELECT_COLUMNS |
-        CWTM_MenuBarDynamicMenuFlags.SHOW_FULL_ACCOUNT_NAME
+        CWTM_MenuBarDynamicMenuFlags.SHOW_FULL_ACCOUNT_NAME |
+        CWTM_MenuBarDynamicMenuFlags.UPDATE_SPEED
     ),
     CWTM_TabWidgetColumnEnum.TASK_MANAGER_APPLICATIONS_TAB: (
-        CWTM_MenuBarDynamicMenuFlags.SELECT_COLUMNS
+        CWTM_MenuBarDynamicMenuFlags.UPDATE_SPEED
     ),
     CWTM_TabWidgetColumnEnum.TASK_MANAGER_PROCESSES_TAB: (
-        CWTM_MenuBarDynamicMenuFlags.SELECT_COLUMNS
+        CWTM_MenuBarDynamicMenuFlags.SELECT_COLUMNS |
+        CWTM_MenuBarDynamicMenuFlags.UPDATE_SPEED
     ),
-    CWTM_TabWidgetColumnEnum.TASK_MANAGER_SERVICES_TAB: (
-        CWTM_MenuBarDynamicMenuFlags.SELECT_COLUMNS
-    ),
+    CWTM_TabWidgetColumnEnum.TASK_MANAGER_SERVICES_TAB: 0 # Nothing
 }

@@ -3,14 +3,15 @@ import math
 import psutil
 import pyqtgraph
 
-from functools import partial
-
 from .. import sys_utils
 from ..qt_widgets import (
     CWTM_ResourceLevelBarWidget,
     CWTM_ResourceGraphWidget
 )
-from ..qt_components import CWTM_TabManager
+from ..qt_components import (
+    CWTM_TabManager,
+    CWTM_GlobalUpdateIntervalHandler
+)
 from .core_properties import (
     CWTM_ResourceLevelBarParameters,
     CWTM_GlobalUpdateIntervals,
@@ -95,19 +96,8 @@ class CWTM_PerformanceTab(CWTM_TabManager):
             self.switch_to_all_cpu_graphing)
         self.parent.tm_view_menu_cpu_one_graph_per_cpu.triggered.connect(
             self.switch_to_per_cpu_graphing)
-
-        self.parent.tm_view_menu_us_menu_high.triggered.connect(partial(
-            self.switch_performance_update_speed, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_HIGH))
-        self.parent.tm_view_menu_us_menu_normal.triggered.connect(partial(
-            self.switch_performance_update_speed, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_NORMAL))
-        self.parent.tm_view_menu_us_menu_low.triggered.connect(partial(
-            self.switch_performance_update_speed, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_LOW))
-        self.parent.tm_view_menu_us_menu_paused.triggered.connect(partial(
-            self.switch_performance_update_speed, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED))
-
         self.parent.tm_view_menu_refresh_now.triggered.connect(
             self.update_refresh_performance_page)
-
         self.parent.tm_view_menu_show_kernel_times.triggered.connect(
             self.update_show_kernel_times_setting)
 
@@ -124,9 +114,6 @@ class CWTM_PerformanceTab(CWTM_TabManager):
 
     def update_refresh_performance_page(self):
         self.performance_page_worker.get_all_resource_usage_frame()
-
-    def switch_performance_update_speed(self, update_interval):
-        self.performance_page_worker.timeout_interval = update_interval
 
     def register_cpu_core(self, *, per_cpu=False):
         cpu_core_count = psutil.cpu_count()
@@ -311,6 +298,9 @@ class CWTM_PerformanceTab(CWTM_TabManager):
             parent_tab_widget=self.parent.task_manager_tab_widget,
             per_cpu=self.graphing_mode_per_cpu
         )
+        self.performance_page_update_handler = CWTM_GlobalUpdateIntervalHandler(self.parent)
+        self.performance_page_update_handler.register_selected_tab_update_interval_handler(
+            self.performance_page_worker)
 
         self.performance_page_worker.perf_sig_memory_labels_info.connect(
             self.update_physical_memory_labels)

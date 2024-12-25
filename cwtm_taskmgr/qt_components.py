@@ -8,7 +8,8 @@ from .tm_tabbar.core_properties import (
     CWTM_TabWidgetColumnEnum,
     CWTM_MenuBarStatusBarLabels,
     CWTM_MenuBarDynamicMenuFlags,
-    CWTM_MENU_BAR_DYNAMIC_MENU_VISIBILITY_MAPPING
+    CWTM_GlobalUpdateIntervals,
+    CWTM_MENU_BAR_DYNAMIC_MENU_VISIBILITY_MAPPING,
 )
 from cwtm_taskmgr_ui.cwtm_taskmgr_dialog_ui import (
     Ui_CWTMTaskManagerConfirmationDialog
@@ -141,9 +142,30 @@ class CWTM_TabManager:
             return current_selected_item.text()
 
 
-class CWTM_GlobalUpdateIntervalHanlder:
+class CWTM_GlobalUpdateIntervalHandler:
     def __init__(self, parent):
         self.parent = parent
+
+    def register_selected_tab_update_interval_handler(self, thread_worker):
+        self.parent.tm_view_menu_us_menu_high.triggered.connect(lambda:
+            self.switch_selected_tab_update_speed(
+                thread_worker, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_HIGH)
+        )
+        self.parent.tm_view_menu_us_menu_normal.triggered.connect(lambda:
+            self.switch_selected_tab_update_speed(
+                thread_worker, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_NORMAL)
+        )
+        self.parent.tm_view_menu_us_menu_low.triggered.connect(lambda:
+            self.switch_selected_tab_update_speed(
+                thread_worker, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_LOW)
+        )
+        self.parent.tm_view_menu_us_menu_paused.triggered.connect(lambda:
+            self.switch_selected_tab_update_speed(
+                thread_worker, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED)
+        )
+
+    def switch_selected_tab_update_speed(self, thread_worker, update_interval):
+        thread_worker.timeout_interval = update_interval
 
 
 class CWTM_MenuBarSignalHandler:
@@ -187,6 +209,8 @@ class CWTM_MenuBarSignalHandler:
             bool(dynamic_menu_flags & CWTM_MenuBarDynamicMenuFlags.NETWORK_ADAPTER_HISTORY))
         self.parent.tm_options_menu_show_scale.setVisible(
             bool(dynamic_menu_flags & CWTM_MenuBarDynamicMenuFlags.SHOW_SCALE))
+        self.parent.tm_view_menu_menu_update_speed.menuAction().setVisible(
+            bool(dynamic_menu_flags & CWTM_MenuBarDynamicMenuFlags.UPDATE_SPEED))
 
     def setup_menu_bar_status_bar_labels(self):
         self.parent.tm_file_menu_new_task_run.setStatusTip(
