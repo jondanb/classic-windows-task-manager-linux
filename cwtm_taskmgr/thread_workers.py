@@ -82,13 +82,9 @@ class CWTM_ProcessesInfoRetrievalWorker(QObject):
         self.parent_tab_widget = parent_tab_widget
 
     def run(self):        
-        self.processes_update_timer = QTimer()
-        self.processes_update_timer.timeout.connect(
-            self.get_all_gtk_running_processes_info
-        )
-        self.processes_update_timer.start(self.timeout_interval)
+        self.get_all_gtk_running_processes_info_loop()
 
-    def get_all_gtk_running_processes_info(self, *, force_run=False):
+    def get_all_gtk_running_processes_info_frame(self, *, force_run=False):
         if not force_run and self.parent_tab_widget.currentIndex() != \
            CWTM_TabWidgetColumnEnum.TASK_MANAGER_PROCESSES_TAB:
             return
@@ -97,6 +93,13 @@ class CWTM_ProcessesInfoRetrievalWorker(QObject):
         self.proc_sig_processes_info.emit(
             gtk_running_processes
         )
+
+    def get_all_gtk_running_processes_info_loop(self):
+        if self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
+            QTimer.singleShot(100, self.get_all_gtk_running_processes_info_loop)
+        else:
+            self.get_all_gtk_running_processes_info_frame()
+            QTimer.singleShot(self.timeout_interval, self.get_all_gtk_running_processes_info_loop)
 
 class CWTM_ApplicationsInfoRetrievalWorker(QObject):
     app_sig_applications_info = pyqtSignal(list)
@@ -107,13 +110,9 @@ class CWTM_ApplicationsInfoRetrievalWorker(QObject):
         self.parent_tab_widget = parent_tab_widget
 
     def run(self):        
-        self.application_update_timer = QTimer()
-        self.application_update_timer.timeout.connect(
-            self.get_all_gtk_running_applications_info
-        )
-        self.application_update_timer.start(self.timeout_interval)
+        self.get_all_gtk_running_applications_info_loop()
 
-    def get_all_gtk_running_applications_info(self, *, force_run=False):
+    def get_all_gtk_running_applications_info_frame(self, *, force_run=False):
         if not force_run and self.parent_tab_widget.currentIndex() != \
           CWTM_TabWidgetColumnEnum.TASK_MANAGER_APPLICATIONS_TAB:
             return
@@ -125,6 +124,13 @@ class CWTM_ApplicationsInfoRetrievalWorker(QObject):
         self.app_sig_applications_info.emit(
             gtk_running_apps_and_icons
         )
+
+    def get_all_gtk_running_applications_info_loop(self):
+        if self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
+            QTimer.singleShot(100, self.get_all_gtk_running_applications_info_loop)
+        else:
+            self.get_all_gtk_running_applications_info_frame()
+            QTimer.singleShot(self.timeout_interval, self.get_all_gtk_running_applications_info_loop)
 
 class CWTM_PerformanceInfoRetrievalWorker(QObject):
     perf_sig_memory_labels_info = pyqtSignal(psutil._pslinux.svmem)

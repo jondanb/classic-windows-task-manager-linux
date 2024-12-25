@@ -96,8 +96,6 @@ class CWTM_PerformanceTab(CWTM_TabManager):
             self.switch_to_all_cpu_graphing)
         self.parent.tm_view_menu_cpu_one_graph_per_cpu.triggered.connect(
             self.switch_to_per_cpu_graphing)
-        self.parent.tm_view_menu_refresh_now.triggered.connect(
-            self.update_refresh_performance_page)
         self.parent.tm_view_menu_show_kernel_times.triggered.connect(
             self.update_show_kernel_times_setting)
 
@@ -300,7 +298,8 @@ class CWTM_PerformanceTab(CWTM_TabManager):
         )
         self.performance_page_update_handler = CWTM_GlobalUpdateIntervalHandler(self.parent)
         self.performance_page_update_handler.register_selected_tab_update_interval_handler(
-            self.performance_page_worker)
+            thread_worker=self.performance_page_worker,
+            refresh_function=self.update_refresh_performance_page)
 
         self.performance_page_worker.perf_sig_memory_labels_info.connect(
             self.update_physical_memory_labels)

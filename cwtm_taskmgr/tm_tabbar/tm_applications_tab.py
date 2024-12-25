@@ -1,13 +1,14 @@
 import enum
-import functools
 
 from .core_properties import (
     CWTM_ApplicationsTabTableColumns,
-    CWTM_TableWidgetItemProperties
+    CWTM_TableWidgetItemProperties,
+    CWTM_GlobalUpdateIntervals
 )
 from ..qt_components import (
     CWTM_TabManager, 
-    CWTM_TaskManagerConfirmationDialog
+    CWTM_TaskManagerConfirmationDialog,
+    CWTM_GlobalUpdateIntervalHandler
 )
 from ..thread_workers import CWTM_ApplicationsInfoRetrievalWorker
 
@@ -26,7 +27,8 @@ class CWTM_ApplicationsTab(CWTM_TabManager):
         self.parent = parent
 
         self.APP_T_TASK_LIST_TABLE_COLUMN_RATIO = (0.85, 0.15)
-        self.APP_T_TASK_LIST_TABLE_UPDATE_FREQUENCY = 1000 # 1 second
+        self.APP_T_TASK_LIST_TABLE_UPDATE_FREQUENCY = \
+            CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_NORMAL
 
         self.parent.app_t_task_list_table.setColumnHidden(
             CWTM_ApplicationsTabTableColumns.APP_T_TASK_LIST_TABLE_PID, True
@@ -74,7 +76,7 @@ class CWTM_ApplicationsTab(CWTM_TabManager):
         for gtk_app_name, gtk_app_pid, gtk_app_icon in gtk_running_apps_icons:
             if not gtk_app_name:
                 continue
-            
+
             self.append_row_to_table(
                 self.parent.app_t_task_list_table, CWTM_ApplicationsTabTableColumns,
                 CWTM_TableWidgetItemProperties(item_label=gtk_app_name, item_icon=gtk_app_icon),
@@ -89,16 +91,23 @@ class CWTM_ApplicationsTab(CWTM_TabManager):
                 current_selected_item
             )
 
+    def update_refresh_applications_page_apps(self):
+        self.applications_page_worker.get_all_gtk_running_applications_info_frame()
+
     def start_applications_page_updater_thread(self):
         self.applications_page_thread = QThread()
         self.applications_page_worker = CWTM_ApplicationsInfoRetrievalWorker(
             timeout_interval=self.APP_T_TASK_LIST_TABLE_UPDATE_FREQUENCY,
-            parent_tab_widget=self.parent.task_manager_tab_widget
-        )
+            parent_tab_widget=self.parent.task_manager_tab_widget)
+        self.applications_page_update_handler = CWTM_GlobalUpdateIntervalHandler(self.parent)
+        self.applications_page_update_handler.register_selected_tab_update_interval_handler(
+            thread_worker=self.applications_page_worker,
+            refresh_function=self.update_refresh_applications_page_apps)
+
         self.applications_page_worker.app_sig_applications_info.connect(
             self.update_applications_page
         )
-        self.applications_page_worker.get_all_gtk_running_applications_info(
+        self.applications_page_worker.get_all_gtk_running_applications_info_frame(
             force_run=True
         )
         self.applications_page_worker.moveToThread(

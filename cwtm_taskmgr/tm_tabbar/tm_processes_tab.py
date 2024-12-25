@@ -5,11 +5,13 @@ import functools
 from .. import sys_utils
 from .core_properties import (
     CWTM_ProcessesTabTableColumns,
-    CWTM_TableWidgetItemProperties
+    CWTM_TableWidgetItemProperties,
+    CWTM_GlobalUpdateIntervals
 )
 from ..qt_components import (
     CWTM_TabManager, 
-    CWTM_TaskManagerConfirmationDialog
+    CWTM_TaskManagerConfirmationDialog,
+    CWTM_GlobalUpdateIntervalHandler
 )
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
 from ..thread_workers import CWTM_ProcessesInfoRetrievalWorker
@@ -29,7 +31,8 @@ class CWTM_ProcessesTab(CWTM_TabManager):
     def __init__(self, parent):
         self.parent = parent
 
-        self.PROC_T_PROC_LIST_TABLE_UPDATE_FREQUENCY = 5000 # 5 seconds
+        self.PROC_T_PROC_LIST_TABLE_UPDATE_FREQUENCY = \
+            CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_NORMAL
         self.PROC_T_PROC_LIST_COLUMN_RATIO = (0.25, 0.10, 0.15,
                                               0.10, 0.15, 0.25)
 
@@ -91,33 +94,28 @@ class CWTM_ProcessesTab(CWTM_TabManager):
                 current_selected_item
             )
 
+    def update_refresh_processes_page_proc(self):
+        self.self.processes_page_worker.get_all_gtk_running_processes_info_frame()
+
     def start_processes_page_updater_thread(self):
         self.processes_page_thread = QThread()
         self.processes_page_worker = CWTM_ProcessesInfoRetrievalWorker(
             timeout_interval=self.PROC_T_PROC_LIST_TABLE_UPDATE_FREQUENCY,
-            parent_tab_widget=self.parent.task_manager_tab_widget
-        )
+            parent_tab_widget=self.parent.task_manager_tab_widget)
+        self.processes_page_update_handler = CWTM_GlobalUpdateIntervalHandler(self.parent)
+        self.processes_page_update_handler.register_selected_tab_update_interval_handler(
+            thread_worker=self.processes_page_worker,
+            refresh_function=self.update_refresh_processes_page_proc)
+
         self.processes_page_worker.proc_sig_processes_info.connect(
-            self.update_processes_page
-        )
-        
-        self.processes_page_worker.get_all_gtk_running_processes_info(
-            force_run=True
-        )
+            self.update_processes_page)
 
         self.processes_page_worker.moveToThread(self.processes_page_thread)
 
         self.processes_page_thread.started.connect(
-            self.processes_page_worker.run
-        )
+            self.processes_page_worker.run)
         
         self.processes_page_thread.start()
 
-    def __start_processes_page_updater(self, timeout_frequency):
-        self.update_processes_page()
-        
-        self.processes_update_timer = QTimer()
-        self.processes_update_timer.timeout.connect(
-            self.update_processes_page
-        )
-        self.processes_update_timer.start(timeout_frequency)
+        self.processes_page_worker.get_all_gtk_running_processes_info_frame(
+            force_run=True)

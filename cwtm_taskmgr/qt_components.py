@@ -146,7 +146,7 @@ class CWTM_GlobalUpdateIntervalHandler:
     def __init__(self, parent):
         self.parent = parent
 
-    def register_selected_tab_update_interval_handler(self, thread_worker):
+    def register_selected_tab_update_interval_handler(self, thread_worker, refresh_function):
         self.parent.tm_view_menu_us_menu_high.triggered.connect(lambda:
             self.switch_selected_tab_update_speed(
                 thread_worker, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_HIGH)
@@ -163,6 +163,9 @@ class CWTM_GlobalUpdateIntervalHandler:
             self.switch_selected_tab_update_speed(
                 thread_worker, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED)
         )
+
+        self.parent.tm_view_menu_refresh_now.triggered.connect(
+            refresh_function)
 
     def switch_selected_tab_update_speed(self, thread_worker, update_interval):
         thread_worker.timeout_interval = update_interval

@@ -4,13 +4,12 @@ import functools
 from .. import sys_utils
 from .core_properties import (
     CWTM_UsersTabTableColumns,
-    CWTM_TableWidgetItemProperties
+    CWTM_TableWidgetItemProperties,
+    CWTM_GlobalUpdateIntervals
 )
 from ..qt_components import CWTM_TabManager
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
 from ..thread_workers import CWTM_PageUpdaterWorkerThread
-
-
 
 from PyQt5.QtCore import (
     Qt,
@@ -26,7 +25,8 @@ class CWTM_UsersTab(CWTM_TabManager):
     def __init__(self, parent):
         self.parent = parent
 
-        self.USERS_T_USERS_LIST_TABLE_UPDATE_FREQUENCY = 300_000 # 5 minutes
+        self.USERS_T_USERS_LIST_TABLE_UPDATE_FREQUENCY = \
+            CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_NORMAL
             
     def update_users_page(self):
         self.parent.users_t_users_list_table.setRowCount(0)

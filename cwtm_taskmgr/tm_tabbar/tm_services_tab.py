@@ -6,7 +6,7 @@ from .. import sys_utils
 from ..qt_components import CWTM_TabManager
 from .core_properties import (
     CWTM_ServicesTabTableColumns,
-    CWTM_TableWidgetItemProperties
+    CWTM_TableWidgetItemProperties,
 )
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
 from ..thread_workers import CWTM_PageUpdaterWorkerThread
@@ -26,7 +26,7 @@ class CWTM_ServicesTab(CWTM_TabManager):
         self.parent = parent
 
         self.SVC_T_SERVICES_LIST_TABLE_COLUMN_RATIO = (0.25, 0.1, 0.50, 0.15)
-        self.SVC_T_SERVICES_LIST_TABLE_UPDATE_FREQUENCY = 60000 # 1 minute
+        self.SVC_T_SERVICES_LIST_TABLE_UPDATE_FREQUENCY = 360_000 # 5 minutes
 
     def update_services_page(self):
         self.parent.svc_t_services_list_table.setRowCount(0)

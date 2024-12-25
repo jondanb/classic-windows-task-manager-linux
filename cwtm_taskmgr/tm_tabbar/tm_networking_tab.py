@@ -35,8 +35,6 @@ class CWTM_NetworkingTab(CWTM_TabManager):
         self.NET_T_NETWORK_USAGE_X_RANGE = 200 # 200:8 ratio 
 
     def setup_performance_tab_menu_bar_slots(self):
-        self.parent.tm_view_menu_refresh_now.triggered.connect(
-            self.update_refresh_networking_page_resource_graphs)
         self.parent.tm_view_menu_nas_bytes_sent.triggered.connect(
             self.clear_all_disabled_networking_byte_line)
         self.parent.tm_view_menu_nas_bytes_received.triggered.connect(
@@ -236,7 +234,8 @@ class CWTM_NetworkingTab(CWTM_TabManager):
                 self.NET_T_NETWORKING_LIST_TABLE_UPDATE_FREQUENCY, self.parent)
         self.networking_page_update_handler = CWTM_GlobalUpdateIntervalHandler(self.parent)
         self.networking_page_update_handler.register_selected_tab_update_interval_handler(
-            self.networking_interface_retrieval_worker)  
+            thread_worker=self.networking_interface_retrieval_worker,
+            refresh_function=self.update_refresh_networking_page_resource_graphs)  
 
         self.networking_interface_retrieval_worker.moveToThread(
             self.networking_interface_retrieval_thread
