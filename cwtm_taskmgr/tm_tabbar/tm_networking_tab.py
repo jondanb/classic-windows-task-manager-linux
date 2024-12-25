@@ -232,9 +232,9 @@ class CWTM_NetworkingTab(CWTM_TabManager):
         self.networking_interface_retrieval_worker = \
             CWTM_NetworkingInterfaceRetrievalWorker(
                 self.NET_T_NETWORKING_LIST_TABLE_UPDATE_FREQUENCY, self.parent)
-        self.networking_page_update_handler = CWTM_GlobalUpdateIntervalHandler(self.parent)
+        self.networking_page_update_handler = CWTM_GlobalUpdateIntervalHandler(
+            self.parent, thread_worker=self.networking_interface_retrieval_worker)
         self.networking_page_update_handler.register_selected_tab_update_interval_handler(
-            thread_worker=self.networking_interface_retrieval_worker,
             refresh_function=self.update_refresh_networking_page_resource_graphs)  
 
         self.networking_interface_retrieval_worker.moveToThread(

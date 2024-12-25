@@ -99,9 +99,9 @@ class CWTM_ApplicationsTab(CWTM_TabManager):
         self.applications_page_worker = CWTM_ApplicationsInfoRetrievalWorker(
             timeout_interval=self.APP_T_TASK_LIST_TABLE_UPDATE_FREQUENCY,
             parent_tab_widget=self.parent.task_manager_tab_widget)
-        self.applications_page_update_handler = CWTM_GlobalUpdateIntervalHandler(self.parent)
+        self.applications_page_update_handler = CWTM_GlobalUpdateIntervalHandler(
+            self.parent, thread_worker=self.applications_page_worker)
         self.applications_page_update_handler.register_selected_tab_update_interval_handler(
-            thread_worker=self.applications_page_worker,
             refresh_function=self.update_refresh_applications_page_apps)
 
         self.applications_page_worker.app_sig_applications_info.connect(

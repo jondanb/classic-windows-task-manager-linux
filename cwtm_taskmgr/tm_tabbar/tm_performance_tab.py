@@ -296,9 +296,9 @@ class CWTM_PerformanceTab(CWTM_TabManager):
             parent_tab_widget=self.parent.task_manager_tab_widget,
             per_cpu=self.graphing_mode_per_cpu
         )
-        self.performance_page_update_handler = CWTM_GlobalUpdateIntervalHandler(self.parent)
+        self.performance_page_update_handler = CWTM_GlobalUpdateIntervalHandler(
+            self.parent, thread_worker=self.performance_page_worker)
         self.performance_page_update_handler.register_selected_tab_update_interval_handler(
-            thread_worker=self.performance_page_worker,
             refresh_function=self.update_refresh_performance_page)
 
         self.performance_page_worker.perf_sig_memory_labels_info.connect(

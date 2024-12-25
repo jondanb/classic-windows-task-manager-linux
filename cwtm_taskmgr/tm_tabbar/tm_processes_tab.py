@@ -102,9 +102,9 @@ class CWTM_ProcessesTab(CWTM_TabManager):
         self.processes_page_worker = CWTM_ProcessesInfoRetrievalWorker(
             timeout_interval=self.PROC_T_PROC_LIST_TABLE_UPDATE_FREQUENCY,
             parent_tab_widget=self.parent.task_manager_tab_widget)
-        self.processes_page_update_handler = CWTM_GlobalUpdateIntervalHandler(self.parent)
+        self.processes_page_update_handler = CWTM_GlobalUpdateIntervalHandler(
+            self.parent, thread_worker=self.processes_page_worker)
         self.processes_page_update_handler.register_selected_tab_update_interval_handler(
-            thread_worker=self.processes_page_worker,
             refresh_function=self.update_refresh_processes_page_proc)
 
         self.processes_page_worker.proc_sig_processes_info.connect(

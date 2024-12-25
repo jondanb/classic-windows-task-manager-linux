@@ -143,32 +143,25 @@ class CWTM_TabManager:
 
 
 class CWTM_GlobalUpdateIntervalHandler:
-    def __init__(self, parent):
+    def __init__(self, parent, thread_worker):
         self.parent = parent
+        self.thread_worker = thread_worker
 
-    def register_selected_tab_update_interval_handler(self, thread_worker, refresh_function):
+    def register_selected_tab_update_interval_handler(self, *, refresh_function):
         self.parent.tm_view_menu_us_menu_high.triggered.connect(lambda:
-            self.switch_selected_tab_update_speed(
-                thread_worker, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_HIGH)
-        )
+            self.switch_selected_tab_update_speed(CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_HIGH))
         self.parent.tm_view_menu_us_menu_normal.triggered.connect(lambda:
-            self.switch_selected_tab_update_speed(
-                thread_worker, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_NORMAL)
-        )
+            self.switch_selected_tab_update_speed(CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_NORMAL))
         self.parent.tm_view_menu_us_menu_low.triggered.connect(lambda:
-            self.switch_selected_tab_update_speed(
-                thread_worker, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_LOW)
-        )
+            self.switch_selected_tab_update_speed(CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_LOW))
         self.parent.tm_view_menu_us_menu_paused.triggered.connect(lambda:
-            self.switch_selected_tab_update_speed(
-                thread_worker, CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED)
-        )
+            self.switch_selected_tab_update_speed(CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED))
 
         self.parent.tm_view_menu_refresh_now.triggered.connect(
             refresh_function)
 
-    def switch_selected_tab_update_speed(self, thread_worker, update_interval):
-        thread_worker.timeout_interval = update_interval
+    def switch_selected_tab_update_speed(self, update_interval):
+        self.thread_worker.timeout_interval = update_interval
 
 
 class CWTM_MenuBarSignalHandler:
