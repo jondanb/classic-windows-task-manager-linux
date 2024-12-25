@@ -14,7 +14,6 @@ class CWTM_ResourceLevelBarParameters:
     total_bars:         int
     bar_height:         int
     bar_width:          int
-    bar_colour:         QColor
     spacing:            int
     resource_bar_label: str
     
@@ -118,6 +117,12 @@ class CWTM_GlobalUpdateIntervals(enum.IntEnum):
     GLOBAL_UPDATE_INTERVAL_LOW                          = 4000 # 4 seconds
     GLOBAL_UPDATE_INTERVAL_PAUSED                       = -1
     
+
+class CWTM_ResourceBarLevelColours:
+    BAR_COLOUR_CPU_USAGE_TIME_FILLED                    = QColor(0, 255, 0) # green
+    BAR_COLOUR_CPU_USAGE_TIME_EMPTY                     = QColor(0, 100, 0) # dark green
+    BAR_COLOUR_KERNEL_USAGE_TIME_FILLED                 = QColor(255, 0, 0) # red
+
 
 CWTM_MENU_BAR_DYNAMIC_MENU_VISIBILITY_MAPPING = {
     CWTM_TabWidgetColumnEnum.TASK_MANAGER_NETWORKING_TAB: (

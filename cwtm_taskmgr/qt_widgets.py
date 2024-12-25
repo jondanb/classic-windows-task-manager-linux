@@ -106,25 +106,52 @@ class CWTM_ResourceLevelBarWidget(QWidget):
 
     def paintEvent(self, event):        
         painter = QPainter(self)
-        
         painter.fillRect(self.rect(), QColor(0, 0, 0))
         
-        self.draw_graphical_resource_level(painter, self.x_offset_progress_bar_1)
-        self.draw_graphical_resource_level(painter, self.x_offset_progress_bar_2)
+        self.draw_resource_bar_levels(
+            painter, self.x_offset_progress_bar_1, 
+            self.primary_resource_value,
+            self.primary_bar_colour_filled,
+            self.primary_bar_colour_empty)
+        self.draw_resource_bar_levels(
+            painter, self.x_offset_progress_bar_2,
+            self.primary_resource_value,
+            self.primary_bar_colour_filled,
+            self.primary_bar_colour_empty)
+
+        if self.secondary_bar_colour_filled is not None:
+            self.draw_resource_bar_levels(
+                painter, self.x_offset_progress_bar_1, 
+                self.secondary_resource_value,
+                self.secondary_bar_colour_filled,
+                self.secondary_bar_colour_empty,
+                draw_empty_bars=False)
+            self.draw_resource_bar_levels(
+                painter, self.x_offset_progress_bar_2,
+                self.secondary_resource_value,
+                self.secondary_bar_colour_filled,
+                self.secondary_bar_colour_empty,
+                draw_empty_bars=False)
+
+        painter.setPen(self.primary_bar_colour_filled)
+        painter.setBrush(self.primary_bar_colour_filled)
 
         painter.drawText(
             self.x_offset_progress_bar_1 * self.bar_parameters.offset_factor // 4,
             self.bar_parameters.y_offset + self.bar_parameters.total_bars \
             * (self.bar_parameters.bar_height + self.bar_parameters.spacing) + 10,
-            f'{self.resource_value} {self.bar_parameters.resource_bar_label}'
-        )
+            f'{self.primary_resource_value} {self.bar_parameters.resource_bar_label}')
 
-    def draw_graphical_resource_level(self, painter, current_x_offset):
-        filled_bars = int((self.resource_value / self.total_space) \
+    def draw_resource_bar_levels(
+        self, painter, current_x_offset, resource_value,
+        bar_colour_filled, bar_colour_empty, *, draw_empty_bars=True):
+        filled_bars = int((resource_value / self.total_space) \
                           * self.bar_parameters.total_bars)
+        total_current_bars = self.bar_parameters.total_bars \
+            if draw_empty_bars else filled_bars
         
-        for i in range(self.bar_parameters.total_bars):
-            color = self.bar_parameters.bar_colour if i < filled_bars else QColor(0, 100, 0)
+        for i in range(total_current_bars):
+            color = bar_colour_filled if i < filled_bars else bar_colour_empty
             brush, pen = QBrush(color), QPen(color)
             
             painter.setBrush(brush)
@@ -137,10 +164,19 @@ class CWTM_ResourceLevelBarWidget(QWidget):
                              self.bar_parameters.bar_width,
                              self.bar_parameters.bar_height)
 
-        painter.setPen(self.bar_parameters.bar_colour)
+        painter.setPen(bar_colour_filled)
 
-    def set_resource_value(self, resource_value, total_space):
-        self.resource_value = resource_value
+    def set_resource_value(
+        self, primary_resource_value, secondary_resource_value, total_space, 
+        primary_bar_colour_filled, primary_bar_colour_empty,
+        secondary_bar_colour_filled, secondary_bar_colour_empty):
+        self.primary_bar_colour_filled = primary_bar_colour_filled
+        self.primary_bar_colour_empty = primary_bar_colour_empty
+        self.secondary_bar_colour_filled = secondary_bar_colour_filled
+        self.secondary_bar_colour_empty = secondary_bar_colour_empty
+
+        self.primary_resource_value = primary_resource_value
+        self.secondary_resource_value = secondary_resource_value
         self.total_space  = total_space
         self.update()  # Request a repaint
 

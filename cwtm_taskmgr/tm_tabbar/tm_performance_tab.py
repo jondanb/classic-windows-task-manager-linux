@@ -13,7 +13,8 @@ from ..qt_widgets import (
 from ..qt_components import CWTM_TabManager
 from .core_properties import (
     CWTM_ResourceLevelBarParameters,
-    CWTM_GlobalUpdateIntervals
+    CWTM_GlobalUpdateIntervals,
+    CWTM_ResourceBarLevelColours
 )
 from ..thread_workers import CWTM_PerformanceInfoRetrievalWorker
 
@@ -44,6 +45,8 @@ class CWTM_PerformanceTab(CWTM_TabManager):
             self.cpu_usage_history_layout
         )
 
+        self.show_kernel_times = False
+
     def setup_performance_tab_bars(self):
         cpu_resource_bar_parameters = CWTM_ResourceLevelBarParameters(
             x_offset=self.parent.perf_cpu_usage.size().width(),
@@ -51,7 +54,6 @@ class CWTM_PerformanceTab(CWTM_TabManager):
             total_bars=self.PERF_RESOURCE_USAGE_TOTAL_BARS,
             bar_height=self.PERF_RESOURCE_USAGE_BAR_HEIGHT,
             bar_width=self.PERF_RESOURCE_USAGE_BAR_WIDTH,
-            bar_colour=QColor(0, 255, 0),
             spacing=self.PERF_RESOURCE_USAGE_BAR_SPACING,
             resource_bar_label="%"
         )
@@ -106,6 +108,12 @@ class CWTM_PerformanceTab(CWTM_TabManager):
         self.parent.tm_view_menu_refresh_now.triggered.connect(
             self.update_refresh_performance_page)
 
+        self.parent.tm_view_menu_show_kernel_times.triggered.connect(
+            self.update_show_kernel_times_setting)
+
+    def update_show_kernel_times_setting(self):
+        self.show_kernel_times = not self.show_kernel_times
+
     def update_refresh_performance_page(self):
         self.performance_page_worker.get_all_resource_usage_frame()
 
@@ -125,15 +133,25 @@ class CWTM_PerformanceTab(CWTM_TabManager):
             if not per_cpu else self.PERF_RESOURCE_USAGE_X_RANGE // (cpu_core_count * 2)
         cpu_grid_usage_data_x, cpu_grid_usage_data_y = \
             cpu_grid_widget.get_all_data_axes(x_range=cpu_graph_x_range)
+        cpu_grid_kernel_usage_data_x, cpu_grid_kernel_usage_data_y = \
+            cpu_grid_widget.get_all_data_axes(x_range=cpu_graph_x_range)
         cpu_grid_usage_plot_pen = pyqtgraph.mkPen(color="g", width=1)
+        cpu_grid_kernel_usage_plot_pen = pyqtgraph.mkPen(color="r", width=1)
         cpu_grid_usage_plot_item = cpu_grid_widget.plot(
             cpu_grid_usage_data_x, cpu_grid_usage_data_y,
             pen=cpu_grid_usage_plot_pen
         )
+        cpu_grid_kernel_usage_plot_item = cpu_grid_widget.plot(
+            cpu_grid_kernel_usage_data_x, cpu_grid_kernel_usage_data_y,
+            pen=cpu_grid_kernel_usage_plot_pen
+        )
 
         self.PERF_CPU_USAGE_HISTORY_GRAPHS.append((
-            cpu_grid_widget, cpu_grid_usage_data_x, cpu_grid_usage_data_y,
-            cpu_grid_usage_plot_pen, cpu_grid_usage_plot_item
+            cpu_grid_widget, 
+            cpu_grid_usage_data_x, cpu_grid_usage_data_y,
+            cpu_grid_kernel_usage_data_x, cpu_grid_kernel_usage_data_y,
+            cpu_grid_usage_plot_pen, cpu_grid_kernel_usage_plot_pen, 
+            cpu_grid_usage_plot_item, cpu_grid_kernel_usage_plot_item
         ))
 
         return cpu_grid_widget
@@ -237,21 +255,43 @@ class CWTM_PerformanceTab(CWTM_TabManager):
         self.parent.status_bar_physical_memory_label.setText(
             f"Physical Memory: {v_mem_percent}%")
 
-    def update_cpu_usage_history_graphs(self, current_cpu_usage):
-        for cpu_core, cpu_usage in enumerate(current_cpu_usage):
+    def update_cpu_usage_history_graphs(self, current_cpu_usage, current_cpu_kernel_usage):
+        for cpu_core, (cpu_usage, kernel_cpu_usage) in enumerate(
+            zip(current_cpu_usage, current_cpu_kernel_usage)):
             (cpu_grid_widget, 
                 cpu_grid_usage_data_x, cpu_grid_usage_data_y,
-                cpu_grid_usage_plot_pen, cpu_grid_usage_plot_item
+                cpu_grid_kernel_usage_data_x, cpu_grid_kernel_usage_data_y,
+                cpu_grid_usage_plot_pen, cpu_grid_kernel_usage_plot_pen, 
+                cpu_grid_usage_plot_item, cpu_grid_kernel_usage_plot_item
             ) = self.PERF_CPU_USAGE_HISTORY_GRAPHS[cpu_core]
 
             cpu_grid_widget.update_plot(
                 cpu_grid_usage_plot_item, cpu_usage,
-                cpu_grid_usage_data_x, cpu_grid_usage_data_y
-            )
+                cpu_grid_usage_data_x, cpu_grid_usage_data_y)
 
-    def update_graphical_widgets(self, current_cpu_usage, current_memory_usage, memory_used, memory_total):
-        self.cpu_bar_widget.set_resource_value(current_cpu_usage, 100)
-        self.memory_bar_widget.set_resource_value(memory_used, memory_total)
+            if not self.show_kernel_times:
+                continue
+
+            cpu_grid_widget.update_plot(
+                cpu_grid_kernel_usage_plot_item, kernel_cpu_usage,
+                cpu_grid_kernel_usage_data_x, cpu_grid_kernel_usage_data_y)
+
+    def update_graphical_widgets(
+        self, current_cpu_usage, current_kernel_usage, 
+        current_memory_usage, memory_used, memory_total):
+        current_kernel_usage = current_kernel_usage \
+            if self.show_kernel_times else 0
+        self.cpu_bar_widget.set_resource_value(
+            current_cpu_usage, current_kernel_usage, 100,
+            CWTM_ResourceBarLevelColours.BAR_COLOUR_CPU_USAGE_TIME_FILLED,
+            CWTM_ResourceBarLevelColours.BAR_COLOUR_CPU_USAGE_TIME_EMPTY,
+            CWTM_ResourceBarLevelColours.BAR_COLOUR_KERNEL_USAGE_TIME_FILLED,
+            QColor(0, 0, 0))
+        self.memory_bar_widget.set_resource_value(
+            memory_used, None, memory_total,
+            CWTM_ResourceBarLevelColours.BAR_COLOUR_CPU_USAGE_TIME_FILLED,
+            CWTM_ResourceBarLevelColours.BAR_COLOUR_CPU_USAGE_TIME_EMPTY,
+            None, None)
 
         self.memory_grid_widget.update_plot(
             self.mem_grid_usage_plot_item, current_memory_usage,

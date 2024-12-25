@@ -125,11 +125,11 @@ class CWTM_ApplicationsInfoRetrievalWorker(QObject):
 class CWTM_PerformanceInfoRetrievalWorker(QObject):
     perf_sig_memory_labels_info = pyqtSignal(psutil._pslinux.svmem)
     perf_sig_status_bar_labels_info = pyqtSignal(int, float, float)
-    perf_sig_cpu_usage_history_graphs_info = pyqtSignal(list) # percpu or all cpu
+    perf_sig_cpu_usage_history_graphs_info = pyqtSignal(list, list) # percpu or all cpu
     perf_sig_kernel_mem_labels_info = pyqtSignal(psutil._common.sswap)
     perf_sig_sys_mem_labels_info = pyqtSignal(int, int, int, str, str)
 
-    perf_sig_graphical_widgets_info = pyqtSignal(float, float, float, float)
+    perf_sig_graphical_widgets_info = pyqtSignal(float, float, float, float, float)
 
     def __init__(self, timeout_interval, parent_tab_widget, *args, per_cpu, **kwargs):
         super().__init__(*args, **kwargs)
@@ -160,11 +160,13 @@ class CWTM_PerformanceInfoRetrievalWorker(QObject):
             total_system_uptime, total_system_mem_commit
         )
 
-    def get_cpu_usage_history_graphs(self):
-        current_cpu_usage = [psutil.cpu_percent()] if not self.per_cpu \
-                                else psutil.cpu_percent(percpu=True)
+    def get_cpu_usage_history_graphs(self, cpu_usage, kernel_usage):
+        current_cpu_usage = [cpu_usage] if not self.per_cpu \
+            else psutil.cpu_percent(percpu=True)
+        current_cpu_kernel_usage = [kernel_usage] if not self.per_cpu \
+            else [*map(lambda x: x.system, psutil.cpu_times_percent(percpu=True))]
 
-        self.perf_sig_cpu_usage_history_graphs_info.emit(current_cpu_usage)
+        return current_cpu_usage, current_cpu_kernel_usage
 
     def get_all_resource_usage_frame(self):
         current_memory_info = psutil.virtual_memory()
@@ -180,9 +182,13 @@ class CWTM_PerformanceInfoRetrievalWorker(QObject):
             current_memory_info.used
         )
 
-        self.get_system_memory_labels(total_iter_processes, current_memory_info)
-        self.get_cpu_usage_history_graphs()
+        kernel_cpu_time = psutil.cpu_times_percent().system
+        current_cpu_graph_usage, current_cpu_kernel_graph_usage = self.get_cpu_usage_history_graphs(
+            current_cpu_usage, kernel_cpu_time)
 
+        self.get_system_memory_labels(total_iter_processes, current_memory_info)
+
+        self.perf_sig_cpu_usage_history_graphs_info.emit(current_cpu_graph_usage, current_cpu_kernel_graph_usage)
         self.perf_sig_kernel_mem_labels_info.emit(sys_swap_memory)
         self.perf_sig_memory_labels_info.emit(current_memory_info)
         self.perf_sig_status_bar_labels_info.emit(
@@ -190,8 +196,8 @@ class CWTM_PerformanceInfoRetrievalWorker(QObject):
         )
 
         self.perf_sig_graphical_widgets_info.emit(
-            current_cpu_usage, current_memory_usage,
-            memory_used, memory_total
+            current_cpu_usage, kernel_cpu_time,
+            current_memory_usage, memory_used, memory_total,
         )
 
     def get_all_resource_usage_loop(self):
