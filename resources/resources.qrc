@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="icons">
+        <file alias="uac256.png">app_icons/uac256.png</file>
+        <file alias="taskmgr48.png">app_icons/taskmgr48.png</file>
+    </qresource>
+</RCC>

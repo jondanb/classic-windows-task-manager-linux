@@ -112,7 +112,15 @@ class CWTM_PerformanceTab(CWTM_TabManager):
             self.update_show_kernel_times_setting)
 
     def update_show_kernel_times_setting(self):
+        if self.show_kernel_times:
+            self.clear_kernel_time_resource_graph_lines()
         self.show_kernel_times = not self.show_kernel_times
+
+    def clear_kernel_time_resource_graph_lines(self):
+        for registered_cpu in self.PERF_CPU_USAGE_HISTORY_GRAPHS:
+            (_, _, _, _, _, _, _, _, 
+                cpu_grid_kernel_usage_plot_item) = registered_cpu
+            cpu_grid_kernel_usage_plot_item.clear()
 
     def update_refresh_performance_page(self):
         self.performance_page_worker.get_all_resource_usage_frame()
@@ -269,11 +277,9 @@ class CWTM_PerformanceTab(CWTM_TabManager):
                 cpu_grid_usage_plot_item, cpu_usage,
                 cpu_grid_usage_data_x, cpu_grid_usage_data_y)
 
-            if not self.show_kernel_times:
-                continue
-
             cpu_grid_widget.update_plot(
-                cpu_grid_kernel_usage_plot_item, kernel_cpu_usage,
+                cpu_grid_kernel_usage_plot_item, 
+                kernel_cpu_usage if self.show_kernel_times else 0,
                 cpu_grid_kernel_usage_data_x, cpu_grid_kernel_usage_data_y)
 
     def update_graphical_widgets(

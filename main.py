@@ -90,8 +90,8 @@ class Win7TaskManager(Ui_CWTM_TaskManagerMainWindow):
     def set_application_style(self):
         application_font = QFont()
         application_font_db_id = QFontDatabase.addApplicationFont(
-            "./app_font/segoeui.ttf" if not self.old_style else \
-            "./app_font/ms-sans-serif-1.ttf"
+            "./resources/app_font/segoeui.ttf" if not self.old_style else \
+            "./resources/app_font/ms-sans-serif-1.ttf"
         )
         application_font_family = QFontDatabase.applicationFontFamilies(
             application_font_db_id

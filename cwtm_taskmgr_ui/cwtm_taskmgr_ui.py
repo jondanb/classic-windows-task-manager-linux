@@ -12,6 +12,8 @@ from PyQt5.QtCore import *  # type: ignore
 from PyQt5.QtGui import *  # type: ignore
 from PyQt5.QtWidgets import *  # type: ignore
 
+from resources import resources
+
 
 class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
     def setupUi(self, CWTM_TaskManagerMainWindow):
@@ -213,6 +215,13 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
         self.perf_resource_monitor_button = QPushButton(self.perf_widget)
         self.perf_resource_monitor_button.setObjectName(u"perf_resource_monitor_button")
         self.perf_resource_monitor_button.setGeometry(QRect(200, 430, 181, 24))
+
+        self.perf_resource_monitor_button_icon = QPixmap(":/icons/uac256.png")
+        self.perf_resource_monitor_button.setIcon(QIcon(self.perf_resource_monitor_button_icon))
+
+        self.svc_t_services_button_icon = QPixmap(":/icons/uac256.png")
+        self.svc_t_services_button.setIcon(QIcon(self.svc_t_services_button_icon))
+
 
         self.verticalLayout_3.addWidget(self.perf_widget)
 
@@ -441,7 +450,8 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
     # setupUi
 
     def retranslateUi(self, CWTM_TaskManagerMainWindow):
-        CWTM_TaskManagerMainWindow.setWindowTitle(QCoreApplication.translate("CWTM_TaskManagerMainWindow", u"MainWindow", None))
+        CWTM_TaskManagerMainWindow.setWindowTitle(QCoreApplication.translate("CWTM_TaskManagerMainWindow", u"Classic Windows Task Manager", None))
+        CWTM_TaskManagerMainWindow.setWindowIcon(QIcon(":/icons/taskmgr48.png"))
 
         self.tm_file_menu_new_task_run.setText(QCoreApplication.translate("CWTM_TaskManagerMainWindow", u"New Task (Run...)", None))
         self.tm_file_menu_exit_task_manager.setText(QCoreApplication.translate("CWTM_TaskManagerMainWindow", u"Exit Task Manager", None))
