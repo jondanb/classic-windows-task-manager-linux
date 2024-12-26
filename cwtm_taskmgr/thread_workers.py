@@ -6,6 +6,7 @@ from .tm_tabbar.core_properties import (
     CWTM_TabWidgetColumnEnum,
     CWTM_GlobalUpdateIntervals
 )
+from .qt_components import CWTM_TimeoutIntervalChangeSignal
 
 from PyQt5.QtCore import (
     pyqtSignal, pyqtSlot, Qt,
@@ -20,7 +21,7 @@ class CWTM_PageUpdaterWorkerThread(QObject):
         self.tm_update_function = tm_update_function
 
 
-class CWTM_NetworkingInterfaceRetrievalWorker(QObject):
+class CWTM_NetworkingInterfaceRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
     ni_sig_usage_frame = pyqtSignal(str, float, float)
     ni_sig_disconnect_nic = pyqtSignal(str)
 
@@ -73,7 +74,7 @@ class CWTM_NetworkingInterfaceRetrievalWorker(QObject):
             QTimer.singleShot(self.timeout_interval, self.get_networking_interface_usage_loop)
 
 
-class CWTM_ProcessesInfoRetrievalWorker(QObject):
+class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
     proc_sig_processes_info = pyqtSignal(list)
 
     def __init__(self, timeout_interval, parent_tab_widget, *args, **kwargs):
@@ -101,7 +102,7 @@ class CWTM_ProcessesInfoRetrievalWorker(QObject):
             self.get_all_gtk_running_processes_info_frame()
             QTimer.singleShot(self.timeout_interval, self.get_all_gtk_running_processes_info_loop)
 
-class CWTM_ApplicationsInfoRetrievalWorker(QObject):
+class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
     app_sig_applications_info = pyqtSignal(list)
 
     def __init__(self, timeout_interval, parent_tab_widget, *args, **kwargs):
@@ -132,7 +133,7 @@ class CWTM_ApplicationsInfoRetrievalWorker(QObject):
             self.get_all_gtk_running_applications_info_frame()
             QTimer.singleShot(self.timeout_interval, self.get_all_gtk_running_applications_info_loop)
 
-class CWTM_PerformanceInfoRetrievalWorker(QObject):
+class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
     perf_sig_memory_labels_info = pyqtSignal(psutil._pslinux.svmem)
     perf_sig_status_bar_labels_info = pyqtSignal(int, float, float)
     perf_sig_cpu_usage_history_graphs_info = pyqtSignal(list, list) # percpu or all cpu
@@ -218,9 +219,11 @@ class CWTM_PerformanceInfoRetrievalWorker(QObject):
             QTimer.singleShot(self.timeout_interval, self.get_all_resource_usage_loop)
 
 
-class CWTM_ServicesInfoRetrievalWorker(QObject):
+class CWTM_ServicesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
     proc_sig_processes_info = pyqtSignal(list)
     proc_sig_clear_processes_info = pyqtSignal()
+
+    proc_sig_change_timeout_interval = pyqtSignal(int)
 
     def __init__(self, timeout_interval, parent_tab_widget, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -234,6 +237,9 @@ class CWTM_ServicesInfoRetrievalWorker(QObject):
         )
         self.processes_update_timer.start(self.timeout_interval)
 
+    def handle_timeout_interval_change(self, new_timeout_interval):
+        self.timeout_interval = new_timeout_interval
+
     def get_all_gtk_running_processes_info(self, *, force_run=False):
         if not force_run and self.parent_tab_widget.currentIndex() != \
            CWTM_TabWidgetColumnEnum.TASK_MANAGER_PROCESSES_TAB:
@@ -245,7 +251,7 @@ class CWTM_ServicesInfoRetrievalWorker(QObject):
             gtk_running_processes
         )
 
-class CWTM_UsersInfoRetrievalWorker(QObject):
+class CWTM_UsersInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
     proc_sig_processes_info = pyqtSignal(list)
     proc_sig_clear_processes_info = pyqtSignal()
 

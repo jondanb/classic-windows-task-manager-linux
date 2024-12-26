@@ -25,7 +25,10 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QVBoxLayout
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import (
+    Qt, QObject,
+    pyqtSignal, pyqtSlot
+)
 
 
 class CWTM_TaskManagerConfirmationDialog(Ui_CWTMTaskManagerConfirmationDialog):
@@ -159,7 +162,19 @@ class CWTM_TableWidgetController:
         # wrapper deleting it after use
         if current_selected_item is not None:
             return current_selected_item.text()
-            
+
+
+class CWTM_TimeoutIntervalChangeSignal(QObject):
+    sig_change_timeout_interval = pyqtSignal(int)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.sig_change_timeout_interval.connect(self.handle_timeout_interval_change)
+
+    @pyqtSlot(int)
+    def handle_timeout_interval_change(self, new_timeout_interval):
+        self.timeout_interval = new_timeout_interval
+
 
 class CWTM_GlobalUpdateIntervalHandler:
     def __init__(self, parent, thread_worker):
@@ -180,7 +195,7 @@ class CWTM_GlobalUpdateIntervalHandler:
             refresh_function)
 
     def switch_selected_tab_update_speed(self, update_interval):
-        self.thread_worker.timeout_interval = update_interval
+        self.thread_worker.sig_change_timeout_interval.emit(update_interval)
 
 
 class CWTM_MenuBarSignalHandler:
