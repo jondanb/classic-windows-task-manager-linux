@@ -3,7 +3,7 @@ import enum
 import functools
 
 from .. import sys_utils
-from ..qt_components import CWTM_TabManager
+from ..qt_components import CWTM_TableWidgetController
 from .core_properties import (
     CWTM_ServicesTabTableColumns,
     CWTM_TableWidgetItemProperties,
@@ -21,7 +21,7 @@ from PyQt5.QtCore import (
 )
 from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
 
-class CWTM_ServicesTab(CWTM_TabManager):
+class CWTM_ServicesTab(CWTM_TableWidgetController):
     def __init__(self, parent):
         self.parent = parent
 

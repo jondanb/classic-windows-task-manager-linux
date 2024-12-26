@@ -65,8 +65,9 @@ class CWTM_TaskManagerNewTaskDialog(Ui_CWTM_TaskManagerNewTaskDialog):
         self.new_task_input_line_edit.clear()
 
 
-class CWTM_TabManager:
-    def append_row_to_table(self, table_widget, table_enum, *row_data):
+class CWTM_TableWidgetController:
+    @staticmethod
+    def append_row_to_table(table_widget, table_enum, *row_data):
         # make sure the table can't be sorted while populating
         table_widget.setSortingEnabled(False)
 
@@ -91,7 +92,8 @@ class CWTM_TabManager:
             
         table_widget.setSortingEnabled(True)
 
-    def set_table_column_ratios(self, table_widget, header_ratio):
+    @staticmethod
+    def set_table_column_ratios(table_widget, header_ratio):
         total_width = table_widget.viewport().width()
         for i, ratio in enumerate(header_ratio):
             table_widget.setColumnWidth(i, int(total_width * ratio))
@@ -116,7 +118,8 @@ class CWTM_TabManager:
         table_widget.verticalHeader().setDefaultSectionSize(10)
         table_widget.setShowGrid(False)
 
-    def add_full_size_widget_to_groupbox(self, groupbox_name, groupbox_widget):
+    @staticmethod
+    def add_full_size_widget_to_groupbox(groupbox_name, groupbox_widget):
         widget_groupbox = QGroupBox(groupbox_name)
         widget_groupbox_layout = QVBoxLayout()
 
@@ -125,7 +128,8 @@ class CWTM_TabManager:
 
         return widget_groupbox
 
-    def reselect_item_from_value(self, table_widget, table_column, previous_selected_item):
+    @staticmethod
+    def reselect_item_from_value(table_widget, table_column, previous_selected_item):
         # prevent item from being focused when table rows change
         table_widget.setAutoScroll(False)
         
@@ -155,7 +159,7 @@ class CWTM_TabManager:
         # wrapper deleting it after use
         if current_selected_item is not None:
             return current_selected_item.text()
-
+            
 
 class CWTM_GlobalUpdateIntervalHandler:
     def __init__(self, parent, thread_worker):

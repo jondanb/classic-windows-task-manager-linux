@@ -4,7 +4,7 @@ import pyqtgraph
 
 from .. import sys_utils
 from ..qt_components import (
-    CWTM_TabManager,
+    CWTM_TableWidgetController,
     CWTM_GlobalUpdateIntervalHandler
 )
 from .core_properties import (
@@ -24,7 +24,7 @@ from PyQt5.QtCore import (
 from PyQt5.QtWidgets import QTableWidgetItem, QGroupBox
 
 
-class CWTM_NetworkingTab(CWTM_TabManager):
+class CWTM_NetworkingTab(CWTM_TableWidgetController):
     def __init__(self, parent):
         self.parent = parent
         

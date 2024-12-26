@@ -9,7 +9,7 @@ from ..qt_widgets import (
     CWTM_ResourceGraphWidget
 )
 from ..qt_components import (
-    CWTM_TabManager,
+    CWTM_TableWidgetController,
     CWTM_GlobalUpdateIntervalHandler
 )
 from .core_properties import (
@@ -24,7 +24,7 @@ from PyQt5.QtCore import Qt, QTimer, QThread, QMetaObject
 from PyQt5.QtGui import QColor
 
 
-class CWTM_PerformanceTab(CWTM_TabManager):
+class CWTM_PerformanceTab(CWTM_TableWidgetController):
     def __init__(self, parent):
         self.parent = parent
 

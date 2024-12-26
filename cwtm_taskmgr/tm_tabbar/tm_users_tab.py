@@ -7,7 +7,7 @@ from .core_properties import (
     CWTM_TableWidgetItemProperties,
     CWTM_GlobalUpdateIntervals
 )
-from ..qt_components import CWTM_TabManager
+from ..qt_components import CWTM_TableWidgetController
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
 from ..thread_workers import CWTM_PageUpdaterWorkerThread
 
@@ -21,7 +21,7 @@ from PyQt5.QtCore import (
 from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView 
 
 
-class CWTM_UsersTab(CWTM_TabManager):
+class CWTM_UsersTab(CWTM_TableWidgetController):
     def __init__(self, parent):
         self.parent = parent
 

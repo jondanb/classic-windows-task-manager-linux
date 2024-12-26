@@ -9,7 +9,7 @@ from .core_properties import (
     CWTM_GlobalUpdateIntervals
 )
 from ..qt_components import (
-    CWTM_TabManager, 
+    CWTM_TableWidgetController, 
     CWTM_TaskManagerConfirmationDialog,
     CWTM_GlobalUpdateIntervalHandler
 )
@@ -27,7 +27,7 @@ from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
 
 
 
-class CWTM_ProcessesTab(CWTM_TabManager):
+class CWTM_ProcessesTab(CWTM_TableWidgetController):
     def __init__(self, parent):
         self.parent = parent
 

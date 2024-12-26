@@ -17,7 +17,7 @@ from .core_properties import (
     CWTM_GlobalUpdateIntervals
 )
 from ..qt_components import (
-    CWTM_TabManager, 
+    CWTM_TableWidgetController, 
     CWTM_TaskManagerConfirmationDialog,
     CWTM_GlobalUpdateIntervalHandler,
     CWTM_TaskManagerNewTaskDialog
@@ -30,9 +30,12 @@ class CWTM_ApplicationsTabCustomContextMenu(QMenu):
         super().__init__(*args, parent=parent, **kwargs)
 
         self.action1 = QAction("Test")
+        self.action1.triggered.connect(lambda: print('hi'))
+
+        self.addAction(self.action1)
 
 
-class CWTM_ApplicationsTab(CWTM_TabManager):
+class CWTM_ApplicationsTab(CWTM_TableWidgetController):
     def __init__(self, parent):
         self.parent = parent
 
@@ -43,6 +46,9 @@ class CWTM_ApplicationsTab(CWTM_TabManager):
         self.parent.app_t_task_list_table.setColumnHidden(
             CWTM_ApplicationsTabTableColumns.APP_T_TASK_LIST_TABLE_PID, True
         ) # maybe change later???
+        self.parent.app_t_task_list_table.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.parent.app_t_task_list_table.customContextMenuRequested.connect(
+            self.process_custom_applications_context_menu_request)
 
         self.parent.app_t_switch_to_button.clicked.connect(
             self.process_signal_app_t_switch_to_button)
@@ -104,6 +110,16 @@ class CWTM_ApplicationsTab(CWTM_TabManager):
 
     def update_refresh_applications_page_apps(self):
         self.applications_page_worker.get_all_gtk_running_applications_info_frame()
+
+    def process_custom_applications_context_menu_request(self, position):
+        current_selected_item = self.parent.app_t_task_list_table.itemAt(position)
+        
+        if current_selected_item is None:
+            return
+
+        custom_applications_context_menu = CWTM_ApplicationsTabCustomContextMenu(parent=self.parent)
+        custom_applications_context_menu.exec_(
+            self.parent.app_t_task_list_table.mapToGlobal(position))
 
     def start_applications_page_updater_thread(self):
         self.applications_page_thread = QThread()
