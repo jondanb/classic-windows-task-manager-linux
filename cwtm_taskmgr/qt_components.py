@@ -38,12 +38,8 @@ class CWTM_TaskManagerConfirmationDialog(Ui_CWTMTaskManagerConfirmationDialog):
 
         self.set_process_name(self.proc_name)
 
-        self.cancel_button.clicked.connect(
-            self.close
-        )
-        self.confirm_button.clicked.connect(
-            self.close
-        )
+        self.cancel_button.clicked.connect(self.close)
+        self.confirm_button.clicked.connect(self.close)
         self.confirm_button.clicked.connect(
             functools.partial(sys_utils.end_process_by_pid, proc_pid)
         )
@@ -52,6 +48,22 @@ class CWTM_TaskManagerConfirmationDialog(Ui_CWTMTaskManagerConfirmationDialog):
         self.end_process_title_label.setText(
             f"Do you want to end \"{process_name}\"?"
         )
+
+
+class CWTM_TaskManagerNewTaskDialog(Ui_CWTM_TaskManagerNewTaskDialog):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setupUi(self)
+
+        self.cancel_button.clicked.connect(self.close)
+        #self.ok_button.clicked.connect(self.close)
+        self.ok_button.clicked.connect(self.execute_system_command)
+
+    def execute_system_command(self):
+        command_to_run = self.new_task_input_line_edit.text()
+        sys_utils.execute_system_uri_command(command_to_run)
+        self.new_task_input_line_edit.clear()
+
 
 class CWTM_TabManager:
     def append_row_to_table(self, table_widget, table_enum, *row_data):

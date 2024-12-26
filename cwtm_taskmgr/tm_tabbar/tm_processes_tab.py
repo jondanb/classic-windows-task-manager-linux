@@ -57,7 +57,7 @@ class CWTM_ProcessesTab(CWTM_TabManager):
             return
 
         confirmation_dialog = CWTM_TaskManagerConfirmationDialog(
-            proc_name=selected_process_name, proc_pid=int(selected_process_pid)
+            parent=self.parent, proc_name=selected_process_name, proc_pid=int(selected_process_pid)
         )
         confirmation_dialog.exec_()
         

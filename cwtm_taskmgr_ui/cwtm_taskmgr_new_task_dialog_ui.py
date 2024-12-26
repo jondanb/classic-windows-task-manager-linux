@@ -12,8 +12,10 @@ from PyQt5.QtCore import *  # type: ignore
 from PyQt5.QtGui import *  # type: ignore
 from PyQt5.QtWidgets import *  # type: ignore
 
+from resources import resources
 
-class Ui_CWTM_TaskManagerNewTaskDialog(object):
+
+class Ui_CWTM_TaskManagerNewTaskDialog(QDialog):
     def setupUi(self, CWTM_TaskManagerNewTaskDialog):
         if not CWTM_TaskManagerNewTaskDialog.objectName():
             CWTM_TaskManagerNewTaskDialog.setObjectName(u"CWTM_TaskManagerNewTaskDialog")
@@ -23,10 +25,10 @@ class Ui_CWTM_TaskManagerNewTaskDialog(object):
         self.button_group_widget = QWidget(CWTM_TaskManagerNewTaskDialog)
         self.button_group_widget.setObjectName(u"button_group_widget")
         self.button_group_widget.setGeometry(QRect(-10, 140, 481, 81))
-        self.button_group_widget.setStyleSheet(u"QWidget#widget {\n"
-"	background-color: #F0F0F0;\n"
-"	border-top: 1px solid #DFDFDF;\n"
-"}")
+
+        with open ("./cwtm_taskmgr_ui/cwtm_button_group_widget.qss", "r") as btn_grp_wdgt:   
+            self.button_group_widget.setStyleSheet(btn_grp_wdgt.read())
+
         self.browse_button = QPushButton(self.button_group_widget)
         self.browse_button.setObjectName(u"browse_button")
         self.browse_button.setGeometry(QRect(320, 20, 81, 24))
@@ -50,7 +52,7 @@ class Ui_CWTM_TaskManagerNewTaskDialog(object):
         self.main_application_icon = QLabel(CWTM_TaskManagerNewTaskDialog)
         self.main_application_icon.setObjectName(u"main_application_icon")
         self.main_application_icon.setGeometry(QRect(10, 30, 41, 41))
-        self.main_application_icon.setPixmap(QPixmap(u"../resources/app_icons/taskmgr48.png"))
+        self.main_application_icon.setPixmap(QPixmap(u":/icons/windows_taskmgr.png"))
         self.main_application_icon.setScaledContents(True)
 
         self.retranslateUi(CWTM_TaskManagerNewTaskDialog)
@@ -59,7 +61,8 @@ class Ui_CWTM_TaskManagerNewTaskDialog(object):
     # setupUi
 
     def retranslateUi(self, CWTM_TaskManagerNewTaskDialog):
-        CWTM_TaskManagerNewTaskDialog.setWindowTitle(QCoreApplication.translate("CWTM_TaskManagerNewTaskDialog", u"Dialog", None))
+        CWTM_TaskManagerNewTaskDialog.setWindowTitle(QCoreApplication.translate("CWTM_TaskManagerNewTaskDialog", u"Create New Task", None))
+        CWTM_TaskManagerNewTaskDialog.setWindowIcon(QIcon(":/icons/windows_run.png"))
         self.browse_button.setText(QCoreApplication.translate("CWTM_TaskManagerNewTaskDialog", u"Browse...", None))
         self.cancel_button.setText(QCoreApplication.translate("CWTM_TaskManagerNewTaskDialog", u"Cancel", None))
         self.ok_button.setText(QCoreApplication.translate("CWTM_TaskManagerNewTaskDialog", u"OK", None))

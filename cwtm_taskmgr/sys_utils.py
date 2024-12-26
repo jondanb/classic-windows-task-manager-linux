@@ -2,8 +2,11 @@ import gi
 import os
 import time
 import dbus
+import shlex
+import shutil
 import psutil
 import traceback
+import subprocess
 
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gio", "2.0")
@@ -91,6 +94,12 @@ def get_all_running_applications(running_apps):
         else:
             app_details.append((app_name, app_pid, None))
     return app_details
+
+def execute_system_uri_command(command):
+    if shutil.which(command) is not None:
+        return subprocess.call(shlex.split(command))
+    return subprocess.call(["xdg-open"] + shlex.split(command))
+
 
 def show_file_properties(filepath):
     session_bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)

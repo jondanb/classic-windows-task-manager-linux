@@ -1,5 +1,16 @@
 import enum
 
+from PyQt5.QtCore import (
+    Qt, QTimer, 
+    pyqtSignal, 
+    QThread, 
+    QObject
+)
+from PyQt5.QtWidgets import (
+    QTableWidgetItem, QHeaderView, 
+    QMenu, QAction
+)
+
 from .core_properties import (
     CWTM_ApplicationsTabTableColumns,
     CWTM_TableWidgetItemProperties,
@@ -8,18 +19,17 @@ from .core_properties import (
 from ..qt_components import (
     CWTM_TabManager, 
     CWTM_TaskManagerConfirmationDialog,
-    CWTM_GlobalUpdateIntervalHandler
+    CWTM_GlobalUpdateIntervalHandler,
+    CWTM_TaskManagerNewTaskDialog
 )
 from ..thread_workers import CWTM_ApplicationsInfoRetrievalWorker
 
-from PyQt5.QtCore import (
-    Qt,
-    QTimer,
-    pyqtSignal,
-    QThread,
-    QObject
-)
-from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
+
+class CWTM_ApplicationsTabCustomContextMenu(QMenu):
+    def __init__(self, *args, parent=None, **kwargs):
+        super().__init__(*args, parent=parent, **kwargs)
+
+        self.action1 = QAction("Test")
 
 
 class CWTM_ApplicationsTab(CWTM_TabManager):
@@ -34,15 +44,16 @@ class CWTM_ApplicationsTab(CWTM_TabManager):
             CWTM_ApplicationsTabTableColumns.APP_T_TASK_LIST_TABLE_PID, True
         ) # maybe change later???
 
-        self.parent.app_t_new_task_button.clicked.connect(
-            self.process_signal_app_t_new_task_button)
         self.parent.app_t_switch_to_button.clicked.connect(
             self.process_signal_app_t_switch_to_button)
         self.parent.app_t_end_task_button.clicked.connect(
             self.process_signal_app_t_end_task_button)
+        self.parent.app_t_new_task_button.clicked.connect(
+            self.process_signal_app_t_new_task_button)
 
     def process_signal_app_t_new_task_button(self):
-        return NotImplemented
+        new_task_dialog = CWTM_TaskManagerNewTaskDialog(parent=self.parent)
+        new_task_dialog.exec_()
     
     def process_signal_app_t_switch_to_button(self):
         return NotImplemented
