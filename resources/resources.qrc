@@ -1,7 +1,8 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource prefix="icons">
-        <file alias="uac256.png">app_icons/uac256.png</file>
-        <file alias="taskmgr48.png">app_icons/taskmgr48.png</file>
+        <file alias="windows_uac.png">app_icons/windows_uac.png</file>
+        <file alias="windows_run.png">app_icons/windows_run.png</file>
+        <file alias="windows_taskmgr.png">app_icons/windows_taskmgr.png</file>
     </qresource>
 </RCC>

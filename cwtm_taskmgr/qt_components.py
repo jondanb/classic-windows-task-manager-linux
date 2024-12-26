@@ -11,8 +11,11 @@ from .tm_tabbar.core_properties import (
     CWTM_GlobalUpdateIntervals,
     CWTM_MENU_BAR_DYNAMIC_MENU_VISIBILITY_MAPPING,
 )
-from cwtm_taskmgr_ui.cwtm_taskmgr_dialog_ui import (
+from cwtm_taskmgr_ui.cwtm_taskmgr_confirmation_dialog_ui import (
     Ui_CWTMTaskManagerConfirmationDialog
+)
+from cwtm_taskmgr_ui.cwtm_taskmgr_new_task_dialog_ui import (
+    Ui_CWTM_TaskManagerNewTaskDialog
 )
 
 from PyQt5.QtWidgets import (

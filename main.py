@@ -22,7 +22,7 @@ from cwtm_taskmgr.tm_tabbar import (
 )
 
 
-class Win7TaskManager(Ui_CWTM_TaskManagerMainWindow):
+class CWTM_TaskManager(Ui_CWTM_TaskManagerMainWindow):
     def __init__(self, *args, old_style=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
@@ -108,7 +108,7 @@ class Win7TaskManager(Ui_CWTM_TaskManagerMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main = Win7TaskManager(old_style=False)
+    main = CWTM_TaskManager(old_style=False)
     
     main.show()
     sys.exit(app.exec_())
