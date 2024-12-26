@@ -231,7 +231,7 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
         self.networking_interface_retrieval_thread = QThread()
         self.networking_interface_retrieval_worker = \
             CWTM_NetworkingInterfaceRetrievalWorker(
-                self.NET_T_NETWORKING_LIST_TABLE_UPDATE_FREQUENCY, self.parent)
+                self.NET_T_NETWORKING_LIST_TABLE_UPDATE_FREQUENCY, parent=self.parent)
         self.networking_page_update_handler = CWTM_GlobalUpdateIntervalHandler(
             self.parent, thread_worker=self.networking_interface_retrieval_worker)
         self.networking_page_update_handler.register_selected_tab_update_interval_handler(

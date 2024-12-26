@@ -65,11 +65,11 @@ class CWTM_ApplicationsTab(CWTM_TableWidgetController):
         return NotImplemented
     
     def process_signal_app_t_end_task_button(self):
-        selected_application_pid = CWTM_TabManager.get_current_selected_item_from_column(
+        selected_application_pid = CWTM_TableWidgetController.get_current_selected_item_from_column(
             self.parent.app_t_task_list_table,
             CWTM_ApplicationsTabTableColumns.APP_T_TASK_LIST_TABLE_PID
         )
-        selected_application_name = CWTM_TabManager.get_current_selected_item_from_column(
+        selected_application_name = CWTM_TableWidgetController.get_current_selected_item_from_column(
             self.parent.app_t_task_list_table,
             CWTM_ApplicationsTabTableColumns.APP_T_TASK_LIST_TABLE_TASK
         )

@@ -293,7 +293,6 @@ class CWTM_PerformanceTab(CWTM_TableWidgetController):
         self.performance_page_thread = QThread()
         self.performance_page_worker = CWTM_PerformanceInfoRetrievalWorker(
             timeout_interval=self.PERF_RESOURCE_USAGE_HISTORY_UPDATE_FREQUENCY,
-            parent_tab_widget=self.parent.task_manager_tab_widget,
             per_cpu=self.graphing_mode_per_cpu
         )
         self.performance_page_update_handler = CWTM_GlobalUpdateIntervalHandler(

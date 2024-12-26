@@ -44,11 +44,11 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
             self.process_signal_proc_t_end_process_button)
 
     def process_signal_proc_t_end_process_button(self):
-        selected_process_pid = CWTM_TabManager.get_current_selected_item_from_column(
+        selected_process_pid = CWTM_TableWidgetController.get_current_selected_item_from_column(
             self.parent.proc_t_proc_list_table,
             CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_PID
         )
-        selected_process_name = CWTM_TabManager.get_current_selected_item_from_column(
+        selected_process_name = CWTM_TableWidgetController.get_current_selected_item_from_column(
             self.parent.proc_t_proc_list_table,
             CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_IMAGE_NAME
         )

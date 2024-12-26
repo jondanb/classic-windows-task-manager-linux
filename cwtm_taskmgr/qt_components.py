@@ -61,11 +61,15 @@ class CWTM_TaskManagerNewTaskDialog(Ui_CWTM_TaskManagerNewTaskDialog):
         self.cancel_button.clicked.connect(self.close)
         #self.ok_button.clicked.connect(self.close)
         self.ok_button.clicked.connect(self.execute_system_command)
+        self.browse_button.clicked.connect(self.handle_browse_command)
 
     def execute_system_command(self):
         command_to_run = self.new_task_input_line_edit.text()
         sys_utils.execute_system_uri_command(command_to_run)
         self.new_task_input_line_edit.clear()
+
+    def handle_browse_command(self):
+        return NotImplemented
 
 
 class CWTM_TableWidgetController:

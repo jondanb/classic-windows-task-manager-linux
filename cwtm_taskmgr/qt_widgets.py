@@ -1,3 +1,4 @@
+import functools
 import pyqtgraph as pg
 
 from PyQt5.QtWidgets import (
@@ -182,14 +183,9 @@ class CWTM_ResourceLevelBarWidget(QWidget):
 
 
 class CWTM_QNumericTableWidgetItem(QTableWidgetItem):
-    def __init__ (self, value):
-        super().__init__(value)
-        self.value = value
+    def __init__(self, value):
+        super().__init__(str(value))  # Store the string representation
+        self.value = float(value)    # Store the numeric value for comparisons
 
     def __lt__(self, other):
-        if isinstance(other, CWTM_QNumericTableWidgetItem):
-            self_data_value  = float(self.data(Qt.EditRole))
-            other_data_value = float(other.data(Qt.EditRole))
-            return self_data_value < other_data_value
-        else:
-            return QTableWidgetItem.__lt__(self, other)
+        return self.value < other.value  # Direct comparison with the numeric value
