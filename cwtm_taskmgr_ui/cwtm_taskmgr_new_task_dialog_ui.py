@@ -26,7 +26,7 @@ class Ui_CWTM_TaskManagerNewTaskDialog(QDialog):
         self.button_group_widget.setObjectName(u"button_group_widget")
         self.button_group_widget.setGeometry(QRect(-10, 140, 481, 81))
 
-        with open ("./cwtm_taskmgr_ui/cwtm_button_group_widget.qss", "r") as btn_grp_wdgt:   
+        with open ("./cwtm_taskmgr_ui/qt_stylesheets/cwtm_button_group_widget.qss", "r") as btn_grp_wdgt:   
             self.button_group_widget.setStyleSheet(btn_grp_wdgt.read())
 
         self.browse_button = QPushButton(self.button_group_widget)

@@ -24,7 +24,7 @@ class Ui_CWTMTaskManagerConfirmationDialog(QDialog):
         self.button_group_widget.setObjectName(u"button_group_widget")
         self.button_group_widget.setGeometry(QRect(-20, 130, 391, 51))
 
-        with open ("./cwtm_taskmgr_ui/cwtm_button_group_widget.qss", "r") as btn_grp_wdgt:   
+        with open ("./cwtm_taskmgr_ui/qt_stylesheets/cwtm_button_group_widget.qss", "r") as btn_grp_wdgt:   
             self.button_group_widget.setStyleSheet(btn_grp_wdgt.read())
         
         self.cancel_button = QPushButton(self.button_group_widget)

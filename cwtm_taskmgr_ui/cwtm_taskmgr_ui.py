@@ -35,7 +35,7 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
         self.task_manager_tab_widget = QTabWidget(self.centralwidget)
         self.task_manager_tab_widget.setObjectName(u"task_manager_tab_widget")
 
-        with open("./cwtm_taskmgr_ui/cwtm_tab_widget.qss", "r") as tab_widget_stylesheet_file:
+        with open("./cwtm_taskmgr_ui/qt_stylesheets/cwtm_tab_widget.qss", "r") as tab_widget_stylesheet_file:
             self.task_manager_tab_widget.setStyleSheet(tab_widget_stylesheet_file.read())
             
         self.applications_tab = QWidget()
