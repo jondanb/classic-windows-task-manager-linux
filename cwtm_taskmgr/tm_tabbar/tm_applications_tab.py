@@ -109,7 +109,7 @@ class CWTM_ApplicationsTab(CWTM_TableWidgetController):
             )
 
     def update_refresh_applications_page_apps(self):
-        self.applications_page_worker.get_all_gtk_running_applications_info_frame()
+        self.applications_page_worker.get_all_gtk_running_applications_info_loop(disable_loop=True)
 
     def process_custom_applications_context_menu_request(self, position):
         current_selected_item = self.parent.app_t_task_list_table.itemAt(position)
@@ -134,8 +134,8 @@ class CWTM_ApplicationsTab(CWTM_TableWidgetController):
         self.applications_page_worker.app_sig_applications_info.connect(
             self.update_applications_page
         )
-        self.applications_page_worker.get_all_gtk_running_applications_info_frame(
-            force_run=True
+        self.applications_page_worker.get_all_gtk_running_applications_info_loop(
+            force_run=True, disable_loop=True
         )
         self.applications_page_worker.moveToThread(
             self.applications_page_thread

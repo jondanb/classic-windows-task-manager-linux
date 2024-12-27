@@ -111,7 +111,7 @@ class CWTM_PerformanceTab(CWTM_TableWidgetController):
             cpu_grid_kernel_usage_plot_item.clear()
 
     def update_refresh_performance_page(self):
-        self.performance_page_worker.get_all_resource_usage_frame()
+        self.performance_page_worker.get_all_resource_usage_loop(disable_loop=True)
 
     def register_cpu_core(self, *, per_cpu=False):
         cpu_core_count = psutil.cpu_count()

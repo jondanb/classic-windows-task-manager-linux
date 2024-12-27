@@ -27,7 +27,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import (
     Qt, QObject,
-    pyqtSignal, pyqtSlot
+    pyqtSignal, pyqtSlot, 
+    QTimer
 )
 
 
@@ -178,6 +179,21 @@ class CWTM_TimeoutIntervalChangeSignal(QObject):
     @pyqtSlot(int)
     def handle_timeout_interval_change(self, new_timeout_interval):
         self.timeout_interval = new_timeout_interval
+
+    @staticmethod
+    def thread_worker_timeout_interval_loop(frame_function):
+        @functools.wraps(frame_function)
+        def information_retreival_function_wrapper(self, *args: dict, disable_loop: bool=False, **kwargs: dict) -> None:
+            if disable_loop:
+                frame_function(self, *args, **kwargs)
+            elif self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
+                QTimer.singleShot(100, functools.partial(
+                    information_retreival_function_wrapper, self, *args, **kwargs))
+            else:
+                frame_function(self, *args, **kwargs)
+                QTimer.singleShot(self.timeout_interval, functools.partial(
+                    information_retreival_function_wrapper, self, *args, **kwargs))
+        return information_retreival_function_wrapper
 
 
 class CWTM_GlobalUpdateIntervalHandler:

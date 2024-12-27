@@ -71,7 +71,8 @@ class CWTM_NetworkingInterfaceRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
             del self.last_data[nic] # Delete the disconnected network interface
             self.ni_sig_disconnect_nic.emit(nic) # Dispatch deleted interface
 
-    def get_networking_interface_usage_frame(self):
+    @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop
+    def get_networking_interface_usage_loop(self):
         """
         Retrieves the current networking interface usage data, calculates the bytes sent
         and received per interval for each active interface, and emits the corresponding signals.
@@ -102,24 +103,6 @@ class CWTM_NetworkingInterfaceRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
 
             self.ni_sig_usage_frame.emit(nic, sent_bytes_per_interval, recv_bytes_per_interval)
             self.last_data[nic]: psutil._common.snetio = counters
-
-    def get_networking_interface_usage_loop(self):
-        """
-        Manages the retrieval loop for networking interface usage data. Depending on the
-        current timeout interval, it either pauses the loop or schedules the next data retrieval.
-
-        If the `timeout_interval` is set to `GLOBAL_UPDATE_INTERVAL_PAUSED`, the loop waits
-        for 100 milliseconds before checking to see if the update interval has changed. 
-        Otherwise, it retrieves the current usage frame and schedules the next retrieval 
-        based on the `timeout_interval`.
-        """
-        if self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
-            # Pause the loop by waiting 100 ms before retrying
-            QTimer.singleShot(100, self.get_networking_interface_usage_loop)
-        else:
-            self.get_networking_interface_usage_frame()
-            # Schedule the next retrieval based on the timeout interval
-            QTimer.singleShot(self.timeout_interval, self.get_networking_interface_usage_loop)
 
 
 class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
@@ -157,7 +140,8 @@ class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         """
         self.get_all_gtk_running_processes_info_loop()
 
-    def get_all_gtk_running_processes_info_frame(self, *, force_run: bool = False) -> None:
+    @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop
+    def get_all_gtk_running_processes_info_loop(self, *, force_run: bool = False) -> None:
         """
         Retrieves information about all running GTK processes and emits the process info signal.
         If the current tab is not the task manager processes tab, the method does not perform the 
@@ -171,21 +155,6 @@ class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         
         *gtk_running_processes, = sys_utils.get_all_running_processes_info()
         self.proc_sig_processes_info.emit(gtk_running_processes)
-
-    def get_all_gtk_running_processes_info_loop(self) -> None:
-        """
-        Manages the loop for retrieving GTK process information. Depending on the current timeout interval,
-        it either pauses the loop or schedules the next data retrieval.
-
-        If the `timeout_interval` is set to `GLOBAL_UPDATE_INTERVAL_PAUSED`, the loop waits 100 milliseconds
-        before checking again. Otherwise, it retrieves the current process info and schedules the next retrieval
-        based on the `timeout_interval`.
-        """
-        if self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
-            QTimer.singleShot(100, self.get_all_gtk_running_processes_info_loop)
-        else:
-            self.get_all_gtk_running_processes_info_frame()
-            QTimer.singleShot(self.timeout_interval, self.get_all_gtk_running_processes_info_loop)
 
 
 class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
@@ -221,7 +190,8 @@ class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         """
         self.get_all_gtk_running_applications_info_loop()
 
-    def get_all_gtk_running_applications_info_frame(self, *, force_run: bool = False) -> None:
+    @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop
+    def get_all_gtk_running_applications_info_loop(self, *, force_run: bool = False) -> None:
         """
         Retrieves information about all running GTK applications, including their names and icons,
         and emits the application info signal. If the current tab is not the applications tab or if
@@ -236,21 +206,6 @@ class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         gtk_running_apps: list = sys_utils.get_all_running_applications_names()
         gtk_running_apps_and_icons: list = sys_utils.get_all_running_applications(gtk_running_apps)
         self.app_sig_applications_info.emit(gtk_running_apps_and_icons)
-
-    def get_all_gtk_running_applications_info_loop(self) -> None:
-        """
-        Manages the loop for retrieving GTK application information. Depending on the current timeout interval,
-        it either pauses the loop or schedules the next data retrieval.
-
-        If the `timeout_interval` is set to `GLOBAL_UPDATE_INTERVAL_PAUSED`, the loop waits 100 milliseconds
-        before checking again. Otherwise, it retrieves the current application info and schedules the next retrieval
-        based on the `timeout_interval`.
-        """
-        if self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
-            QTimer.singleShot(100, self.get_all_gtk_running_applications_info_loop)
-        else:
-            self.get_all_gtk_running_applications_info_frame()
-            QTimer.singleShot(self.timeout_interval, self.get_all_gtk_running_applications_info_loop)
 
 
 class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
@@ -358,7 +313,8 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         
         return current_cpu_usage, current_cpu_kernel_usage
 
-    def get_all_resource_usage_frame(self) -> None:
+    @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop
+    def get_all_resource_usage_loop(self) -> None:
         """
         Retrieves the system resource usage statistics, including memory usage, CPU usage, and swap memory.
         The retrieved data is emitted via various signals, including graphical widget data, status bar labels,
@@ -390,21 +346,6 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
             current_cpu_usage, kernel_cpu_time,
             current_memory_usage, memory_used, memory_total,
         )
-
-    def get_all_resource_usage_loop(self) -> None:
-        """
-        Manages the loop for retrieving system resource usage statistics. Depending on the current timeout
-        interval, it either pauses the loop or schedules the next data retrieval.
-
-        If the `timeout_interval` is set to `GLOBAL_UPDATE_INTERVAL_PAUSED`, the loop waits 100 milliseconds
-        before checking again. Otherwise, it retrieves the current resource usage data and schedules the next
-        retrieval based on the `timeout_interval`.
-        """
-        if self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
-            QTimer.singleShot(100, self.get_all_resource_usage_loop)
-        else:
-            self.get_all_resource_usage_frame()
-            QTimer.singleShot(self.timeout_interval, self.get_all_resource_usage_loop)
 
 
 class CWTM_ServicesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):

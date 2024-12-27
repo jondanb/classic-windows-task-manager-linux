@@ -95,7 +95,7 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
             )
 
     def update_refresh_processes_page_proc(self):
-        self.processes_page_worker.get_all_gtk_running_processes_info_frame()
+        self.processes_page_worker.get_all_gtk_running_processes_info_loop()
 
     def start_processes_page_updater_thread(self):
         self.processes_page_thread = QThread()
@@ -117,5 +117,5 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
         
         self.processes_page_thread.start()
 
-        self.processes_page_worker.get_all_gtk_running_processes_info_frame(
-            force_run=True)
+        self.processes_page_worker.get_all_gtk_running_processes_info_loop(
+            force_run=True, disable_loop=True)

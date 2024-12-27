@@ -81,7 +81,8 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
         del self.NETWORK_INTERFACE_GRAPHS[interface_name]
 
     def update_refresh_networking_page_resource_graphs(self):
-        self.networking_interface_retrieval_worker.get_networking_interface_usage_frame()
+        self.networking_interface_retrieval_worker.get_networking_interface_usage_loop(
+            disable_loop=True)
 
     def refresh_networking_page_net_list_table(self):
         self.parent.net_t_network_list_table.setRowCount(0)
