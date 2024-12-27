@@ -104,7 +104,7 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
             if not self.parent.tm_view_menu_nas_bytes_total.isChecked():
                 i_net_total_plot_item.clear()
 
-    def update_networking_page(self, n_interface, n_b_sent, n_b_recv, *, update_table=True):
+    def update_networking_page(self, n_interface, n_b_sent, n_b_recv):
         if n_interface not in self.NETWORK_INTERFACE_GRAPHS:
             self.register_network_interface(n_interface)
 
@@ -133,6 +133,9 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
 
         *graph_equal_ticks, = i_net_graph.get_equal_tick_spacing(4)
         self.set_networking_speed_unit_ticks(i_net_graph, graph_equal_ticks)
+
+        if n_interface == list(self.NETWORK_INTERFACE_GRAPHS.keys())[0]:
+            self.parent.net_t_network_list_table.setRowCount(0)
 
         self.set_network_interface_table_information(
             i_net_graph, n_b_sent, n_b_recv, n_interface, i_net_full_name
@@ -231,7 +234,7 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
         self.networking_interface_retrieval_thread = QThread()
         self.networking_interface_retrieval_worker = \
             CWTM_NetworkingInterfaceRetrievalWorker(
-                self.NET_T_NETWORKING_LIST_TABLE_UPDATE_FREQUENCY, parent=self.parent)
+                timeout_interval=self.NET_T_NETWORKING_LIST_TABLE_UPDATE_FREQUENCY)
         self.networking_page_update_handler = CWTM_GlobalUpdateIntervalHandler(
             self.parent, thread_worker=self.networking_interface_retrieval_worker)
         self.networking_page_update_handler.register_selected_tab_update_interval_handler(

@@ -38,6 +38,16 @@ SYSTEM_NETWORK_INTERFACE_TYPE_MAP = {
 
 
 def get_all_running_processes_info():
+    """
+    Retreives all the system's current running procceses' information which includes their:
+        - PID (Process Identification)
+        - Process name
+        - User/group the process is running on
+        - Process CPU usage
+        - Process memory usage
+        - Process command
+        - Process executable path
+    """
     for proc in psutil.process_iter(
         ["pid", "name", "username", "cpu_percent", "memory_info", "cmdline"]):
         try:
@@ -50,6 +60,15 @@ def get_all_running_processes_info():
         
 
 def get_all_running_applications_names():
+    """
+    Retreives all the system's current running applications' information which includes their:
+        - PID
+        - Name
+        - Executable path
+        - Application command
+
+    This function is not 100% accurate and may skip certain running applications on the system(to be fixed)
+    """
     running_apps = []
     processes = [proc.info for proc in psutil.process_iter(["pid", "name", "exe", "cmdline"])]
     desktop_files = Gio.AppInfo.get_all()
@@ -78,6 +97,10 @@ def get_all_running_applications_names():
     return running_apps
 
 def get_all_running_applications(running_apps):
+    """
+    Retreives full details about each running application on the system. This function expects the output
+    of `get_all_running_applications_names` in order to find the icons for the apps.
+    """
     app_details = []
     for app_info, app_pid in running_apps:
         app_name = app_info.get_name()

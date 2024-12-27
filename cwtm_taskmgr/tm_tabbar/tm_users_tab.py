@@ -9,12 +9,13 @@ from .core_properties import (
 )
 from ..qt_components import CWTM_TableWidgetController
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
-from ..thread_workers import CWTM_PageUpdaterWorkerThread
+from ..thread_workers import CWTM_UsersInfoRetrievalWorker
 
 from PyQt5.QtCore import (
     Qt,
     QTimer,
     pyqtSignal,
+    pyqtSlot,
     QThread,
     QObject
 )
@@ -28,11 +29,8 @@ class CWTM_UsersTab(CWTM_TableWidgetController):
         self.USERS_T_USERS_LIST_TABLE_UPDATE_FREQUENCY = \
             CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_NORMAL
             
-    def update_users_page(self):
+    def update_users_page(self, system_user_details: list, user_gtk_icons: list):
         self.parent.users_t_users_list_table.setRowCount(0)
-        
-        *system_user_details, = sys_utils.get_all_user_accounts_details()
-        user_gtk_icons = sys_utils.get_user_account_type_icon(system_user_details)
 
         for user_gtk_icon, (u_user_name, u_user_uid, u_is_logged_in,
              u_real_name, u_home_dir) in zip(user_gtk_icons, system_user_details):
@@ -49,27 +47,30 @@ class CWTM_UsersTab(CWTM_TableWidgetController):
                 CWTM_TableWidgetItemProperties(item_label=u_home_dir)
             ) 
 
+    @pyqtSlot()
+    def update_refresh_user_page_usrs(self):
+        #current_tab_widget = self.parent.task_manager_tab_widget.currentIndex()
+        self.users_page_worker.get_all_users_information_frame()
+
     def start_users_page_updater_thread(self):
         self.users_page_thread = QThread()
-        users_page_worker = CWTM_PageUpdaterWorkerThread(
-            tm_update_function=functools.partial(
-                self.__start_users_page_updater,
-                self.USERS_T_USERS_LIST_TABLE_UPDATE_FREQUENCY)
-        )
+        self.users_page_worker = CWTM_UsersInfoRetrievalWorker(
+            parent_tab_widget=self.parent.task_manager_tab_widget, #change
+            timeout_interval=self.USERS_T_USERS_LIST_TABLE_UPDATE_FREQUENCY)
+        # no need for CWTM_GlobalUpdateIntervalHandler since user won't be connected
+        # to timeout interval changer for users tab
 
-        users_page_worker.moveToThread(self.users_page_thread)
-
-        self.users_page_thread.started.connect(
-            users_page_worker.tm_update_function
-        )
-        self.users_page_thread.start()
-
-
-    def __start_users_page_updater(self, timeout_frequency):
-        self.update_users_page()
-        
-        self.users_update_timer = QTimer()
-        self.users_update_timer.timeout.connect(
+        self.users_page_worker.users_sig_user_account_info.connect(
             self.update_users_page
         )
-        self.users_update_timer.start(timeout_frequency)
+        self.users_page_worker.get_all_users_information_frame(
+            force_run=True
+        )
+        self.users_page_worker.moveToThread(
+            self.users_page_thread
+        )
+
+        self.users_page_thread.started.connect(
+            self.users_page_worker.run
+        )
+        self.users_page_thread.start()

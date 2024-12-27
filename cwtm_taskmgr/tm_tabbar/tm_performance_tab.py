@@ -189,10 +189,13 @@ class CWTM_PerformanceTab(CWTM_TableWidgetController):
             memory_usage_history_layout
         )
         self.memory_grid_widget = CWTM_ResourceGraphWidget(
-            grid_color='g', percentage=True, dotted_grid_lines=self.parent.old_style
+            grid_color='g', percentage=True, 
+            dotted_grid_lines=self.parent.old_style, 
+            grid_size_x=self.PERF_RESOURCE_USAGE_GRID_SIZE
         )
         self.mem_grid_usage_data_x, self.mem_grid_usage_data_y = \
-                                    self.memory_grid_widget.get_all_data_axes(x_range=100)
+                                    self.memory_grid_widget.get_all_data_axes(
+                                        self.PERF_RESOURCE_USAGE_X_RANGE)
         self.mem_grid_usage_plot_pen = pyqtgraph.mkPen(color="#007FFD", width=2)
         self.mem_grid_usage_plot_item = self.memory_grid_widget.plot(
             self.mem_grid_usage_data_x, self.mem_grid_usage_data_y,

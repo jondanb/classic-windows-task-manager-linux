@@ -12,188 +12,368 @@ from PyQt5.QtCore import (
     pyqtSignal, pyqtSlot, Qt,
     QTimer, QThread, QObject
 )
-
-
-class CWTM_PageUpdaterWorkerThread(QObject):    
-    def __init__(self, tm_update_function):
-        super().__init__()
-        
-        self.tm_update_function = tm_update_function
+from PyQt5.QtWidgets import QTabWidget
 
 
 class CWTM_NetworkingInterfaceRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
+    """
+    Worker class responsible for retrieving networking interface usage data at specified intervals
+    and emitting signals with the updated information. It monitors network interfaces, detects
+    disconnected interfaces, and calculates the bytes sent and received per interval.
+
+    Attributes:
+        ni_sig_usage_frame (pyqtSignal): Signal emitted with NIC usage data.
+            - str: Network interface name.
+            - float: Sent bytes per interval.
+            - float: Received bytes per interval.
+        ni_sig_disconnect_nic (pyqtSignal): Signal emitted when a network interface is disconnected.
+            - str: Network interface name.
+    """
+
     ni_sig_usage_frame = pyqtSignal(str, float, float)
     ni_sig_disconnect_nic = pyqtSignal(str)
 
-    def __init__(self, timeout_interval, parent, *args, **kwargs):
+    def __init__(self, timeout_interval: int, *args: list, **kwargs: dict) -> None:
+        """
+        Initializes the Networking Interface Retrieval Worker.
+
+        Arguments:
+            timeout_interval (int): The interval in milliseconds between data retrievals.
+            *args: Extra arguments meant for the superclass (CWTM_TimeoutIntervalChangeSignal:QObject)
+            **kwargs: Extra keyword arguments meant for the superclass (CWTM_TimeoutIntervalChangeSignal:QObject)
+        """
         super().__init__(*args, **kwargs)
-        self.timeout_interval = timeout_interval
-        self.parent = parent
-        self.last_data = {}
+        self.timeout_interval: int = timeout_interval
+        # To check bytes sent and bytes received, we need to compare two frames of network usage.
+        self.last_data: dict[str, psutil._common.snetio] = {}
 
     def run(self):
+        """
+        Starts the networking interface usage retrieval loop.
+        """
         self.get_networking_interface_usage_loop()
 
     def check_for_disconnected_network_interface(self, network_data):
-        current_network_data_set, last_network_data_set = (
-            set(network_data.keys()), set(self.last_data.keys())
-        )
-        nic_frame_total_difference = last_network_data_set - current_network_data_set
+        """
+        Checks for any network interfaces that have been disconnected since the last check.
+        Emits a signal for each disconnected interface and updates the internal tracking data.
 
-        for nic_frame_difference in list(nic_frame_total_difference):
-            del self.last_data[nic_frame_difference]
-            self.ni_sig_disconnect_nic.emit(nic_frame_difference)
+        Arguments:
+            network_data (dict): Current network data retrieved from psutil.net_io_counters().
+                Keys are interface names, and values are psutil._common.snetio objects (their properties).
+        """
+        current_network_data_set: set[str] = set(network_data.keys())
+        last_network_data_set: set[str] = set(self.last_data.keys())
+        disconnected_interfaces: set[str] = last_network_data_set - current_network_data_set
+        # Subtracting the two sets so that the disconnected interfaces are left in the subbed set
 
+        for nic in disconnected_interfaces:
+            del self.last_data[nic] # Delete the disconnected network interface
+            self.ni_sig_disconnect_nic.emit(nic) # Dispatch deleted interface
 
     def get_networking_interface_usage_frame(self):
+        """
+        Retrieves the current networking interface usage data, calculates the bytes sent
+        and received per interval for each active interface, and emits the corresponding signals.
+        Also updates the internal state with the latest data.
+
+        This method performs the following steps:
+            1. Fetches current network I/O counters.
+            2. Checks for any disconnected network interfaces.
+            3. Clears the network list table in the parent UI component. (to be changed)
+            4. Iterates through each network interface to calculate usage.
+            5. Emits usage data for active interfaces.
+        """
         current_data = psutil.net_io_counters(pernic=True)
         self.check_for_disconnected_network_interface(current_data)
-        self.parent.net_t_network_list_table.setRowCount(0)
 
         for nic, counters in current_data.items():
             if nic not in self.last_data:
-                self.last_data[nic] = counters
+                self.last_data[nic]: psutil._common.snetio = counters
                 continue
 
-            last_counters = self.last_data[nic]
-            sent_bytes_per_interval = (
+            last_counters: psutil._common.snetio = self.last_data[nic]
+            sent_bytes_per_interval: float = (
                 counters.bytes_sent - last_counters.bytes_sent
             ) / (self.timeout_interval / 1000)
-            recv_bytes_per_interval = (
+            recv_bytes_per_interval: float = (
                 counters.bytes_recv - last_counters.bytes_recv
             ) / (self.timeout_interval / 1000)
 
             self.ni_sig_usage_frame.emit(nic, sent_bytes_per_interval, recv_bytes_per_interval)
-            self.last_data[nic] = counters
+            self.last_data[nic]: psutil._common.snetio = counters
 
     def get_networking_interface_usage_loop(self):
+        """
+        Manages the retrieval loop for networking interface usage data. Depending on the
+        current timeout interval, it either pauses the loop or schedules the next data retrieval.
+
+        If the `timeout_interval` is set to `GLOBAL_UPDATE_INTERVAL_PAUSED`, the loop waits
+        for 100 milliseconds before checking to see if the update interval has changed. 
+        Otherwise, it retrieves the current usage frame and schedules the next retrieval 
+        based on the `timeout_interval`.
+        """
         if self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
-            QTimer.singleShot(100, self.get_networking_interface_usage_loop) # wait 100 ms until it is not paused
+            # Pause the loop by waiting 100 ms before retrying
+            QTimer.singleShot(100, self.get_networking_interface_usage_loop)
         else:
             self.get_networking_interface_usage_frame()
+            # Schedule the next retrieval based on the timeout interval
             QTimer.singleShot(self.timeout_interval, self.get_networking_interface_usage_loop)
 
 
 class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
+    """
+    Worker class responsible for retrieving information about all running GTK processes
+    at specified intervals. The retrieved data is emitted via a signal, which provides a list
+    of process information.
+
+    Attributes:
+        proc_sig_processes_info (pyqtSignal): Signal emitted with a list of running GTK process info.
+            - list: List of running process information.
+    """
+
     proc_sig_processes_info = pyqtSignal(list)
 
-    def __init__(self, timeout_interval, parent_tab_widget, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.timeout_interval = timeout_interval
-        self.parent_tab_widget = parent_tab_widget
+    def __init__(self, timeout_interval: int, parent_tab_widget: QTabWidget, *args: tuple, **kwargs: dict) -> None:
+        """
+        Initializes the Processes Info Retrieval Worker.
 
-    def run(self):        
+        Args:
+            timeout_interval (int): The interval in milliseconds between data retrievals.
+            parent_tab_widget (QTabWidget): The parent tab widget that determines the currently active tab.
+            *args: Variable length argument list for additional parameters.
+            **kwargs: Arbitrary keyword arguments for additional parameters.
+        """
+        super().__init__(*args, **kwargs)
+        self.timeout_interval: int = timeout_interval
+        self.parent_tab_widget: QTabWidget = parent_tab_widget
+
+        # self.parent_tab_widget must be changed since its referencing a variable from another thread
+
+    def run(self) -> None:
+        """
+        Starts the process info retrieval loop.
+        """
         self.get_all_gtk_running_processes_info_loop()
 
-    def get_all_gtk_running_processes_info_frame(self, *, force_run=False):
-        if not force_run and self.parent_tab_widget.currentIndex() != \
-           CWTM_TabWidgetColumnEnum.TASK_MANAGER_PROCESSES_TAB:
+    def get_all_gtk_running_processes_info_frame(self, *, force_run: bool = False) -> None:
+        """
+        Retrieves information about all running GTK processes and emits the process info signal.
+        If the current tab is not the task manager processes tab, the method does not perform the 
+        retrieval unless force_run is set to True.
+
+        Args:
+            force_run (bool): If True, forces the retrieval of process information regardless of the tab selection.
+        """
+        if not force_run and self.parent_tab_widget.currentIndex() != CWTM_TabWidgetColumnEnum.TASK_MANAGER_PROCESSES_TAB:
             return
         
         *gtk_running_processes, = sys_utils.get_all_running_processes_info()
-        self.proc_sig_processes_info.emit(
-            gtk_running_processes
-        )
+        self.proc_sig_processes_info.emit(gtk_running_processes)
 
-    def get_all_gtk_running_processes_info_loop(self):
+    def get_all_gtk_running_processes_info_loop(self) -> None:
+        """
+        Manages the loop for retrieving GTK process information. Depending on the current timeout interval,
+        it either pauses the loop or schedules the next data retrieval.
+
+        If the `timeout_interval` is set to `GLOBAL_UPDATE_INTERVAL_PAUSED`, the loop waits 100 milliseconds
+        before checking again. Otherwise, it retrieves the current process info and schedules the next retrieval
+        based on the `timeout_interval`.
+        """
         if self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
             QTimer.singleShot(100, self.get_all_gtk_running_processes_info_loop)
         else:
             self.get_all_gtk_running_processes_info_frame()
             QTimer.singleShot(self.timeout_interval, self.get_all_gtk_running_processes_info_loop)
 
+
 class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
+    """
+    Worker class responsible for retrieving information about all running GTK applications
+    at specified intervals. The retrieved data includes application names and icons, and is
+    emitted via a signal.
+
+    Attributes:
+        app_sig_applications_info (pyqtSignal): Signal emitted with a list of running GTK application info.
+            - list: List of application names and their corresponding icons.
+    """
+
     app_sig_applications_info = pyqtSignal(list)
 
-    def __init__(self, timeout_interval, parent_tab_widget, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.timeout_interval = timeout_interval
-        self.parent_tab_widget = parent_tab_widget
+    def __init__(self, timeout_interval: int, parent_tab_widget: QTabWidget, *args: tuple, **kwargs: dict) -> None:
+        """
+        Initializes the Applications Info Retrieval Worker.
 
-    def run(self):        
+        Args:
+            timeout_interval (int): The interval in milliseconds between data retrievals.
+            parent_tab_widget (QWidget): The parent tab widget that determines the currently active tab.
+            *args: Variable length argument list for additional parameters.
+            **kwargs: Arbitrary keyword arguments for additional parameters.
+        """
+        super().__init__(*args, **kwargs)
+        self.timeout_interval: int = timeout_interval
+        self.parent_tab_widget: QTabWidget = parent_tab_widget
+
+    def run(self) -> None:
+        """
+        Starts the application info retrieval loop.
+        """
         self.get_all_gtk_running_applications_info_loop()
 
-    def get_all_gtk_running_applications_info_frame(self, *, force_run=False):
-        if not force_run and self.parent_tab_widget.currentIndex() != \
-          CWTM_TabWidgetColumnEnum.TASK_MANAGER_APPLICATIONS_TAB:
+    def get_all_gtk_running_applications_info_frame(self, *, force_run: bool = False) -> None:
+        """
+        Retrieves information about all running GTK applications, including their names and icons,
+        and emits the application info signal. If the current tab is not the applications tab or if
+        force_run is False, the method does not perform the retrieval.
+
+        Args:
+            force_run (bool): If True, forces the retrieval of application information regardless of the tab selection.
+        """
+        if not force_run and self.parent_tab_widget.currentIndex() != CWTM_TabWidgetColumnEnum.TASK_MANAGER_APPLICATIONS_TAB:
             return
         
-        gtk_running_apps = sys_utils.get_all_running_applications_names()
-        gtk_running_apps_and_icons = sys_utils.get_all_running_applications(
-            gtk_running_apps
-        )
-        self.app_sig_applications_info.emit(
-            gtk_running_apps_and_icons
-        )
+        gtk_running_apps: list = sys_utils.get_all_running_applications_names()
+        gtk_running_apps_and_icons: list = sys_utils.get_all_running_applications(gtk_running_apps)
+        self.app_sig_applications_info.emit(gtk_running_apps_and_icons)
 
-    def get_all_gtk_running_applications_info_loop(self):
+    def get_all_gtk_running_applications_info_loop(self) -> None:
+        """
+        Manages the loop for retrieving GTK application information. Depending on the current timeout interval,
+        it either pauses the loop or schedules the next data retrieval.
+
+        If the `timeout_interval` is set to `GLOBAL_UPDATE_INTERVAL_PAUSED`, the loop waits 100 milliseconds
+        before checking again. Otherwise, it retrieves the current application info and schedules the next retrieval
+        based on the `timeout_interval`.
+        """
         if self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
             QTimer.singleShot(100, self.get_all_gtk_running_applications_info_loop)
         else:
             self.get_all_gtk_running_applications_info_frame()
             QTimer.singleShot(self.timeout_interval, self.get_all_gtk_running_applications_info_loop)
 
+
 class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
+    """
+    Worker class responsible for retrieving system performance metrics at specified intervals,
+    including memory usage, CPU usage, and swap memory information. The retrieved data is emitted
+    through several signals, providing real-time system statistics.
+
+    Attributes:
+        perf_sig_memory_labels_info (pyqtSignal): Signal emitted with memory usage information.
+            - psutil._pslinux.svmem: Virtual memory statistics.
+        perf_sig_status_bar_labels_info (pyqtSignal): Signal emitted with status bar information.
+            - int: Total number of processes.
+            - float: Current memory usage percentage.
+            - float: Current CPU usage percentage.
+        perf_sig_cpu_usage_history_graphs_info (pyqtSignal): Signal emitted with CPU usage history.
+            - list: List of CPU usage percentages.
+            - list: List of kernel CPU usage percentages.
+        perf_sig_kernel_mem_labels_info (pyqtSignal): Signal emitted with swap memory information.
+            - psutil._common.sswap: Swap memory statistics.
+        perf_sig_sys_mem_labels_info (pyqtSignal): Signal emitted with system memory labels.
+            - int: Number of file descriptors.
+            - int: Number of system threads.
+            - int: Number of system processes.
+            - str: System uptime.
+            - str: Total and used commit memory.
+        perf_sig_graphical_widgets_info (pyqtSignal): Signal emitted with graphical widget data.
+            - float: CPU usage.
+            - float: Kernel CPU time.
+            - float: Memory usage percentage.
+            - float: Memory used in MB.
+            - float: Total memory in MB.
+    """
+
     perf_sig_memory_labels_info = pyqtSignal(psutil._pslinux.svmem)
     perf_sig_status_bar_labels_info = pyqtSignal(int, float, float)
-    perf_sig_cpu_usage_history_graphs_info = pyqtSignal(list, list) # percpu or all cpu
+    perf_sig_cpu_usage_history_graphs_info = pyqtSignal(list, list)  # percpu or all cpu
     perf_sig_kernel_mem_labels_info = pyqtSignal(psutil._common.sswap)
     perf_sig_sys_mem_labels_info = pyqtSignal(int, int, int, str, str)
 
     perf_sig_graphical_widgets_info = pyqtSignal(float, float, float, float, float)
 
-    def __init__(self, timeout_interval, parent_tab_widget, *args, per_cpu, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.timeout_interval = timeout_interval
-        self.parent_tab_widget = parent_tab_widget
-        self.per_cpu = per_cpu
+    def __init__(self, timeout_interval: int, *args: tuple, per_cpu: bool, **kwargs: dict) -> None:
+        """
+        Initializes the Performance Info Retrieval Worker.
 
-    def run(self):
+        Args:
+            timeout_interval (int): The interval in milliseconds between data retrievals.
+            parent_tab_widget (QWidget): The parent tab widget that determines the currently active tab.
+            per_cpu (bool): Flag indicating whether to retrieve per-CPU usage data.
+            *args: Variable length argument list for additional parameters.
+            **kwargs: Arbitrary keyword arguments for additional parameters.
+        """
+        super().__init__(*args, **kwargs)
+        self.timeout_interval: int = timeout_interval
+        self.per_cpu: bool = per_cpu
+
+    def run(self) -> None:
+        """
+        Starts the resource usage retrieval loop.
+        """
         self.get_all_resource_usage_loop()
 
-    def get_system_memory_labels(self, total_processes, virtual_memory):
-        n_file_descriptors = sys_utils.get_number_of_handle_file_descriptors()
-        n_sys_threads = sys_utils.get_number_of_total_threads(total_processes)
-        n_sys_processes = len(total_processes)
-        commit_mem_total, commit_mem_amount = sys_utils.get_total_system_commit_memory(
-            virtual_memory
-        )
-        total_system_mem_commit = " / ".join(
-            (sys_utils.convert_proc_mem_b_to_mb(commit_mem_amount)[:-2],
-             sys_utils.convert_proc_mem_b_to_mb(commit_mem_total)[:-2])
-        )
-        total_system_uptime = sys_utils.format_seconds_to_timestamp(
-            sys_utils.get_total_uptime_in_seconds()
-        )
+    def get_system_memory_labels(self, total_processes: list, virtual_memory: psutil._pslinux.svmem) -> None:
+        """
+        Retrieves and emits system memory labels, including information about file descriptors,
+        system threads, processes, and system uptime. It also provides commit memory statistics.
+
+        Args:
+            total_processes (list): List of all running processes on the system.
+            virtual_memory (psutil._pslinux.svmem): Virtual memory statistics from psutil.
+        """
+        n_file_descriptors: int = sys_utils.get_number_of_handle_file_descriptors()
+        n_sys_threads: int = sys_utils.get_number_of_total_threads(total_processes)
+        n_sys_processes: int = len(total_processes)
+        commit_mem_total, commit_mem_amount = sys_utils.get_total_system_commit_memory(virtual_memory)
+        total_system_mem_commit: str = " / ".join((
+            sys_utils.convert_proc_mem_b_to_mb(commit_mem_amount)[:-2],
+            sys_utils.convert_proc_mem_b_to_mb(commit_mem_total)[:-2]
+        ))
+        total_system_uptime: str = sys_utils.format_seconds_to_timestamp(sys_utils.get_total_uptime_in_seconds())
 
         self.perf_sig_sys_mem_labels_info.emit(
             n_file_descriptors, n_sys_threads, n_sys_processes,
             total_system_uptime, total_system_mem_commit
         )
 
-    def get_cpu_usage_history_graphs(self, cpu_usage, kernel_usage):
-        current_cpu_usage = [cpu_usage] if not self.per_cpu \
-            else psutil.cpu_percent(percpu=True)
-        current_cpu_kernel_usage = [kernel_usage] if not self.per_cpu \
-            else [*map(lambda x: x.system, psutil.cpu_times_percent(percpu=True))]
+    def get_cpu_usage_history_graphs(self, cpu_usage: float, kernel_usage: float) -> tuple[list, list]:
+        """
+        Retrieves the CPU usage history, either for all CPUs or per-CPU, depending on the `per_cpu` flag.
+        Returns two lists: one for the overall CPU usage and one for kernel CPU usage.
 
+        Args:
+            cpu_usage (float): The overall CPU usage percentage.
+            kernel_usage (float): The overall kernel CPU usage percentage.
+
+        Returns:
+            tuple[list, list]: A tuple containing two lists:
+                - List of CPU usage percentages.
+                - List of kernel CPU usage percentages.
+        """
+        current_cpu_usage: list[float] = [cpu_usage] if not self.per_cpu else psutil.cpu_percent(percpu=True)
+        current_cpu_kernel_usage: list[float] = [kernel_usage] if not self.per_cpu else [
+            *map(lambda x: x.system, psutil.cpu_times_percent(percpu=True))]
+        
         return current_cpu_usage, current_cpu_kernel_usage
 
-    def get_all_resource_usage_frame(self):
-        current_memory_info = psutil.virtual_memory()
-        sys_swap_memory = psutil.swap_memory()
+    def get_all_resource_usage_frame(self) -> None:
+        """
+        Retrieves the system resource usage statistics, including memory usage, CPU usage, and swap memory.
+        The retrieved data is emitted via various signals, including graphical widget data, status bar labels,
+        and detailed system memory and CPU usage statistics.
+        """
+        current_memory_info: psutil._pslinux.svmem = psutil.virtual_memory()
+        sys_swap_memory: psutil._common.sswap = psutil.swap_memory()
         *total_iter_processes, = psutil.process_iter()
-        current_cpu_usage = psutil.cpu_percent()
-        
-        current_memory_usage = current_memory_info.percent
-        memory_total, _ = sys_utils.get_memory_size_info(
-            current_memory_info.total
-        )
-        memory_used, _ = sys_utils.get_memory_size_info(
-            current_memory_info.used
-        )
+        current_cpu_usage: float = psutil.cpu_percent()
 
-        kernel_cpu_time = psutil.cpu_times_percent().system
+        current_memory_usage: float = current_memory_info.percent
+        memory_total, _ = sys_utils.get_memory_size_info(current_memory_info.total)
+        memory_used, _ = sys_utils.get_memory_size_info(current_memory_info.used)
+
+        kernel_cpu_time: float = psutil.cpu_times_percent().system
         current_cpu_graph_usage, current_cpu_kernel_graph_usage = self.get_cpu_usage_history_graphs(
             current_cpu_usage, kernel_cpu_time)
 
@@ -211,69 +391,67 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
             current_memory_usage, memory_used, memory_total,
         )
 
-    def get_all_resource_usage_loop(self):
+    def get_all_resource_usage_loop(self) -> None:
+        """
+        Manages the loop for retrieving system resource usage statistics. Depending on the current timeout
+        interval, it either pauses the loop or schedules the next data retrieval.
+
+        If the `timeout_interval` is set to `GLOBAL_UPDATE_INTERVAL_PAUSED`, the loop waits 100 milliseconds
+        before checking again. Otherwise, it retrieves the current resource usage data and schedules the next
+        retrieval based on the `timeout_interval`.
+        """
         if self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
-            QTimer.singleShot(100, self.get_all_resource_usage_loop) # wait 100 ms until it is not paused
+            QTimer.singleShot(100, self.get_all_resource_usage_loop)
         else:
             self.get_all_resource_usage_frame()
             QTimer.singleShot(self.timeout_interval, self.get_all_resource_usage_loop)
 
 
 class CWTM_ServicesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
-    proc_sig_processes_info = pyqtSignal(list)
-    proc_sig_clear_processes_info = pyqtSignal()
+    svc_sig_all_system_services = pyqtSignal(list)
 
-    proc_sig_change_timeout_interval = pyqtSignal(int)
-
-    def __init__(self, timeout_interval, parent_tab_widget, *args, **kwargs):
+    def __init__(self, timeout_interval:int, *args: dict, parent_tab_widget: QTabWidget, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
+
         self.timeout_interval = timeout_interval
-        self.parent_tab_widget = parent_tab_widget
+        self.parent_tab_widget: QTabWidget = parent_tab_widget
 
-    def run(self):        
-        self.processes_update_timer = QTimer()
-        self.processes_update_timer.timeout.connect(
-            self.get_all_gtk_running_processes_info
-        )
-        self.processes_update_timer.start(self.timeout_interval)
+    def run(self):
+        self.get_all_services_information_loop()
 
-    def handle_timeout_interval_change(self, new_timeout_interval):
-        self.timeout_interval = new_timeout_interval
-
-    def get_all_gtk_running_processes_info(self, *, force_run=False):
-        if not force_run and self.parent_tab_widget.currentIndex() != \
-           CWTM_TabWidgetColumnEnum.TASK_MANAGER_PROCESSES_TAB:
+    def get_all_services_information_frame(self, *, force_run: bool = False):
+        if not force_run and self.parent_tab_widget.currentIndex() != CWTM_TabWidgetColumnEnum.TASK_MANAGER_SERVICES_TAB:
             return
-        
-        self.proc_sig_clear_processes_info.emit()
-        *gtk_running_processes, = sys_utils.get_all_running_processes_info()
-        self.proc_sig_processes_info.emit(
-            gtk_running_processes
-        )
+
+        *system_all_services, = sys_utils.get_all_system_services()
+        self.svc_sig_all_system_services.emit(system_all_services)
+
+    def get_all_services_information_loop(self):
+        # timeout_interval does not change since getting all services is expensive and slow
+        # this is for performance reasons
+        self.get_all_services_information_frame()
+        QTimer.singleShot(self.timeout_interval, self.get_all_services_information_loop)
 
 class CWTM_UsersInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
-    proc_sig_processes_info = pyqtSignal(list)
-    proc_sig_clear_processes_info = pyqtSignal()
+    users_sig_user_account_info = pyqtSignal(list, list)
 
-    def __init__(self, timeout_interval, parent_tab_widget, *args, **kwargs):
+    def __init__(self, timeout_interval:int, *args: dict, parent_tab_widget: QTabWidget, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
+
         self.timeout_interval = timeout_interval
-        self.parent_tab_widget = parent_tab_widget
+        self.parent_tab_widget: QTabWidget = parent_tab_widget
 
-    def run(self):        
-        self.processes_update_timer = QTimer()
-        self.processes_update_timer.timeout.connect(
-            self.get_all_gtk_running_processes_info
-        )
-        self.processes_update_timer.start(self.timeout_interval)
+    def run(self):
+        self.get_all_users_information_loop()
 
-    def get_all_gtk_running_processes_info(self, *, force_run=False):
-        if not force_run and self.parent_tab_widget.currentIndex() != \
-           CWTM_TabWidgetColumnEnum.TASK_MANAGER_PROCESSES_TAB:
+    def get_all_users_information_frame(self, *, force_run: bool = False):
+        if not force_run and self.parent_tab_widget.currentIndex() != CWTM_TabWidgetColumnEnum.TASK_MANAGER_USERS_TAB:
             return
-        
-        self.proc_sig_clear_processes_info.emit()
-        *gtk_running_processes, = sys_utils.get_all_running_processes_info()
-        self.proc_sig_processes_info.emit(
-            gtk_running_processes
-        )
+
+        *system_user_details, = sys_utils.get_all_user_accounts_details()
+        *user_gtk_icons, = sys_utils.get_user_account_type_icon(system_user_details)
+        self.users_sig_user_account_info.emit(system_user_details, user_gtk_icons)
+
+    def get_all_users_information_loop(self):
+        self.get_all_users_information_frame()
+        QTimer.singleShot(self.timeout_interval, self.get_all_users_information_loop)
