@@ -340,16 +340,20 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM
         current_cpu_graph_usage, current_cpu_kernel_graph_usage = self.get_cpu_usage_history_graphs(
             current_cpu_usage, kernel_cpu_time)
 
+        *total_iter_processes, = psutil.process_iter()
+        current_memory_info: psutil._pslinux.svmem = psutil.virtual_memory()
+        current_memory_usage: float = current_memory_info.percent
+
         self.perf_sig_cpu_usage_history_graphs_info.emit(current_cpu_graph_usage, current_cpu_kernel_graph_usage)
+        self.perf_sig_status_bar_labels_info.emit(
+            len(total_iter_processes), current_memory_usage, current_cpu_usage
+        )
 
         if not self._info_retrieval_authorization:
             return
 
-        current_memory_info: psutil._pslinux.svmem = psutil.virtual_memory()
         sys_swap_memory: psutil._common.sswap = psutil.swap_memory()
-        *total_iter_processes, = psutil.process_iter()
 
-        current_memory_usage: float = current_memory_info.percent
         memory_total, _ = sys_utils.get_memory_size_info(current_memory_info.total)
         memory_used, _ = sys_utils.get_memory_size_info(current_memory_info.used)
 
@@ -357,9 +361,6 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM
 
         self.perf_sig_kernel_mem_labels_info.emit(sys_swap_memory)
         self.perf_sig_memory_labels_info.emit(current_memory_info)
-        self.perf_sig_status_bar_labels_info.emit(
-            len(total_iter_processes), current_memory_usage, current_cpu_usage
-        )
 
         self.perf_sig_graphical_widgets_info.emit(
             current_cpu_usage, kernel_cpu_time,
