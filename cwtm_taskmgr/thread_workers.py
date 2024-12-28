@@ -118,7 +118,9 @@ class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
 
     proc_sig_processes_info = pyqtSignal(list)
 
-    def __init__(self, timeout_interval: int, parent_tab_widget: QTabWidget, *args: tuple, **kwargs: dict) -> None:
+    _proc_sig_information_retrieval_authorization = pyqtSignal(bool)
+
+    def __init__(self, timeout_interval: int, *args: tuple, **kwargs: dict) -> None:
         """
         Initializes the Processes Info Retrieval Worker.
 
@@ -130,7 +132,10 @@ class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         """
         super().__init__(*args, **kwargs)
         self.timeout_interval: int = timeout_interval
-        self.parent_tab_widget: QTabWidget = parent_tab_widget
+        self.info_retrieval_authorization: bool = False
+
+        self._proc_sig_information_retrieval_authorization.connect(
+            self.update_information_retrieval_authorization)
 
         # self.parent_tab_widget must be changed since its referencing a variable from another thread
 
@@ -139,6 +144,11 @@ class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         Starts the process info retrieval loop.
         """
         self.get_all_gtk_running_processes_info_loop()
+
+    @pyqtSlot(bool)
+    def update_information_retrieval_authorization(self, updated_authorization):
+
+        self.info_retrieval_authorization = updated_authorization
 
     @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop
     def get_all_gtk_running_processes_info_loop(self, *, force_run: bool = False) -> None:
@@ -150,7 +160,7 @@ class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         Args:
             force_run (bool): If True, forces the retrieval of process information regardless of the tab selection.
         """
-        if not force_run and self.parent_tab_widget.currentIndex() != CWTM_TabWidgetColumnEnum.TASK_MANAGER_PROCESSES_TAB:
+        if not force_run and not self.info_retrieval_authorization:
             return
         
         *gtk_running_processes, = sys_utils.get_all_running_processes_info()
@@ -200,6 +210,7 @@ class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         Args:
             force_run (bool): If True, forces the retrieval of application information regardless of the tab selection.
         """
+
         if not force_run and self.parent_tab_widget.currentIndex() != CWTM_TabWidgetColumnEnum.TASK_MANAGER_APPLICATIONS_TAB:
             return
         

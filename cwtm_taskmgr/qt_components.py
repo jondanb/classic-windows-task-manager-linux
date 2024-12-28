@@ -180,20 +180,28 @@ class CWTM_TimeoutIntervalChangeSignal(QObject):
     def handle_timeout_interval_change(self, new_timeout_interval):
         self.timeout_interval = new_timeout_interval
 
+    
     @staticmethod
     def thread_worker_timeout_interval_loop(frame_function):
         @functools.wraps(frame_function)
-        def information_retreival_function_wrapper(self, *args: dict, disable_loop: bool=False, **kwargs: dict) -> None:
+        def information_retrieval_function_wrapper(self, *args: dict, disable_loop: bool=False, **kwargs: dict) -> None:
             if disable_loop:
                 frame_function(self, *args, **kwargs)
             elif self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
                 QTimer.singleShot(100, functools.partial(
-                    information_retreival_function_wrapper, self, *args, **kwargs))
+                    information_retrieval_function_wrapper, self, *args, **kwargs))
             else:
                 frame_function(self, *args, **kwargs)
                 QTimer.singleShot(self.timeout_interval, functools.partial(
-                    information_retreival_function_wrapper, self, *args, **kwargs))
-        return information_retreival_function_wrapper
+                    information_retrieval_function_wrapper, self, *args, **kwargs))
+        return information_retrieval_function_wrapper
+
+
+class CWTM_InformationRetrievalAuthorization:
+    _information_retrieval_authorization = pyqtSignal(bool)
+
+    def __init__(self):
+        pass
 
 
 class CWTM_GlobalUpdateIntervalHandler:
