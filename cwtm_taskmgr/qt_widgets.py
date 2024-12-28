@@ -1,6 +1,8 @@
 import functools
 import pyqtgraph as pg
 
+from .tm_tabbar.core_properties import CWTM_ResourceBarLevelColours
+
 from PyQt5.QtWidgets import (
     QWidget, QTableWidgetItem
 )
@@ -105,10 +107,21 @@ class CWTM_ResourceLevelBarWidget(QWidget):
                                        + self.bar_parameters.bar_width \
                                        + (self.bar_parameters.bar_width // 10)
 
-    def paintEvent(self, event):        
+        self.primary_bar_colour_filled = None
+        self.primary_bar_colour_empty = None
+        self.secondary_bar_colour_filled = None
+        self.secondary_bar_colour_empty = None
+
+        self.primary_resource_value = None
+        self.secondary_resource_value = None
+        self.total_space  = None
+
+    def paintEvent(self, event):
         painter = QPainter(self)
         painter.fillRect(self.rect(), QColor(0, 0, 0))
-        
+
+        self.default_to_default_values()
+
         self.draw_resource_bar_levels(
             painter, self.x_offset_progress_bar_1, 
             self.primary_resource_value,
@@ -142,6 +155,15 @@ class CWTM_ResourceLevelBarWidget(QWidget):
             self.bar_parameters.y_offset + self.bar_parameters.total_bars \
             * (self.bar_parameters.bar_height + self.bar_parameters.spacing) + 10,
             f'{self.primary_resource_value} {self.bar_parameters.resource_bar_label}')
+
+    def default_to_default_values(self):
+        if self.primary_bar_colour_filled is None: # not defined, program just started
+            self.primary_bar_colour_filled = CWTM_ResourceBarLevelColours.BAR_COLOUR_CPU_USAGE_TIME_FILLED
+            self.primary_bar_colour_empty = CWTM_ResourceBarLevelColours.BAR_COLOUR_CPU_USAGE_TIME_EMPTY
+
+            self.primary_resource_value = 0
+            self.total_space  = 100
+
 
     def draw_resource_bar_levels(
         self, painter, current_x_offset, resource_value,

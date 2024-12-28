@@ -206,7 +206,7 @@ class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWT
         self.app_sig_applications_info.emit(gtk_running_apps_and_icons)
 
 
-class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
+class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_InformationRetrievalAuthorization):
     """
     Worker class responsible for retrieving system performance metrics at specified intervals,
     including memory usage, CPU usage, and swap memory information. The retrieved data is emitted
@@ -290,6 +290,9 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
             total_processes (list): List of all running processes on the system.
             virtual_memory (psutil._pslinux.svmem): Virtual memory statistics from psutil.
         """
+        if not self._info_retrieval_authorization:
+            return
+
         n_file_descriptors: int = sys_utils.get_number_of_handle_file_descriptors()
         n_sys_threads: int = sys_utils.get_number_of_total_threads(total_processes)
         n_sys_processes: int = len(total_processes)
@@ -332,22 +335,26 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         The retrieved data is emitted via various signals, including graphical widget data, status bar labels,
         and detailed system memory and CPU usage statistics.
         """
+        current_cpu_usage: float = psutil.cpu_percent()
+        kernel_cpu_time: float = psutil.cpu_times_percent().system
+        current_cpu_graph_usage, current_cpu_kernel_graph_usage = self.get_cpu_usage_history_graphs(
+            current_cpu_usage, kernel_cpu_time)
+
+        self.perf_sig_cpu_usage_history_graphs_info.emit(current_cpu_graph_usage, current_cpu_kernel_graph_usage)
+
+        if not self._info_retrieval_authorization:
+            return
+
         current_memory_info: psutil._pslinux.svmem = psutil.virtual_memory()
         sys_swap_memory: psutil._common.sswap = psutil.swap_memory()
         *total_iter_processes, = psutil.process_iter()
-        current_cpu_usage: float = psutil.cpu_percent()
 
         current_memory_usage: float = current_memory_info.percent
         memory_total, _ = sys_utils.get_memory_size_info(current_memory_info.total)
         memory_used, _ = sys_utils.get_memory_size_info(current_memory_info.used)
 
-        kernel_cpu_time: float = psutil.cpu_times_percent().system
-        current_cpu_graph_usage, current_cpu_kernel_graph_usage = self.get_cpu_usage_history_graphs(
-            current_cpu_usage, kernel_cpu_time)
-
         self.get_system_memory_labels(total_iter_processes, current_memory_info)
 
-        self.perf_sig_cpu_usage_history_graphs_info.emit(current_cpu_graph_usage, current_cpu_kernel_graph_usage)
         self.perf_sig_kernel_mem_labels_info.emit(sys_swap_memory)
         self.perf_sig_memory_labels_info.emit(current_memory_info)
         self.perf_sig_status_bar_labels_info.emit(

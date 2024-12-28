@@ -79,6 +79,8 @@ class CWTM_UsersTab(CWTM_TableWidgetController):
         self.users_page_worker.moveToThread(
             self.users_page_thread
         )
+        self.parent.task_manager_tab_widget.currentChanged.connect(
+            self.update_thread_worker_info_retrieval_authorization)
 
         self.users_page_thread.started.connect(
             self.users_page_worker.run

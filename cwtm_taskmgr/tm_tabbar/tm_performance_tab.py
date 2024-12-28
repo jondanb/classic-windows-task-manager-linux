@@ -15,7 +15,8 @@ from ..qt_components import (
 from .core_properties import (
     CWTM_ResourceLevelBarParameters,
     CWTM_GlobalUpdateIntervals,
-    CWTM_ResourceBarLevelColours
+    CWTM_ResourceBarLevelColours,
+    CWTM_TabWidgetColumnEnum
 )
 from ..thread_workers import CWTM_PerformanceInfoRetrievalWorker
 
@@ -70,7 +71,6 @@ class CWTM_PerformanceTab(CWTM_TableWidgetController):
         )
 
         cpu_usage_bar_layout.addWidget(self.cpu_bar_widget)
-
         memory_usage_bar_layout = QVBoxLayout()
         _, total_memory_available_unit = sys_utils.get_memory_size_info(
             psutil.virtual_memory().total
@@ -292,6 +292,17 @@ class CWTM_PerformanceTab(CWTM_TableWidgetController):
             self.mem_grid_usage_data_x, self.mem_grid_usage_data_y
         )
 
+    def update_thread_worker_info_retrieval_authorization(self, index: int) -> None:
+        """
+        Authorizes the processes thread worker to emit system process information to the slot
+        `update_processes_page`
+
+        Arguments:
+            - index: the current index of the tab widget
+        """
+        self.performance_page_worker._information_retrieval_authorization.emit(
+            index == CWTM_TabWidgetColumnEnum.TASK_MANAGER_PERFORMANCE_TAB)
+
     def start_performance_page_updater_thread(self):
         self.performance_page_thread = QThread()
         self.performance_page_worker = CWTM_PerformanceInfoRetrievalWorker(
@@ -319,6 +330,8 @@ class CWTM_PerformanceTab(CWTM_TableWidgetController):
 
         self.performance_page_worker.moveToThread(
             self.performance_page_thread)
+        self.parent.task_manager_tab_widget.currentChanged.connect(
+            self.update_thread_worker_info_retrieval_authorization)
         self.performance_page_thread.started.connect(
             self.performance_page_worker.run)
         self.performance_page_thread.start()
