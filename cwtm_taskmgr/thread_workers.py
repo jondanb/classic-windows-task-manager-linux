@@ -279,7 +279,7 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         Arguments:
             - updated_status (bool): The value `per_cpu` should be set to
         """
-        self.per_cpu = updated_status
+        self.per_cpu: bool = updated_status
 
     def get_system_memory_labels(self, total_processes: list, virtual_memory: psutil._pslinux.svmem) -> None:
         """
