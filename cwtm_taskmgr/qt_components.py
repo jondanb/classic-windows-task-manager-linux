@@ -206,7 +206,7 @@ class CWTM_InformationRetrievalAuthorization:
         self._information_retrieval_authorization.connect(
             self._update_information_retrieval_authorization)
 
-    #@pyqtSlot(bool)
+    @pyqtSlot(bool)
     def _update_information_retrieval_authorization(self, updated_authorization: bool):
         self._info_retrieval_authorization = updated_authorization
 
