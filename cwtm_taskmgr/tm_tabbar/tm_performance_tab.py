@@ -155,7 +155,7 @@ class CWTM_PerformanceTab(CWTM_TableWidgetController):
             return
 
         if include_thread_switch:
-            self.performance_page_worker.per_cpu = True
+            self.performance_page_worker.perf_sig_request_per_cpu_status_change.emit(True)
 
         self.setup_switch_cpu_graphing_modes(per_cpu=True)
         for _ in range(psutil.cpu_count()):
@@ -167,7 +167,7 @@ class CWTM_PerformanceTab(CWTM_TableWidgetController):
             return
 
         if include_thread_switch:
-            self.performance_page_worker.per_cpu = False
+            self.performance_page_worker.perf_sig_request_per_cpu_status_change.emit(False)
             
         self.setup_switch_cpu_graphing_modes(per_cpu=False)
         self.cpu_usage_history_layout.addWidget(self.register_cpu_core())

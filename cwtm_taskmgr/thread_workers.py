@@ -246,6 +246,8 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
 
     perf_sig_graphical_widgets_info = pyqtSignal(float, float, float, float, float)
 
+    perf_sig_request_per_cpu_status_change = pyqtSignal(bool)
+
     def __init__(self, timeout_interval: int, *args: tuple, per_cpu: bool, **kwargs: dict) -> None:
         """
         Initializes the Performance Info Retrieval Worker.
@@ -260,11 +262,24 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         self.timeout_interval: int = timeout_interval
         self.per_cpu: bool = per_cpu
 
+        self.perf_sig_request_per_cpu_status_change.connect(
+            self.update_per_cpu_graphing_mode_status)
+
     def run(self) -> None:
         """
         Starts the resource usage retrieval loop.
         """
         self.get_all_resource_usage_loop()
+
+    @pyqtSlot(bool)
+    def update_per_cpu_graphing_mode_status(self, updated_status: bool) -> None:
+        """
+        Updates the `per_cpu` status variable using a signal and slot so it is run thread-safe
+
+        Arguments:
+            - updated_status (bool): The value `per_cpu` should be set to
+        """
+        self.per_cpu = updated_status
 
     def get_system_memory_labels(self, total_processes: list, virtual_memory: psutil._pslinux.svmem) -> None:
         """
