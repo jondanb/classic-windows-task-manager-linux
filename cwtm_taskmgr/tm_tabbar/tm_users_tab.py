@@ -50,8 +50,7 @@ class CWTM_UsersTab(CWTM_TableWidgetController):
 
     @pyqtSlot()
     def update_refresh_user_page_usrs(self):
-        #current_tab_widget = self.parent.task_manager_tab_widget.currentIndex()
-        self.users_page_worker.get_all_users_information_frame()
+        self.users_page_worker.get_all_users_information_loop(disable_loop=True)
 
     def update_thread_worker_info_retrieval_authorization(self, index: int) -> None:
         """
@@ -74,8 +73,8 @@ class CWTM_UsersTab(CWTM_TableWidgetController):
         self.users_page_worker.users_sig_user_account_info.connect(
             self.update_users_page
         )
-        self.users_page_worker.get_all_users_information_frame(
-            force_run=True
+        self.users_page_worker.get_all_users_information_loop(
+            force_run=True, disable_loop=True
         )
         self.users_page_worker.moveToThread(
             self.users_page_thread

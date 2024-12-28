@@ -49,7 +49,7 @@ class CWTM_ServicesTab(CWTM_TableWidgetController):
     @pyqtSlot()
     def update_refresh_services_page_svcs(self):
         #current_tab_widget = self.parent.task_manager_tab_widget.currentIndex()
-        self.services_page_worker.get_all_services_information_frame()
+        self.services_page_worker.get_all_services_information_loop(disable_loop=True)
 
     def update_thread_worker_info_retrieval_authorization(self, index: int) -> None:
         """
@@ -72,8 +72,8 @@ class CWTM_ServicesTab(CWTM_TableWidgetController):
         self.services_page_worker.svc_sig_all_system_services.connect(
             self.update_services_page
         )
-        self.services_page_worker.get_all_services_information_frame(
-            force_run=True
+        self.services_page_worker.get_all_services_information_loop(
+            force_run=True, disable_loop=True
         )
         self.services_page_worker.moveToThread(
             self.services_page_thread

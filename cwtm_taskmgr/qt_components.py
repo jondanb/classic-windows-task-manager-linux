@@ -174,6 +174,8 @@ class CWTM_TableWidgetController:
 
 
 class CWTM_TimeoutIntervalChangeSignal(QObject):
+    TIMEOUT_INTERVAL_CHECK_PAUSE_UPDATE = 100 # 100 ms
+
     sig_change_timeout_interval = pyqtSignal(int)
 
     def __init__(self, *args, **kwargs):
@@ -184,20 +186,24 @@ class CWTM_TimeoutIntervalChangeSignal(QObject):
     def handle_timeout_interval_change(self, new_timeout_interval):
         self.timeout_interval = new_timeout_interval
     
-    @staticmethod
-    def thread_worker_timeout_interval_loop(frame_function):
-        @functools.wraps(frame_function)
-        def information_retrieval_function_wrapper(self, *args: dict, disable_loop: bool=False, **kwargs: dict) -> None:
-            if disable_loop:
-                frame_function(self, *args, **kwargs)
-            elif self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED:
-                QTimer.singleShot(100, functools.partial(
-                    information_retrieval_function_wrapper, self, *args, **kwargs))
-            else:
-                frame_function(self, *args, **kwargs)
-                QTimer.singleShot(self.timeout_interval, functools.partial(
-                    information_retrieval_function_wrapper, self, *args, **kwargs))
-        return information_retrieval_function_wrapper
+    @classmethod
+    def thread_worker_timeout_interval_loop(cls, *, no_timeout_pause_check=False):
+        def thread_worker_decorator_function(frame_function):
+            @functools.wraps(frame_function)
+            def information_retrieval_function_wrapper(self, *args: dict, disable_loop: bool=False, **kwargs: dict) -> None:
+                if disable_loop:
+                    frame_function(self, *args, **kwargs)
+                elif (
+                    not no_timeout_pause_check and
+                    self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED):
+                    QTimer.singleShot(cls.TIMEOUT_INTERVAL_CHECK_PAUSE_UPDATE, functools.partial(
+                        information_retrieval_function_wrapper, self, *args, **kwargs))
+                else:
+                    frame_function(self, *args, **kwargs)
+                    QTimer.singleShot(self.timeout_interval, functools.partial(
+                        information_retrieval_function_wrapper, self, *args, **kwargs))
+            return information_retrieval_function_wrapper
+        return thread_worker_decorator_function
 
 
 class CWTM_InformationRetrievalAuthorization:

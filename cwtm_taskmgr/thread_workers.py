@@ -74,7 +74,7 @@ class CWTM_NetworkingInterfaceRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
             del self.last_data[nic] # Delete the disconnected network interface
             self.ni_sig_disconnect_nic.emit(nic) # Dispatch deleted interface
 
-    @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop
+    @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop()
     def get_networking_interface_usage_loop(self):
         """
         Retrieves the current networking interface usage data, calculates the bytes sent
@@ -139,7 +139,7 @@ class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_I
         """
         self.get_all_gtk_running_processes_info_loop()
 
-    @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop
+    @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop()
     def get_all_gtk_running_processes_info_loop(self, *, force_run: bool = False) -> None:
         """
         Retrieves information about all running GTK processes and emits the process info signal.
@@ -187,7 +187,7 @@ class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWT
         """
         self.get_all_gtk_running_applications_info_loop()
 
-    @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop
+    @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop()
     def get_all_gtk_running_applications_info_loop(self, *, force_run: bool = False) -> None:
         """
         Retrieves information about all running GTK applications, including their names and icons,
@@ -325,7 +325,7 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         
         return current_cpu_usage, current_cpu_kernel_usage
 
-    @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop
+    @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop()
     def get_all_resource_usage_loop(self) -> None:
         """
         Retrieves the system resource usage statistics, including memory usage, CPU usage, and swap memory.
@@ -371,18 +371,13 @@ class CWTM_ServicesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_In
     def run(self):
         self.get_all_services_information_loop()
 
-    def get_all_services_information_frame(self, *, force_run: bool = False):
+    @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop(no_timeout_pause_check=True)
+    def get_all_services_information_loop(self, *, force_run: bool = False):
         if not force_run and not self._info_retrieval_authorization:
             return
 
         *system_all_services, = sys_utils.get_all_system_services()
         self.svc_sig_all_system_services.emit(system_all_services)
-
-    def get_all_services_information_loop(self):
-        # timeout_interval does not change since getting all services is expensive and slow
-        # this is for performance reasons
-        self.get_all_services_information_frame()
-        QTimer.singleShot(self.timeout_interval, self.get_all_services_information_loop)
 
 class CWTM_UsersInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_InformationRetrievalAuthorization):
     users_sig_user_account_info = pyqtSignal(list, list)
@@ -395,14 +390,11 @@ class CWTM_UsersInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_Infor
     def run(self):
         self.get_all_users_information_loop()
 
-    def get_all_users_information_frame(self, *, force_run: bool = False):
+    @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop(no_timeout_pause_check=True)
+    def get_all_users_information_loop(self, *, force_run: bool = False):
         if not force_run and not self._info_retrieval_authorization:
             return
 
         *system_user_details, = sys_utils.get_all_user_accounts_details()
         *user_gtk_icons, = sys_utils.get_user_account_type_icon(system_user_details)
         self.users_sig_user_account_info.emit(system_user_details, user_gtk_icons)
-
-    def get_all_users_information_loop(self):
-        self.get_all_users_information_frame()
-        QTimer.singleShot(self.timeout_interval, self.get_all_users_information_loop)
