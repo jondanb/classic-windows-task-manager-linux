@@ -70,7 +70,8 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
         
         for (p_name, p_pid, p_username, \
                 p_cpu, p_mem, p_desc, p_exe) in gtk_running_processes:
-            proc_memory_mb = sys_utils.convert_proc_mem_b_to_mb(p_mem.rss)
+            proc_memory_mb = sys_utils.convert_proc_mem_b_to_mb(
+                p_mem.rss, include_unit_label=False)
             proc_desc = shlex.join(p_desc if p_desc is not None else [])
             
             self.append_row_to_table(
@@ -81,7 +82,8 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
                 CWTM_TableWidgetItemProperties(item_label=p_username),
                 CWTM_TableWidgetItemProperties(item_label=str(p_cpu), 
                     item_type=CWTM_QNumericTableWidgetItem),
-                CWTM_TableWidgetItemProperties(item_label=proc_memory_mb),
+                CWTM_TableWidgetItemProperties(item_label=proc_memory_mb,
+                    item_type=CWTM_QNumericTableWidgetItem, item_unit="MB"),
                 CWTM_TableWidgetItemProperties(item_label=proc_desc, item_tool_tip=proc_desc),
                 CWTM_TableWidgetItemProperties(item_label=p_exe) # hidden
             )

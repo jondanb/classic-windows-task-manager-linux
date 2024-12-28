@@ -274,8 +274,8 @@ def format_seconds_to_timestamp(seconds):
     days, hours = divmod(hours, 24)
     return f"{int(days)}:{int(hours):02}:{int(mins):02}:{int(secs):02}"
 
-def convert_proc_mem_b_to_mb(mem_info):
-    return f"{mem_info / 1024 / 1024:.0f}MB"
+def convert_proc_mem_b_to_mb(mem_info, *, include_unit_label=True):
+    return f"{mem_info / 1024 / 1024:.0f}" + ("MB" if include_unit_label else "")
 
 def get_memory_size_info(size_bytes):
     if size_bytes < 1024:

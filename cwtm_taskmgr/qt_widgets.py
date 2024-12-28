@@ -183,8 +183,8 @@ class CWTM_ResourceLevelBarWidget(QWidget):
 
 
 class CWTM_QNumericTableWidgetItem(QTableWidgetItem):
-    def __init__(self, value):
-        super().__init__(str(value))  # Store the string representation
+    def __init__(self, value, *, label=""):
+        super().__init__(value + " " + label)  # Store the string representation
         self.value = float(value)    # Store the numeric value for comparisons
 
     def __lt__(self, other):

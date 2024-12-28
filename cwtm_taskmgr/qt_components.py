@@ -2,6 +2,7 @@
 import functools
 
 from . import sys_utils
+from .qt_widgets import CWTM_QNumericTableWidgetItem
 from .tm_tabbar.core_properties import (
     CWTM_ProcessesTabTableColumns,
     CWTM_ApplicationsTabTableColumns,
@@ -83,8 +84,11 @@ class CWTM_TableWidgetController:
         table_widget.insertRow(row_position)
 
         for column, row_properties in zip(list(table_enum), row_data):
-            row_item_label = row_properties.item_label
-            q_table_item_object = row_properties.item_type(row_item_label)
+            if (item_type := row_properties.item_type) is CWTM_QNumericTableWidgetItem:
+                q_table_item_object = item_type(
+                    row_properties.item_label, label=row_properties.item_unit)
+            else:
+                q_table_item_object = item_type(row_properties.item_label)
 
             if row_properties.item_icon is not None:
                 q_table_item_object.setIcon(

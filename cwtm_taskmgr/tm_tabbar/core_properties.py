@@ -26,6 +26,7 @@ class CWTM_TableWidgetItemProperties:
     item_type: QTableWidgetItem                         = QTableWidgetItem
     item_icon: sys_utils.Gtk.Image                      = None
     item_tool_tip: str                                  = None
+    item_unit: str                                      = ""
 
 
 class CWTM_TabWidgetColumnEnum(enum.IntEnum):
