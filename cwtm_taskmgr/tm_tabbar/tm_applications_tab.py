@@ -14,7 +14,8 @@ from PyQt5.QtWidgets import (
 from .core_properties import (
     CWTM_ApplicationsTabTableColumns,
     CWTM_TableWidgetItemProperties,
-    CWTM_GlobalUpdateIntervals
+    CWTM_GlobalUpdateIntervals,
+    CWTM_TabWidgetColumnEnum
 )
 from ..qt_components import (
     CWTM_TableWidgetController, 
@@ -121,11 +122,21 @@ class CWTM_ApplicationsTab(CWTM_TableWidgetController):
         custom_applications_context_menu.exec_(
             self.parent.app_t_task_list_table.mapToGlobal(position))
 
+    def update_thread_worker_info_retrieval_authorization(self, index: int) -> None:
+        """
+        Authorizes the processes thread worker to emit system process information to the slot
+        `update_processes_page`
+
+        Arguments:
+            - index: the current index of the tab widget
+        """
+        self.applications_page_worker._information_retrieval_authorization.emit(
+            index == CWTM_TabWidgetColumnEnum.TASK_MANAGER_APPLICATIONS_TAB)
+
     def start_applications_page_updater_thread(self):
         self.applications_page_thread = QThread()
         self.applications_page_worker = CWTM_ApplicationsInfoRetrievalWorker(
-            timeout_interval=self.APP_T_TASK_LIST_TABLE_UPDATE_FREQUENCY,
-            parent_tab_widget=self.parent.task_manager_tab_widget)
+            timeout_interval=self.APP_T_TASK_LIST_TABLE_UPDATE_FREQUENCY)
         self.applications_page_update_handler = CWTM_GlobalUpdateIntervalHandler(
             self.parent, thread_worker=self.applications_page_worker)
         self.applications_page_update_handler.register_selected_tab_update_interval_handler(
@@ -140,6 +151,8 @@ class CWTM_ApplicationsTab(CWTM_TableWidgetController):
         self.applications_page_worker.moveToThread(
             self.applications_page_thread
         )
+        self.parent.task_manager_tab_widget.currentChanged.connect(
+            self.update_thread_worker_info_retrieval_authorization)
 
         self.applications_page_thread.started.connect(
             self.applications_page_worker.run

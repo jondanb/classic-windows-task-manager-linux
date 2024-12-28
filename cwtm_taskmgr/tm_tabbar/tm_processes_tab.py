@@ -102,7 +102,7 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
         Arguments:
             - index: the current index of the tab widget
         """
-        self.processes_page_worker._proc_sig_information_retrieval_authorization.emit(
+        self.processes_page_worker._information_retrieval_authorization.emit(
             index == CWTM_TabWidgetColumnEnum.TASK_MANAGER_PROCESSES_TAB)
 
     #slot

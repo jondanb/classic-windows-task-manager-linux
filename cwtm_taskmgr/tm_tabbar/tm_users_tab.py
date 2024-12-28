@@ -5,7 +5,8 @@ from .. import sys_utils
 from .core_properties import (
     CWTM_UsersTabTableColumns,
     CWTM_TableWidgetItemProperties,
-    CWTM_GlobalUpdateIntervals
+    CWTM_GlobalUpdateIntervals,
+    CWTM_TabWidgetColumnEnum
 )
 from ..qt_components import CWTM_TableWidgetController
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
@@ -52,10 +53,20 @@ class CWTM_UsersTab(CWTM_TableWidgetController):
         #current_tab_widget = self.parent.task_manager_tab_widget.currentIndex()
         self.users_page_worker.get_all_users_information_frame()
 
+    def update_thread_worker_info_retrieval_authorization(self, index: int) -> None:
+        """
+        Authorizes the processes thread worker to emit system process information to the slot
+        `update_processes_page`
+
+        Arguments:
+            - index: the current index of the tab widget
+        """
+        self.users_page_worker._information_retrieval_authorization.emit(
+            index == CWTM_TabWidgetColumnEnum.TASK_MANAGER_USERS_TAB)
+
     def start_users_page_updater_thread(self):
         self.users_page_thread = QThread()
         self.users_page_worker = CWTM_UsersInfoRetrievalWorker(
-            parent_tab_widget=self.parent.task_manager_tab_widget, #change
             timeout_interval=self.USERS_T_USERS_LIST_TABLE_UPDATE_FREQUENCY)
         # no need for CWTM_GlobalUpdateIntervalHandler since user won't be connected
         # to timeout interval changer for users tab

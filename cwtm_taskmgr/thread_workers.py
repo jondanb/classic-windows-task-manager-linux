@@ -6,7 +6,10 @@ from .tm_tabbar.core_properties import (
     CWTM_TabWidgetColumnEnum,
     CWTM_GlobalUpdateIntervals
 )
-from .qt_components import CWTM_TimeoutIntervalChangeSignal
+from .qt_components import (
+    CWTM_TimeoutIntervalChangeSignal,
+    CWTM_InformationRetrievalAuthorization
+)
 
 from PyQt5.QtCore import (
     pyqtSignal, pyqtSlot, Qt,
@@ -105,7 +108,7 @@ class CWTM_NetworkingInterfaceRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
             self.last_data[nic]: psutil._common.snetio = counters
 
 
-class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
+class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_InformationRetrievalAuthorization):
     """
     Worker class responsible for retrieving information about all running GTK processes
     at specified intervals. The retrieved data is emitted via a signal, which provides a list
@@ -118,37 +121,23 @@ class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
 
     proc_sig_processes_info = pyqtSignal(list)
 
-    _proc_sig_information_retrieval_authorization = pyqtSignal(bool)
-
     def __init__(self, timeout_interval: int, *args: tuple, **kwargs: dict) -> None:
         """
         Initializes the Processes Info Retrieval Worker.
 
         Args:
             timeout_interval (int): The interval in milliseconds between data retrievals.
-            parent_tab_widget (QTabWidget): The parent tab widget that determines the currently active tab.
             *args: Variable length argument list for additional parameters.
             **kwargs: Arbitrary keyword arguments for additional parameters.
         """
         super().__init__(*args, **kwargs)
         self.timeout_interval: int = timeout_interval
-        self.info_retrieval_authorization: bool = False
-
-        self._proc_sig_information_retrieval_authorization.connect(
-            self.update_information_retrieval_authorization)
-
-        # self.parent_tab_widget must be changed since its referencing a variable from another thread
 
     def run(self) -> None:
         """
         Starts the process info retrieval loop.
         """
         self.get_all_gtk_running_processes_info_loop()
-
-    @pyqtSlot(bool)
-    def update_information_retrieval_authorization(self, updated_authorization):
-
-        self.info_retrieval_authorization = updated_authorization
 
     @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop
     def get_all_gtk_running_processes_info_loop(self, *, force_run: bool = False) -> None:
@@ -160,14 +149,14 @@ class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         Args:
             force_run (bool): If True, forces the retrieval of process information regardless of the tab selection.
         """
-        if not force_run and not self.info_retrieval_authorization:
+        if not force_run and not self._info_retrieval_authorization: # CWTM_InformationRetrievalAuthorization
             return
         
         *gtk_running_processes, = sys_utils.get_all_running_processes_info()
         self.proc_sig_processes_info.emit(gtk_running_processes)
 
 
-class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
+class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_InformationRetrievalAuthorization):
     """
     Worker class responsible for retrieving information about all running GTK applications
     at specified intervals. The retrieved data includes application names and icons, and is
@@ -180,19 +169,17 @@ class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
 
     app_sig_applications_info = pyqtSignal(list)
 
-    def __init__(self, timeout_interval: int, parent_tab_widget: QTabWidget, *args: tuple, **kwargs: dict) -> None:
+    def __init__(self, timeout_interval: int, *args: tuple, **kwargs: dict) -> None:
         """
         Initializes the Applications Info Retrieval Worker.
 
         Args:
             timeout_interval (int): The interval in milliseconds between data retrievals.
-            parent_tab_widget (QWidget): The parent tab widget that determines the currently active tab.
             *args: Variable length argument list for additional parameters.
             **kwargs: Arbitrary keyword arguments for additional parameters.
         """
         super().__init__(*args, **kwargs)
         self.timeout_interval: int = timeout_interval
-        self.parent_tab_widget: QTabWidget = parent_tab_widget
 
     def run(self) -> None:
         """
@@ -211,7 +198,7 @@ class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
             force_run (bool): If True, forces the retrieval of application information regardless of the tab selection.
         """
 
-        if not force_run and self.parent_tab_widget.currentIndex() != CWTM_TabWidgetColumnEnum.TASK_MANAGER_APPLICATIONS_TAB:
+        if not force_run and not self._info_retrieval_authorization:
             return
         
         gtk_running_apps: list = sys_utils.get_all_running_applications_names()
@@ -265,7 +252,6 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
 
         Args:
             timeout_interval (int): The interval in milliseconds between data retrievals.
-            parent_tab_widget (QWidget): The parent tab widget that determines the currently active tab.
             per_cpu (bool): Flag indicating whether to retrieve per-CPU usage data.
             *args: Variable length argument list for additional parameters.
             **kwargs: Arbitrary keyword arguments for additional parameters.
@@ -359,20 +345,19 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         )
 
 
-class CWTM_ServicesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
+class CWTM_ServicesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_InformationRetrievalAuthorization):
     svc_sig_all_system_services = pyqtSignal(list)
 
-    def __init__(self, timeout_interval:int, *args: dict, parent_tab_widget: QTabWidget, **kwargs: dict) -> None:
+    def __init__(self, timeout_interval:int, *args: dict, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
 
         self.timeout_interval = timeout_interval
-        self.parent_tab_widget: QTabWidget = parent_tab_widget
 
     def run(self):
         self.get_all_services_information_loop()
 
     def get_all_services_information_frame(self, *, force_run: bool = False):
-        if not force_run and self.parent_tab_widget.currentIndex() != CWTM_TabWidgetColumnEnum.TASK_MANAGER_SERVICES_TAB:
+        if not force_run and not self._info_retrieval_authorization:
             return
 
         *system_all_services, = sys_utils.get_all_system_services()
@@ -384,20 +369,19 @@ class CWTM_ServicesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         self.get_all_services_information_frame()
         QTimer.singleShot(self.timeout_interval, self.get_all_services_information_loop)
 
-class CWTM_UsersInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
+class CWTM_UsersInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_InformationRetrievalAuthorization):
     users_sig_user_account_info = pyqtSignal(list, list)
 
-    def __init__(self, timeout_interval:int, *args: dict, parent_tab_widget: QTabWidget, **kwargs: dict) -> None:
+    def __init__(self, timeout_interval:int, *args: dict, **kwargs: dict) -> None:
         super().__init__(*args, **kwargs)
 
         self.timeout_interval = timeout_interval
-        self.parent_tab_widget: QTabWidget = parent_tab_widget
 
     def run(self):
         self.get_all_users_information_loop()
 
     def get_all_users_information_frame(self, *, force_run: bool = False):
-        if not force_run and self.parent_tab_widget.currentIndex() != CWTM_TabWidgetColumnEnum.TASK_MANAGER_USERS_TAB:
+        if not force_run and not self._info_retrieval_authorization:
             return
 
         *system_user_details, = sys_utils.get_all_user_accounts_details()

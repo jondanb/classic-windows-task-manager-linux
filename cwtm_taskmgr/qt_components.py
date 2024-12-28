@@ -179,7 +179,6 @@ class CWTM_TimeoutIntervalChangeSignal(QObject):
     @pyqtSlot(int)
     def handle_timeout_interval_change(self, new_timeout_interval):
         self.timeout_interval = new_timeout_interval
-
     
     @staticmethod
     def thread_worker_timeout_interval_loop(frame_function):
@@ -200,8 +199,16 @@ class CWTM_TimeoutIntervalChangeSignal(QObject):
 class CWTM_InformationRetrievalAuthorization:
     _information_retrieval_authorization = pyqtSignal(bool)
 
-    def __init__(self):
-        pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._info_retrieval_authorization: bool = False
+        self._information_retrieval_authorization.connect(
+            self._update_information_retrieval_authorization)
+
+    #@pyqtSlot(bool)
+    def _update_information_retrieval_authorization(self, updated_authorization: bool):
+        self._info_retrieval_authorization = updated_authorization
 
 
 class CWTM_GlobalUpdateIntervalHandler:

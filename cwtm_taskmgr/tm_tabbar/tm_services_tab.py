@@ -7,7 +7,8 @@ from ..qt_components import CWTM_TableWidgetController
 from .core_properties import (
     CWTM_ServicesTabTableColumns,
     CWTM_TableWidgetItemProperties,
-    CWTM_GlobalUpdateIntervals
+    CWTM_GlobalUpdateIntervals,
+    CWTM_TabWidgetColumnEnum
 )
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
 from ..thread_workers import CWTM_ServicesInfoRetrievalWorker
@@ -50,10 +51,20 @@ class CWTM_ServicesTab(CWTM_TableWidgetController):
         #current_tab_widget = self.parent.task_manager_tab_widget.currentIndex()
         self.services_page_worker.get_all_services_information_frame()
 
+    def update_thread_worker_info_retrieval_authorization(self, index: int) -> None:
+        """
+        Authorizes the processes thread worker to emit system process information to the slot
+        `update_processes_page`
+
+        Arguments:
+            - index: the current index of the tab widget
+        """
+        self.services_page_worker._information_retrieval_authorization.emit(
+            index == CWTM_TabWidgetColumnEnum.TASK_MANAGER_SERVICES_TAB)
+
     def start_services_page_updater_thread(self):
         self.services_page_thread = QThread()
         self.services_page_worker = CWTM_ServicesInfoRetrievalWorker(
-            parent_tab_widget=self.parent.task_manager_tab_widget, #change
             timeout_interval=self.SVC_T_SERVICES_LIST_TABLE_UPDATE_FREQUENCY)
         # no need for CWTM_GlobalUpdateIntervalHandler since services won't be connected
         # to timeout interval changer
@@ -67,6 +78,8 @@ class CWTM_ServicesTab(CWTM_TableWidgetController):
         self.services_page_worker.moveToThread(
             self.services_page_thread
         )
+        self.parent.task_manager_tab_widget.currentChanged.connect(
+            self.update_thread_worker_info_retrieval_authorization)
 
         self.services_page_thread.started.connect(
             self.services_page_worker.run
