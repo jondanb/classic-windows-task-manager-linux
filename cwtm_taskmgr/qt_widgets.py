@@ -120,8 +120,6 @@ class CWTM_ResourceLevelBarWidget(QWidget):
         painter = QPainter(self)
         painter.fillRect(self.rect(), QColor(0, 0, 0))
 
-        self.default_to_default_values()
-
         self.draw_resource_bar_levels(
             painter, self.x_offset_progress_bar_1, 
             self.primary_resource_value,
@@ -155,14 +153,6 @@ class CWTM_ResourceLevelBarWidget(QWidget):
             self.bar_parameters.y_offset + self.bar_parameters.total_bars \
             * (self.bar_parameters.bar_height + self.bar_parameters.spacing) + 10,
             f'{self.primary_resource_value} {self.bar_parameters.resource_bar_label}')
-
-    def default_to_default_values(self):
-        if self.primary_bar_colour_filled is None: # not defined, program just started
-            self.primary_bar_colour_filled = CWTM_ResourceBarLevelColours.BAR_COLOUR_CPU_USAGE_TIME_FILLED
-            self.primary_bar_colour_empty = CWTM_ResourceBarLevelColours.BAR_COLOUR_CPU_USAGE_TIME_EMPTY
-
-            self.primary_resource_value = 0
-            self.total_space  = 100
 
 
     def draw_resource_bar_levels(
