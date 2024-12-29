@@ -347,13 +347,14 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM
         memory_total, _ = sys_utils.get_memory_size_info(current_memory_info.total)
         memory_used, _ = sys_utils.get_memory_size_info(current_memory_info.used)
 
-        self.perf_sig_cpu_usage_history_graphs_info.emit(current_cpu_graph_usage, current_cpu_kernel_graph_usage)
-        self.perf_sig_status_bar_labels_info.emit(
-            len(total_iter_processes), current_memory_usage, current_cpu_usage
-        )
         self.perf_sig_graphical_widgets_info.emit(
             current_cpu_usage, kernel_cpu_time,
             current_memory_usage, memory_used, memory_total,
+        )
+
+        self.perf_sig_cpu_usage_history_graphs_info.emit(current_cpu_graph_usage, current_cpu_kernel_graph_usage)
+        self.perf_sig_status_bar_labels_info.emit(
+            len(total_iter_processes), current_memory_usage, current_cpu_usage
         )
 
         if not self._info_retrieval_authorization:

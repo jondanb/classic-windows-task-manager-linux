@@ -21,7 +21,10 @@ from .core_properties import (
 from ..thread_workers import CWTM_PerformanceInfoRetrievalWorker
 
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QApplication
-from PyQt5.QtCore import Qt, QTimer, QThread, QMetaObject
+from PyQt5.QtCore import (
+    Qt, QTimer, 
+    QThread, pyqtSlot
+)
 from PyQt5.QtGui import QColor
 
 
@@ -292,13 +295,14 @@ class CWTM_PerformanceTab(CWTM_TableWidgetController):
             self.mem_grid_usage_data_x, self.mem_grid_usage_data_y
         )
 
+    #@pyqtSlot(int)
     def update_thread_worker_info_retrieval_authorization(self, index: int) -> None:
         """
         Authorizes the processes thread worker to emit system process information to the slot
         `update_processes_page`
 
         Arguments:
-            - index: the current index of the tab widget
+            - index (int): the current index of the tab widget
         """
         self.performance_page_worker._information_retrieval_authorization.emit(
             index == CWTM_TabWidgetColumnEnum.TASK_MANAGER_PERFORMANCE_TAB)

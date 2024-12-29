@@ -11,7 +11,8 @@ from .core_properties import (
     CWTM_NetworkingTabTableColumns,
     CWTM_NetworkingBytesLabelsColours,
     CWTM_TableWidgetItemProperties,
-    CWTM_GlobalUpdateIntervals
+    CWTM_GlobalUpdateIntervals,
+    CWTM_NetworkInterfaceGraphProperties
 )
 from ..qt_widgets import CWTM_ResourceGraphWidget
 from ..thread_workers import CWTM_NetworkingInterfaceRetrievalWorker
@@ -53,36 +54,24 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
                 interface_name
             ) + f" ({interface_name})" # Local Area Connection (lo)
 
-        (i_net_graph, i_net_groupbox,
-         i_net_sent_data_x, i_net_sent_data_y,
-         i_net_recv_data_x, i_net_recv_data_y,
-         i_net_total_data_x, i_net_total_data_y,
-         i_net_sent_plot_item, i_net_recv_plot_item, 
-         i_net_total_plot_item) = \
-             self._network_create_interface_resource_graph(
-                    interface_full_name)
-        
-        self.NETWORK_INTERFACE_GRAPHS[interface_name] = (
-            i_net_graph, i_net_groupbox, 
-            i_net_sent_data_x, i_net_sent_data_y, 
-            i_net_recv_data_x, i_net_recv_data_y,
-            i_net_total_data_x, i_net_total_data_y,
-            i_net_sent_plot_item, i_net_recv_plot_item, i_net_total_plot_item,
+        network_interface_graph = self._network_create_interface_resource_graph(
             interface_full_name)
+        network_interface_graph.i_net_full_name = interface_full_name
+        
+        self.NETWORK_INTERFACE_GRAPHS[interface_name] = network_interface_graph
 
-        self.parent.net_t_vbox_layout.addWidget(i_net_groupbox)
+        self.parent.net_t_vbox_layout.addWidget(network_interface_graph.i_net_groupbox)
         self.update_networking_page_net_list_table(interface_full_name)
 
     def unregister_disconnected_network_interface(self, interface_name):
-        (_, i_net_groupbox, *_) = self.NETWORK_INTERFACE_GRAPHS[interface_name]
-        self.parent.net_t_vbox_layout.removeWidget(i_net_groupbox)
+        network_interface_graph = self.NETWORK_INTERFACE_GRAPHS[interface_name]
+        self.parent.net_t_vbox_layout.removeWidget(network_interface_graph.i_net_groupbox)
         self.refresh_networking_page_net_list_table()
 
         del self.NETWORK_INTERFACE_GRAPHS[interface_name]
 
     def update_refresh_networking_page_resource_graphs(self):
-        self.networking_interface_retrieval_worker.get_networking_interface_usage_loop(
-            disable_loop=True)
+        self.networking_interface_retrieval_worker.get_networking_interface_usage_loop(disable_loop=True)
 
     def refresh_networking_page_net_list_table(self):
         self.parent.net_t_network_list_table.setRowCount(0)
@@ -97,49 +86,45 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
 
     def clear_all_disabled_networking_byte_line(self):
         for n_interface in self.NETWORK_INTERFACE_GRAPHS.values():
-            (*_, i_net_sent_plot_item, i_net_recv_plot_item, i_net_total_plot_item, _) = n_interface
             if not self.parent.tm_view_menu_nas_bytes_sent.isChecked():
-                i_net_sent_plot_item.clear()
+                n_interface.i_net_sent_plot_item.clear()
             if not self.parent.tm_view_menu_nas_bytes_received.isChecked():
-                i_net_recv_plot_item.clear()
+                n_interface.i_net_recv_plot_item.clear()
             if not self.parent.tm_view_menu_nas_bytes_total.isChecked():
-                i_net_total_plot_item.clear()
+                n_interface.i_net_total_plot_item.clear()
 
     def update_networking_page(self, n_interface, n_b_sent, n_b_recv):
         if n_interface not in self.NETWORK_INTERFACE_GRAPHS:
             self.register_network_interface(n_interface)
 
-        (i_net_graph, i_net_groupbox, 
-        i_net_sent_data_x, i_net_sent_data_y, 
-        i_net_recv_data_x, i_net_recv_data_y,
-        i_net_total_data_x, i_net_total_data_y,
-        i_net_sent_plot_item, i_net_recv_plot_item, i_net_total_plot_item,
-        i_net_full_name) = self.NETWORK_INTERFACE_GRAPHS[n_interface]
+        network_interface_graph = self.NETWORK_INTERFACE_GRAPHS[n_interface]
         
-        i_net_graph.update_plot(
-            i_net_sent_plot_item, 
+        network_interface_graph.i_net_graph.update_plot(
+            network_interface_graph.i_net_sent_plot_item, 
             n_b_sent if self.parent.tm_view_menu_nas_bytes_sent.isChecked() else 0,
-            i_net_sent_data_x, i_net_sent_data_y
+            network_interface_graph.i_net_sent_data_x, network_interface_graph.i_net_sent_data_y
         )
-        i_net_graph.update_plot(
-            i_net_recv_plot_item, 
+        network_interface_graph.i_net_graph.update_plot(
+            network_interface_graph.i_net_recv_plot_item, 
             n_b_recv if self.parent.tm_view_menu_nas_bytes_received.isChecked() else 0,
-            i_net_recv_data_x, i_net_recv_data_y
+            network_interface_graph.i_net_recv_data_x, network_interface_graph.i_net_recv_data_y
         )
-        i_net_graph.update_plot(
-            i_net_total_plot_item, 
+        network_interface_graph.i_net_graph.update_plot(
+            network_interface_graph.i_net_total_plot_item, 
             n_b_recv + n_b_sent if self.parent.tm_view_menu_nas_bytes_total.isChecked() else 0,
-            i_net_total_data_x, i_net_total_data_y
+            network_interface_graph.i_net_total_data_x, network_interface_graph.i_net_total_data_y
         )
 
-        *graph_equal_ticks, = i_net_graph.get_equal_tick_spacing(4)
-        self.set_networking_speed_unit_ticks(i_net_graph, graph_equal_ticks)
+        *graph_equal_ticks, = network_interface_graph.i_net_graph.get_equal_tick_spacing(4)
+        self.set_networking_speed_unit_ticks(
+            network_interface_graph.i_net_graph, graph_equal_ticks)
 
         if n_interface == list(self.NETWORK_INTERFACE_GRAPHS.keys())[0]:
             self.parent.net_t_network_list_table.setRowCount(0)
 
         self.set_network_interface_table_information(
-            i_net_graph, n_b_sent, n_b_recv, n_interface, i_net_full_name
+            network_interface_graph.i_net_graph, n_b_sent, n_b_recv, 
+            n_interface, network_interface_graph.i_net_full_name
         )
 
     def set_network_interface_table_information(
@@ -224,12 +209,13 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
             interface_full_name, interface_net_graph
         )
 
-        return (interface_net_graph, interface_net_groupbox,
-                net_grid_usage_sent_data_x, net_grid_usage_sent_data_y,
-                net_grid_usage_recv_data_x, net_grid_usage_recv_data_y,
-                net_grid_usage_total_data_x, net_grid_usage_total_data_y,
-                net_grid_usage_sent_plot_item, net_grid_usage_recv_plot_item,
-                net_grid_usage_total_plot_item)
+        return CWTM_NetworkInterfaceGraphProperties(
+            interface_net_graph, interface_net_groupbox,
+            net_grid_usage_sent_data_x, net_grid_usage_sent_data_y,
+            net_grid_usage_recv_data_x, net_grid_usage_recv_data_y,
+            net_grid_usage_total_data_x, net_grid_usage_total_data_y,
+            net_grid_usage_sent_plot_item, net_grid_usage_recv_plot_item,
+            net_grid_usage_total_plot_item)
 
     def start_networking_page_updater_thread(self):
         self.networking_interface_retrieval_thread = QThread()
