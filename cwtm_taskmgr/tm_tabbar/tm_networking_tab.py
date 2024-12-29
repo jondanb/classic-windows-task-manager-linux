@@ -10,9 +10,9 @@ from ..qt_components import (
 from .core_properties import (
     CWTM_NetworkingTabTableColumns,
     CWTM_NetworkingBytesLabelsColours,
+    CWTM_NetworkInterfaceGraphProperties,
     CWTM_TableWidgetItemProperties,
-    CWTM_GlobalUpdateIntervals,
-    CWTM_NetworkInterfaceGraphProperties
+    CWTM_GlobalUpdateIntervals
 )
 from ..qt_widgets import CWTM_ResourceGraphWidget
 from ..thread_workers import CWTM_NetworkingInterfaceRetrievalWorker
