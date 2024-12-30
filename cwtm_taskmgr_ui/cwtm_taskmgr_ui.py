@@ -127,7 +127,6 @@ class CWTM_UsersTabCustomContextMenu(QMenu):
         self.addAction(self.usrs_remote_control_action)
 
 
-
 class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
     def setupUi(self, CWTM_TaskManagerMainWindow):
         if not CWTM_TaskManagerMainWindow.objectName():

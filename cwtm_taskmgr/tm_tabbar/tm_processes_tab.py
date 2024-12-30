@@ -80,7 +80,8 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
             CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_PID
         )
         self.parent.proc_t_proc_list_table.setRowCount(0)
-        
+        self.parent.proc_t_proc_list_table.setSortingEnabled(False)
+
         for (p_name, p_pid, p_username, \
                 p_cpu, p_mem, p_desc, p_exe) in gtk_running_processes:
             proc_memory_mb = sys_utils.convert_proc_mem_b_to_mb(
@@ -100,6 +101,7 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
                 CWTM_TableWidgetItemProperties(item_label=proc_desc, item_tool_tip=proc_desc),
                 CWTM_TableWidgetItemProperties(item_label=p_exe) # hidden
             )
+        self.parent.proc_t_proc_list_table.setSortingEnabled(True)
 
         if current_selected_item is not None:
             self.reselect_item_from_value(

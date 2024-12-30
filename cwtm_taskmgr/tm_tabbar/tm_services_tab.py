@@ -50,6 +50,7 @@ class CWTM_ServicesTab(CWTM_TableWidgetController):
 
     def update_services_page(self, system_all_services: list) -> None:
         self.parent.svc_t_services_list_table.setRowCount(0)
+        self.parent.svc_t_services_list_table.setSortingEnabled(False)
 
         for (svc_name, svc_pid, svc_desc, svc_status) \
             in system_all_services:
@@ -61,6 +62,8 @@ class CWTM_ServicesTab(CWTM_TableWidgetController):
                 CWTM_TableWidgetItemProperties(item_label=svc_desc, item_tool_tip=svc_desc),
                 CWTM_TableWidgetItemProperties(svc_status.upper())
             )
+
+        self.parent.svc_t_services_list_table.setSortingEnabled(True)
 
     @pyqtSlot()
     def update_refresh_services_page_svcs(self):

@@ -149,7 +149,7 @@ class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_I
         Args:
             force_run (bool): If True, forces the retrieval of process information regardless of the tab selection.
         """
-        if not force_run and not self._info_retrieval_authorization: # CWTM_InformationRetrievalAuthorization
+        if not force_run and not self._is_authorized: # CWTM_InformationRetrievalAuthorization
             return
         
         *gtk_running_processes, = sys_utils.get_all_running_processes_info()
@@ -198,7 +198,7 @@ class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWT
             force_run (bool): If True, forces the retrieval of application information regardless of the tab selection.
         """
 
-        if not force_run and not self._info_retrieval_authorization:
+        if not force_run and not self._is_authorized:
             return
         
         gtk_running_apps: list = sys_utils.get_all_running_applications_names()
@@ -292,7 +292,7 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM
             total_processes (list): List of all running processes on the system.
             virtual_memory (psutil._pslinux.svmem): Virtual memory statistics from psutil.
         """
-        if not self._info_retrieval_authorization:
+        if not self._is_authorized:
             return
 
         n_file_descriptors: int = sys_utils.get_number_of_handle_file_descriptors()
@@ -359,7 +359,7 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM
             len(total_iter_processes), current_memory_usage, current_cpu_usage
         )
 
-        if not self._info_retrieval_authorization:
+        if not self._is_authorized:
             return
 
         sys_swap_memory: psutil._common.sswap = psutil.swap_memory()
@@ -404,7 +404,7 @@ class CWTM_ServicesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_In
         and their status whether they are active or inactive. This data is emitted through a signal only if the tab
         is activated or the force_run keyword argument is True.
         """
-        if not force_run and not self._info_retrieval_authorization:
+        if not force_run and not self._is_authorized:
             return
 
         *system_all_services, = sys_utils.get_all_system_services()
@@ -423,7 +423,7 @@ class CWTM_UsersInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_Infor
 
     @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop(no_timeout_pause_check=True)
     def get_all_users_information_loop(self, *, force_run: bool = False):
-        if not force_run and not self._info_retrieval_authorization:
+        if not force_run and not self._is_authorized:
             return
 
         *system_user_details, = sys_utils.get_all_user_accounts_details()

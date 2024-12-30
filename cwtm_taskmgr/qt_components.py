@@ -78,7 +78,6 @@ class CWTM_TableWidgetController:
     @staticmethod
     def append_row_to_table(table_widget, table_enum, *row_data):
         # make sure the table can't be sorted while populating
-        table_widget.setSortingEnabled(False)
 
         row_position = table_widget.rowCount()
         table_widget.insertRow(row_position)
@@ -102,8 +101,6 @@ class CWTM_TableWidgetController:
                 row_position, column, q_table_item_object
             )
             
-        table_widget.setSortingEnabled(True)
-
     @staticmethod
     def set_table_column_ratios(table_widget, header_ratio):
         total_width = table_widget.viewport().width()
@@ -212,13 +209,13 @@ class CWTM_InformationRetrievalAuthorization:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._info_retrieval_authorization: bool = False
+        self._is_authorized: bool = False
         self._information_retrieval_authorization.connect(
             self._update_information_retrieval_authorization)
 
     @pyqtSlot(bool)
     def _update_information_retrieval_authorization(self, updated_authorization: bool):
-        self._info_retrieval_authorization = updated_authorization
+        self._is_authorized = updated_authorization
 
 
 class CWTM_GlobalUpdateIntervalHandler:
