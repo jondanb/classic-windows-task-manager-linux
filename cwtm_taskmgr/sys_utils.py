@@ -244,6 +244,12 @@ def get_pid_from_service_obj_path(bus, service_obj_path):
 
     return service_pid
 
+def get_network_interface_link_speed(network_interface: str) -> str:
+    nmcli_interface_output = subprocess.check_output(
+        ["nmcli",  "-f", "CAPABILITIES.SPEED", "dev", "show", network_interface])
+    nmcli_interface_output = b" ".join(nmcli_interface_output.strip().split()[1:]).decode()
+    return "-" if nmcli_interface_output == "unknown" else nmcli_interface_output
+
 def get_interface_type_full_name(interface):
     for prefix, iface_type in SYSTEM_NETWORK_INTERFACE_TYPE_MAP.items():
         if interface.startswith(prefix):

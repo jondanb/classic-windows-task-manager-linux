@@ -30,6 +30,8 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
         self.parent = parent
         
         self.NETWORK_INTERFACE_GRAPHS = {}
+        self.NETWORK_INTERFACE_LINK_SPEEDS = {}
+
         self.NET_T_NETWORKING_LIST_TABLE_UPDATE_FREQUENCY = \
             CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_NORMAL
         self.NET_T_NETWORK_USAGE_GRID_SIZE = 8 # 200:8 ratio
@@ -59,6 +61,8 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
         network_interface_graph.i_net_full_name = interface_full_name
         
         self.NETWORK_INTERFACE_GRAPHS[interface_name] = network_interface_graph
+        self.NETWORK_INTERFACE_LINK_SPEEDS[interface_name] = sys_utils.get_network_interface_link_speed(
+            interface_name)
 
         self.parent.net_t_vbox_layout.addWidget(network_interface_graph.i_net_groupbox)
         self.update_networking_page_net_list_table(interface_full_name)
@@ -69,6 +73,7 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
         self.refresh_networking_page_net_list_table()
 
         del self.NETWORK_INTERFACE_GRAPHS[interface_name]
+        del self.NETWORK_INTERFACE_LINK_SPEEDS[interface_name]
 
     def update_refresh_networking_page_resource_graphs(self):
         self.networking_interface_retrieval_worker.get_networking_interface_usage_loop(disable_loop=True)
@@ -149,9 +154,9 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
                                                     else "Disconnected"
 
         self.update_networking_page_net_list_table(
-            interface_full_name, 
-            total_net_utilization_label, 
-            "-", network_interface_is_connected_label
+            interface_full_name, total_net_utilization_label, 
+            self.NETWORK_INTERFACE_LINK_SPEEDS[interface_name], 
+            network_interface_is_connected_label
         )
 
     def set_networking_speed_unit_ticks(self, network_graph, tick_values):
