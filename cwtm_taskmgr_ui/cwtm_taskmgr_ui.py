@@ -15,6 +15,119 @@ from PyQt5.QtWidgets import *  # type: ignore
 from resources import resources
 
 
+class CWTM_ApplicationsTabCustomContextMenu(QMenu):
+    def __init__(self, *args, parent=None, **kwargs):
+        super().__init__(*args, parent=parent, **kwargs)
+
+        self.app_t_table_switch_to_action = QAction("       Switch To")  # bold
+        self.app_t_table_bring_to_front_action = QAction("       Bring To Front")
+        self.app_t_table_minimize_action = QAction("       Minimize")
+        self.app_t_table_maximize_action = QAction("       Maximize")
+        self.app_t_table_cascade_action = QAction("       Cascade")
+        self.app_t_table_tile_horizontally_action = QAction("       Tile Horizontally")
+        self.app_t_table_tile_vertically_action = QAction("       Tile Vertically")
+        self.app_t_table_tile_end_task_action = QAction("       End Task")
+        self.app_t_table_create_dump_file_action = QAction("       Create Dump File")
+        self.app_t_table_go_to_process_action = QAction("       Go To Process")
+
+        # Make "Switch To" action bold
+        self.app_t_table_switch_to_action_font = self.app_t_table_switch_to_action.font()
+        self.app_t_table_switch_to_action_font.setBold(True)
+        self.app_t_table_switch_to_action.setFont(self.app_t_table_switch_to_action_font)
+
+        # Disable unimplemented actions
+        self.app_t_table_switch_to_action.setDisabled(True)  # Not Implemented
+        self.app_t_table_bring_to_front_action.setDisabled(True)  # Not Implemented
+        self.app_t_table_cascade_action.setDisabled(True)  # Not Implemented
+        self.app_t_table_tile_horizontally_action.setDisabled(True)  # Not Implemented
+        self.app_t_table_tile_vertically_action.setDisabled(True)  # Not Implemented
+
+        # Add actions to the menu
+        self.addAction(self.app_t_table_switch_to_action)
+        self.addAction(self.app_t_table_bring_to_front_action)
+        self.addSeparator()
+        self.addAction(self.app_t_table_minimize_action)
+        self.addAction(self.app_t_table_maximize_action)
+        self.addAction(self.app_t_table_cascade_action)
+        self.addAction(self.app_t_table_tile_horizontally_action)
+        self.addAction(self.app_t_table_tile_vertically_action)
+        self.addSeparator()
+        self.addAction(self.app_t_table_tile_end_task_action)
+        self.addAction(self.app_t_table_create_dump_file_action)
+        self.addAction(self.app_t_table_go_to_process_action)
+
+
+class CWTM_ProcessesTabCustomContextMenu(QMenu):
+    def __init__(self, *args, parent=None, **kwargs):
+        super().__init__(*args, parent=parent, **kwargs)
+
+        self.proc_open_file_location_action = QAction("       Open File Location")
+        self.proc_end_process_action = QAction("       End Process")
+        self.proc_end_process_tree_action = QAction("       End Process Tree")
+        self.proc_debug_action = QAction("       Debug")
+        self.proc_uac_virtualization_action = QAction("       UAC Virtualization")
+        self.proc_create_dump_file_action = QAction("       Create Dump File")
+        self.proc_set_priority_action = QAction("       Set Priority")
+        self.proc_set_affinity_action = QAction("       Set Affinity")
+        self.proc_properties_action = QAction("       Properties")
+        self.proc_go_to_service_action = QAction("       Go To Service(s)")
+
+        # Add actions to the menu
+        self.addAction(self.proc_open_file_location_action)
+        self.addSeparator()
+        self.addAction(self.proc_end_process_action)
+        self.addAction(self.proc_end_process_tree_action)
+        self.addAction(self.proc_debug_action)
+        self.addAction(self.proc_uac_virtualization_action)
+        self.addAction(self.proc_create_dump_file_action)
+        self.addSeparator()
+        self.addAction(self.proc_set_priority_action)
+        self.addAction(self.proc_set_affinity_action)
+        self.addSeparator()
+        self.addAction(self.proc_properties_action)
+        self.addAction(self.proc_go_to_service_action)
+
+
+class CWTM_ServicesTabCustomContextMenu(QMenu):
+    def __init__(self, *args, parent=None, **kwargs):
+        super().__init__(*args, parent=parent, **kwargs)
+
+        self.svcs_start_service_action = QAction("       Start Service")
+        self.svcs_stop_service_action = QAction("       Stop Service")
+        self.svcs_go_to_process_action = QAction("       Go to Process")
+
+        # Add actions to the menu
+        self.addAction(self.svcs_start_service_action)
+        self.addAction(self.svcs_stop_service_action)
+        self.addSeparator()
+        self.addAction(self.svcs_go_to_process_action)
+
+
+class CWTM_UsersTabCustomContextMenu(QMenu):
+    def __init__(self, *args, parent=None, **kwargs):
+        super().__init__(*args, parent=parent, **kwargs)
+
+        self.usrs_send_message_action = QAction("       Send Message")  # bold
+        self.usrs_connect_action = QAction("       Connect")
+        self.usrs_disconnect_action = QAction("       Disconnect")
+        self.usrs_log_off_action = QAction("       Log Off")
+        self.usrs_remote_control_action = QAction("       Remote Control")
+
+        # Make "Send Message" action bold
+        self.usrs_send_message_action_font = self.usrs_send_message_action.font()
+        self.usrs_send_message_action_font.setBold(True)
+        self.usrs_send_message_action.setFont(self.usrs_send_message_action_font)
+
+        # Add actions to the menu
+        self.addAction(self.usrs_send_message_action)
+        self.addSeparator()
+        self.addAction(self.usrs_connect_action)
+        self.addAction(self.usrs_disconnect_action)
+        self.addAction(self.usrs_log_off_action)
+        self.addAction(self.usrs_remote_control_action)
+
+
+
 class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
     def setupUi(self, CWTM_TaskManagerMainWindow):
         if not CWTM_TaskManagerMainWindow.objectName():

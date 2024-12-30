@@ -23,6 +23,8 @@ from PyQt5.QtCore import (
     QObject
 )
 from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
+from cwtm_taskmgr_ui.cwtm_taskmgr_ui import CWTM_ServicesTabCustomContextMenu
+
 
 class CWTM_ServicesTab(CWTM_TableWidgetController):
     def __init__(self, parent):
@@ -31,6 +33,20 @@ class CWTM_ServicesTab(CWTM_TableWidgetController):
         self.SVC_T_SERVICES_LIST_TABLE_COLUMN_RATIO = (0.25, 0.1, 0.50, 0.15)
         self.SVC_T_SERVICES_LIST_TABLE_UPDATE_FREQUENCY = \
             CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_LOW # 4 seconds
+
+        self.parent.svc_t_services_list_table.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.parent.svc_t_services_list_table.customContextMenuRequested.connect(
+            self.process_custom_applications_context_menu_request)
+
+    def process_custom_applications_context_menu_request(self, position):
+        current_selected_item = self.parent.app_t_task_list_table.itemAt(position)
+        
+        if current_selected_item is None:
+            return
+
+        custom_applications_context_menu = CWTM_ServicesTabCustomContextMenu(parent=self.parent)
+        custom_applications_context_menu.exec_(
+            self.parent.app_t_task_list_table.mapToGlobal(position))
 
     def update_services_page(self, system_all_services: list) -> None:
         self.parent.svc_t_services_list_table.setRowCount(0)

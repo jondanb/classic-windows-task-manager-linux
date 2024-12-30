@@ -24,16 +24,7 @@ from ..qt_components import (
     CWTM_TaskManagerNewTaskDialog
 )
 from ..thread_workers import CWTM_ApplicationsInfoRetrievalWorker
-
-
-class CWTM_ApplicationsTabCustomContextMenu(QMenu):
-    def __init__(self, *args, parent=None, **kwargs):
-        super().__init__(*args, parent=parent, **kwargs)
-
-        self.action1 = QAction("Test")
-        self.action1.triggered.connect(lambda: print('hi'))
-
-        self.addAction(self.action1)
+from cwtm_taskmgr_ui.cwtm_taskmgr_ui import CWTM_ApplicationsTabCustomContextMenu
 
 
 class CWTM_ApplicationsTab(CWTM_TableWidgetController):
@@ -57,6 +48,18 @@ class CWTM_ApplicationsTab(CWTM_TableWidgetController):
             self.process_signal_app_t_end_task_button)
         self.parent.app_t_new_task_button.clicked.connect(
             self.process_signal_app_t_new_task_button)
+        self.parent.tm_file_menu_new_task_run.triggered.connect(
+            self.process_signal_app_t_new_task_button)
+
+    def process_custom_applications_context_menu_request(self, position):
+        current_selected_item = self.parent.app_t_task_list_table.itemAt(position)
+        
+        if current_selected_item is None:
+            return
+
+        custom_applications_context_menu = CWTM_ApplicationsTabCustomContextMenu(parent=self.parent)
+        custom_applications_context_menu.exec_(
+            self.parent.app_t_task_list_table.mapToGlobal(position))
 
     def process_signal_app_t_new_task_button(self):
         new_task_dialog = CWTM_TaskManagerNewTaskDialog(parent=self.parent)
@@ -111,16 +114,6 @@ class CWTM_ApplicationsTab(CWTM_TableWidgetController):
 
     def update_refresh_applications_page_apps(self):
         self.applications_page_worker.get_all_gtk_running_applications_info_loop(disable_loop=True)
-
-    def process_custom_applications_context_menu_request(self, position):
-        current_selected_item = self.parent.app_t_task_list_table.itemAt(position)
-        
-        if current_selected_item is None:
-            return
-
-        custom_applications_context_menu = CWTM_ApplicationsTabCustomContextMenu(parent=self.parent)
-        custom_applications_context_menu.exec_(
-            self.parent.app_t_task_list_table.mapToGlobal(position))
 
     def update_thread_worker_info_retrieval_authorization(self, index: int) -> None:
         """
