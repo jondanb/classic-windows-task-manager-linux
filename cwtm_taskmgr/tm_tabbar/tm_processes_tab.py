@@ -3,7 +3,7 @@ import shlex
 import functools
 
 from .. import sys_utils
-from .core_properties import (
+from ..core_properties import (
     CWTM_ProcessesTabTableColumns,
     CWTM_TableWidgetItemProperties,
     CWTM_TabWidgetColumnEnum,

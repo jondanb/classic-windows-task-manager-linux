@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (
     QMenu, QAction
 )
 
-from .core_properties import (
+from ..core_properties import (
     CWTM_ApplicationsTabTableColumns,
     CWTM_TableWidgetItemProperties,
     CWTM_GlobalUpdateIntervals,

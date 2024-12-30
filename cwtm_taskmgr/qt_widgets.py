@@ -1,7 +1,7 @@
 import functools
 import pyqtgraph as pg
 
-from .tm_tabbar.core_properties import CWTM_ResourceBarLevelColours
+from .core_properties import CWTM_ResourceBarLevelColours
 
 from PyQt5.QtWidgets import (
     QWidget, QTableWidgetItem

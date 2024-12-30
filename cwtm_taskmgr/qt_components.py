@@ -3,7 +3,7 @@ import functools
 
 from . import sys_utils
 from .qt_widgets import CWTM_QNumericTableWidgetItem
-from .tm_tabbar.core_properties import (
+from .core_properties import (
     CWTM_ProcessesTabTableColumns,
     CWTM_ApplicationsTabTableColumns,
     CWTM_TabWidgetColumnEnum,

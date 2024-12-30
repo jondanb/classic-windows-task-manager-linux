@@ -7,7 +7,7 @@ from ..qt_components import (
     CWTM_TableWidgetController,
     CWTM_GlobalUpdateIntervalHandler
 )
-from .core_properties import (
+from ..core_properties import (
     CWTM_NetworkingTabTableColumns,
     CWTM_NetworkingBytesLabelsColours,
     CWTM_NetworkInterfaceGraphProperties,

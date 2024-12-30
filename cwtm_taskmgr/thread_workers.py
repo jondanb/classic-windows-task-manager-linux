@@ -2,7 +2,7 @@ import psutil
 import functools
 
 from . import sys_utils
-from .tm_tabbar.core_properties import (
+from .core_properties import (
     CWTM_TabWidgetColumnEnum,
     CWTM_GlobalUpdateIntervals
 )
@@ -33,8 +33,8 @@ class CWTM_NetworkingInterfaceRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
             - str: Network interface name.
     """
 
-    ni_sig_usage_frame = pyqtSignal(str, float, float)
-    ni_sig_disconnect_nic = pyqtSignal(str)
+    ni_sig_usage_frame: pyqtSignal = pyqtSignal(str, float, float)
+    ni_sig_disconnect_nic: pyqtSignal = pyqtSignal(str)
 
     def __init__(self, timeout_interval: int, *args: list, **kwargs: dict) -> None:
         """
@@ -42,8 +42,8 @@ class CWTM_NetworkingInterfaceRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
 
         Arguments:
             timeout_interval (int): The interval in milliseconds between data retrievals.
-            *args: Extra arguments meant for the superclass (CWTM_TimeoutIntervalChangeSignal:QObject)
-            **kwargs: Extra keyword arguments meant for the superclass (CWTM_TimeoutIntervalChangeSignal:QObject)
+            *args: Extra arguments meant for the superclass
+            **kwargs: Extra keyword arguments meant for the superclass
         """
         super().__init__(*args, **kwargs)
         self.timeout_interval: int = timeout_interval
@@ -56,7 +56,7 @@ class CWTM_NetworkingInterfaceRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
         """
         self.get_networking_interface_usage_loop()
 
-    def check_for_disconnected_network_interface(self, network_data):
+    def check_for_disconnected_network_interface(self, network_data: dict):
         """
         Checks for any network interfaces that have been disconnected since the last check.
         Emits a signal for each disconnected interface and updates the internal tracking data.
@@ -88,7 +88,7 @@ class CWTM_NetworkingInterfaceRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
             4. Iterates through each network interface to calculate usage.
             5. Emits usage data for active interfaces.
         """
-        current_data = psutil.net_io_counters(pernic=True)
+        current_data: dict = psutil.net_io_counters(pernic=True)
         self.check_for_disconnected_network_interface(current_data)
 
         for nic, counters in current_data.items():
@@ -119,7 +119,7 @@ class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_I
             - list: List of running process information.
     """
 
-    proc_sig_processes_info = pyqtSignal(list)
+    proc_sig_processes_info: pyqtSignal = pyqtSignal(list)
 
     def __init__(self, timeout_interval: int, *args: tuple, **kwargs: dict) -> None:
         """
@@ -167,7 +167,7 @@ class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWT
             - list: List of application names and their corresponding icons.
     """
 
-    app_sig_applications_info = pyqtSignal(list)
+    app_sig_applications_info: pyqtSignal = pyqtSignal(list)
 
     def __init__(self, timeout_interval: int, *args: tuple, **kwargs: dict) -> None:
         """
@@ -236,6 +236,8 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM
             - float: Memory usage percentage.
             - float: Memory used in MB.
             - float: Total memory in MB.
+        perf_sig_request_per_cpu_status_change (pyqtSignal): Signal emitted with per_cpu status
+            - bool: Boolean value representing if the graphing mode is per cpu.
     """
 
     perf_sig_memory_labels_info = pyqtSignal(psutil._pslinux.svmem)
@@ -369,18 +371,39 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM
 
 
 class CWTM_ServicesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_InformationRetrievalAuthorization):
+    """
+    Worker class responsible for retrieving information about the active and inactive services running on the
+    system. The retreived data includes the service's name, PID, description, and status.
+
+    Attributes:
+        svc_sig_all_system_services (pyqtSignal): Signal emitted with a list of registered system services.
+            - list: List of service names, PID, description, and status.
+    """
     svc_sig_all_system_services = pyqtSignal(list)
 
-    def __init__(self, timeout_interval:int, *args: dict, **kwargs: dict) -> None:
+    def __init__(self, timeout_interval: int, *args: dict, **kwargs: dict) -> None:
+        """
+        Initializes the Services Info Retrieval Worker.
+
+        Args:
+            timeout_interval (int): The interval in milliseconds between data retrievals.
+            *args: Variable length argument list for additional parameters.
+            **kwargs: Arbitrary keyword arguments for additional parameters.
+        """
         super().__init__(*args, **kwargs)
 
-        self.timeout_interval = timeout_interval
+        self.timeout_interval: int = timeout_interval
 
     def run(self):
         self.get_all_services_information_loop()
 
     @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop(no_timeout_pause_check=True)
-    def get_all_services_information_loop(self, *, force_run: bool = False):
+    def get_all_services_information_loop(self, *, force_run: bool = False) -> None:
+        """
+        Retrieves all the registered system services, including their name, their PID, their service description,
+        and their status whether they are active or inactive. This data is emitted through a signal only if the tab
+        is activated or the force_run keyword argument is True.
+        """
         if not force_run and not self._info_retrieval_authorization:
             return
 

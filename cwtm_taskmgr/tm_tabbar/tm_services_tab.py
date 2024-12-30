@@ -4,7 +4,7 @@ import functools
 
 from .. import sys_utils
 from ..qt_components import CWTM_TableWidgetController
-from .core_properties import (
+from ..core_properties import (
     CWTM_ServicesTabTableColumns,
     CWTM_TableWidgetItemProperties,
     CWTM_GlobalUpdateIntervals,

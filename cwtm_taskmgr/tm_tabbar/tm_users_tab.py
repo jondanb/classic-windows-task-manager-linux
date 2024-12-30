@@ -2,7 +2,7 @@ import enum
 import functools
 
 from .. import sys_utils
-from .core_properties import (
+from ..core_properties import (
     CWTM_UsersTabTableColumns,
     CWTM_TableWidgetItemProperties,
     CWTM_GlobalUpdateIntervals,

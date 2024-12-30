@@ -12,7 +12,7 @@ from ..qt_components import (
     CWTM_TableWidgetController,
     CWTM_GlobalUpdateIntervalHandler
 )
-from .core_properties import (
+from ..core_properties import (
     CWTM_ResourceLevelBarParameters,
     CWTM_GlobalUpdateIntervals,
     CWTM_ResourceBarLevelColours,

@@ -1,8 +1,7 @@
 import enum
 import dataclasses
 
-from .. import sys_utils
-
+from . import sys_utils
 
 from PyQt5.QtWidgets import QTableWidgetItem, QGroupBox
 from PyQt5.QtGui import QColor
