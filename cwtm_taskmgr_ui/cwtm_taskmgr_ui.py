@@ -72,6 +72,11 @@ class CWTM_ProcessesTabCustomContextMenu(QMenu):
         self.proc_properties_action = QAction("       Properties")
         self.proc_go_to_service_action = QAction("       Go To Service(s)")
 
+        # Disabled unimplemented actions
+        self.proc_debug_action.setDisabled(True)  # Not Implemented
+        self.proc_uac_virtualization_action.setDisabled(True)  # Not Implemented
+        self.proc_create_dump_file_action.setDisabled(True)  # Not Implemented
+
         # Add actions to the menu
         self.addAction(self.proc_open_file_location_action)
         self.addSeparator()
@@ -117,6 +122,11 @@ class CWTM_UsersTabCustomContextMenu(QMenu):
         self.usrs_send_message_action_font = self.usrs_send_message_action.font()
         self.usrs_send_message_action_font.setBold(True)
         self.usrs_send_message_action.setFont(self.usrs_send_message_action_font)
+
+        # Disabled unimplemented actions
+        self.usrs_send_message_action.setDisabled(True)  # Not Implemented
+        self.usrs_log_off_action.setDisabled(True)  # Not Implemented
+        self.usrs_remote_control_action.setDisabled(True)  # Not Implemented
 
         # Add actions to the menu
         self.addAction(self.usrs_send_message_action)

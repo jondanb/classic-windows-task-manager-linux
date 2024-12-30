@@ -20,9 +20,8 @@ from ..thread_workers import CWTM_ProcessesInfoRetrievalWorker
 from PyQt5.QtCore import (
     Qt, QTimer,
     pyqtSignal, pyqtSlot,
-    QThread, QObject
+    QThread
 )
-from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
 from cwtm_taskmgr_ui.cwtm_taskmgr_ui import CWTM_ProcessesTabCustomContextMenu
 
 
@@ -46,14 +45,14 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
             self.process_custom_applications_context_menu_request)
 
     def process_custom_applications_context_menu_request(self, position):
-        current_selected_item = self.parent.app_t_task_list_table.itemAt(position)
+        current_selected_item = self.parent.proc_t_proc_list_table.itemAt(position)
         
         if current_selected_item is None:
             return
 
         custom_applications_context_menu = CWTM_ProcessesTabCustomContextMenu(parent=self.parent)
         custom_applications_context_menu.exec_(
-            self.parent.app_t_task_list_table.mapToGlobal(position))
+            self.parent.proc_t_proc_list_table.mapToGlobal(position))
 
     def process_signal_proc_t_end_process_button(self):
         selected_process_pid = CWTM_TableWidgetController.get_current_selected_item_from_column(

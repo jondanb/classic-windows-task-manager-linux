@@ -3,8 +3,7 @@ import enum
 from PyQt5.QtCore import (
     Qt, QTimer, 
     pyqtSignal, 
-    QThread, 
-    QObject
+    QThread
 )
 from PyQt5.QtWidgets import (
     QTableWidgetItem, QHeaderView, 

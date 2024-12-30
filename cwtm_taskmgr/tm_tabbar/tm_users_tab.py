@@ -17,8 +17,7 @@ from PyQt5.QtCore import (
     QTimer,
     pyqtSignal,
     pyqtSlot,
-    QThread,
-    QObject
+    QThread
 )
 from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
 from cwtm_taskmgr_ui.cwtm_taskmgr_ui import CWTM_UsersTabCustomContextMenu
@@ -35,15 +34,18 @@ class CWTM_UsersTab(CWTM_TableWidgetController):
         self.parent.users_t_users_list_table.customContextMenuRequested.connect(
             self.process_custom_applications_context_menu_request)
 
+        self.parent.users_t_logoff_button.setDisabled(True) # Not Implemented
+        self.parent.users_t_send_message_button.setDisabled(True) # Not Implemented
+
     def process_custom_applications_context_menu_request(self, position):
-        current_selected_item = self.parent.app_t_task_list_table.itemAt(position)
+        current_selected_item = self.parent.users_t_users_list_table.itemAt(position)
         
         if current_selected_item is None:
             return
 
         custom_applications_context_menu = CWTM_UsersTabCustomContextMenu(parent=self.parent)
         custom_applications_context_menu.exec_(
-            self.parent.app_t_task_list_table.mapToGlobal(position))
+            self.parent.users_t_users_list_table.mapToGlobal(position))
             
     def update_users_page(self, system_user_details: list, user_gtk_icons: list):
         self.parent.users_t_users_list_table.setRowCount(0)
