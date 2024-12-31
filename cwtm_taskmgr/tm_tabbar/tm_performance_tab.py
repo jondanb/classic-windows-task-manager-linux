@@ -199,7 +199,7 @@ class CWTM_PerformanceTab(CWTM_TableWidgetController):
         self.mem_grid_usage_data_x, self.mem_grid_usage_data_y = \
                                     self.memory_grid_widget.get_all_data_axes(
                                         self.PERF_RESOURCE_USAGE_X_RANGE)
-        self.mem_grid_usage_plot_pen = pyqtgraph.mkPen(color="#007FFD", width=2)
+        self.mem_grid_usage_plot_pen = pyqtgraph.mkPen(color="#007FFD", width=3)
         self.mem_grid_usage_plot_item = self.memory_grid_widget.plot(
             self.mem_grid_usage_data_x, self.mem_grid_usage_data_y,
             pen=self.mem_grid_usage_plot_pen

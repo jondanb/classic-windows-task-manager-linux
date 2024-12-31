@@ -219,6 +219,15 @@ class CWTM_TableWidgetController:
         if current_selected_item is not None:
             return current_selected_item.text()
 
+    @staticmethod
+    def find_row_from_column_value(table_widget, column_position, column_value):
+        for row in range(table_widget.rowCount()):
+            item = table_widget.item(row, column_position)
+            if item is not None:
+                if item.text() == str(column_value):
+                    return row
+        return -1
+
 
 class CWTM_TimeoutIntervalChangeSignal(QObject):
     TIMEOUT_INTERVAL_CHECK_PAUSE_UPDATE = 100 # 100 ms

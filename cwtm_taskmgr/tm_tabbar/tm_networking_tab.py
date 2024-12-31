@@ -44,12 +44,22 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
             self.clear_all_disabled_networking_byte_line)
         self.parent.tm_view_menu_nas_bytes_total.triggered.connect(
             self.clear_all_disabled_networking_byte_line)
+        self.parent.tm_options_menu_show_scale.triggered.connect(
+            self.hide_all_network_graph_scales)
 
     def setup_system_networking_interfaces(self):
         system_networking_interfaces = psutil.net_if_addrs().items()
 
         for interface_name, interface_info in system_networking_interfaces:
             self.register_network_interface(interface_name)
+
+    def hide_all_network_graph_scales(self, checked: bool) -> None:
+        for n_inteface in self.NETWORK_INTERFACE_GRAPHS.values():
+            graph_plot_item = n_inteface.i_net_graph.getPlotItem()
+            if not checked:
+                graph_plot_item.hideAxis("left")
+            else:
+                graph_plot_item.showAxis("left")
 
     def register_network_interface(self, interface_name):
         interface_full_name = sys_utils.get_interface_type_full_name(

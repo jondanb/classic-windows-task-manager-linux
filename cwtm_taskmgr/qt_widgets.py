@@ -79,7 +79,6 @@ class CWTM_ResourceGraphWidget(pg.PlotWidget):
             tick_value = min_y + i * interval
             yield tick_value
             
-
     def update_plot(self, plot_item, new_value, total_data_x, total_data_y):
         total_data_y.append(new_value)
         total_data_x.append(total_data_x[-1] + 1)
@@ -201,3 +200,6 @@ class CWTM_QNumericTableWidgetItem(QTableWidgetItem):
 
     def __lt__(self, other):
         return self.value < other.value  # Direct comparison with the numeric value
+
+    def text(self):
+        return super().text().strip()

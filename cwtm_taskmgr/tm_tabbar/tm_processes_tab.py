@@ -6,6 +6,7 @@ import functools
 from .. import sys_utils
 from ..core_properties import (
     CWTM_ProcessesTabTableColumns,
+    CWTM_ServicesTabTableColumns,
     CWTM_TableWidgetItemProperties,
     CWTM_TabWidgetColumnEnum,
     CWTM_GlobalUpdateIntervals
@@ -45,14 +46,19 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
         self.parent.proc_t_proc_list_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.parent.proc_t_proc_list_table.customContextMenuRequested.connect(
             self.process_custom_process_context_menu_request)
-        self.custom_applications_context_menu = CWTM_ProcessesTabCustomContextMenu(
+        self.custom_processes_context_menu = CWTM_ProcessesTabCustomContextMenu(
             parent=self.parent)
-        self.custom_applications_context_menu.proc_open_file_location_action.triggered.connect(
+        self.custom_processes_context_menu.proc_open_file_location_action.triggered.connect(
             self.process_context_menu_action_open_file_location)
-        self.custom_applications_context_menu.proc_end_process_action.triggered.connect(
+        self.custom_processes_context_menu.proc_end_process_action.triggered.connect(
             self.process_signal_proc_t_end_process_button)
-        self.custom_applications_context_menu.proc_end_process_tree_action.triggered.connect(
+        self.custom_processes_context_menu.proc_end_process_tree_action.triggered.connect(
             functools.partial(self.process_signal_proc_t_end_process_button, True))
+        self.custom_processes_context_menu.proc_properties_action.triggered.connect(
+            self.process_context_menu_action_properties)
+        self.custom_processes_context_menu.proc_go_to_service_action.triggered.connect(
+            self.process_context_menu_action_go_to_service
+            )
 
     def process_context_menu_action_open_file_location(self):
         current_selected_process_executable = self.get_current_selected_item_from_column(
@@ -62,13 +68,38 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
         executable_path_folder = os.path.dirname(current_selected_process_executable)
         sys_utils.execute_system_uri_command(executable_path_folder)
 
+    def process_context_menu_action_properties(self):
+        current_selected_process_executable = self.get_current_selected_item_from_column(
+            self.parent.proc_t_proc_list_table, 
+            CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_EXECUTABLE)
+
+        if not current_selected_process_executable:
+            return
+
+        sys_utils.show_file_properties(current_selected_process_executable)
+
+    def process_context_menu_action_go_to_service(self):
+        selected_process_pid = self.get_current_selected_item_from_column(
+            self.parent.proc_t_proc_list_table, 
+            CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_PID)
+
+        service_tab_row = self.find_row_from_column_value(
+            self.parent.svc_t_services_list_table, 
+            CWTM_ServicesTabTableColumns.SVC_T_SERVICES_LIST_TABLE_PID,
+            selected_process_pid)
+
+        if service_tab_row > 0:
+            self.parent.task_manager_tab_widget.setCurrentIndex(
+                CWTM_TabWidgetColumnEnum.TASK_MANAGER_SERVICES_TAB)
+            self.parent.svc_t_services_list_table.selectRow(service_tab_row)
+
     def process_custom_process_context_menu_request(self, position):
         current_selected_item = self.parent.proc_t_proc_list_table.itemAt(position)
         
         if current_selected_item is None:
             return
 
-        self.custom_applications_context_menu.exec_(
+        self.custom_processes_context_menu.exec_(
             self.parent.proc_t_proc_list_table.mapToGlobal(position))
 
     def process_signal_proc_t_end_process_button(self, end_process_tree=False):

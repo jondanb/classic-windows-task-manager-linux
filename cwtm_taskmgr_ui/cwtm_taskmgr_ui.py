@@ -41,6 +41,7 @@ class CWTM_ApplicationsTabCustomContextMenu(QMenu):
         self.app_t_table_cascade_action.setDisabled(True)  # Not Implemented
         self.app_t_table_tile_horizontally_action.setDisabled(True)  # Not Implemented
         self.app_t_table_tile_vertically_action.setDisabled(True)  # Not Implemented
+        self.app_t_table_create_dump_file_action.setDisabled(True) # Not Implemented
 
         # Add actions to the menu
         self.addAction(self.app_t_table_switch_to_action)
@@ -67,7 +68,42 @@ class CWTM_ProcessesTabCustomContextMenu(QMenu):
         self.proc_debug_action = QAction("       Debug")
         self.proc_uac_virtualization_action = QAction("       UAC Virtualization")
         self.proc_create_dump_file_action = QAction("       Create Dump File")
-        self.proc_set_priority_action = QAction("       Set Priority")
+
+        self.proc_set_priority_menu = QMenu("       Set Priority")
+        self.proc_set_priority_menu_action_group = QActionGroup(self.proc_set_priority_menu)
+
+        self.proc_set_priority_realtime = QAction("Realtime")
+        self.proc_set_priority_high = QAction("High")
+        self.proc_set_priority_above_normal = QAction("Above normal")
+        self.proc_set_priority_normal = QAction("Normal")
+        self.proc_set_priority_below_normal = QAction("Below normal")
+        self.proc_set_priority_low = QAction("Low")
+
+        self.proc_set_priority_realtime.setCheckable(True)
+        self.proc_set_priority_high.setCheckable(True)
+        self.proc_set_priority_above_normal.setCheckable(True)
+        self.proc_set_priority_normal.setCheckable(True)
+        self.proc_set_priority_below_normal.setCheckable(True)
+        self.proc_set_priority_low.setCheckable(True)
+
+        self.proc_set_priority_normal.setChecked(True)
+
+        self.proc_set_priority_menu.addAction(self.proc_set_priority_realtime)
+        self.proc_set_priority_menu.addAction(self.proc_set_priority_high)
+        self.proc_set_priority_menu.addAction(self.proc_set_priority_above_normal)
+        self.proc_set_priority_menu.addAction(self.proc_set_priority_normal)
+        self.proc_set_priority_menu.addAction(self.proc_set_priority_below_normal)
+        self.proc_set_priority_menu.addAction(self.proc_set_priority_low)
+
+        self.proc_set_priority_menu_action_group.addAction(self.proc_set_priority_realtime)
+        self.proc_set_priority_menu_action_group.addAction(self.proc_set_priority_high)
+        self.proc_set_priority_menu_action_group.addAction(self.proc_set_priority_above_normal)
+        self.proc_set_priority_menu_action_group.addAction(self.proc_set_priority_normal)
+        self.proc_set_priority_menu_action_group.addAction(self.proc_set_priority_below_normal)
+        self.proc_set_priority_menu_action_group.addAction(self.proc_set_priority_low)
+
+        self.proc_set_priority_menu_action_group.setExclusive(True)
+
         self.proc_set_affinity_action = QAction("       Set Affinity")
         self.proc_properties_action = QAction("       Properties")
         self.proc_go_to_service_action = QAction("       Go To Service(s)")
@@ -86,7 +122,7 @@ class CWTM_ProcessesTabCustomContextMenu(QMenu):
         self.addAction(self.proc_uac_virtualization_action)
         self.addAction(self.proc_create_dump_file_action)
         self.addSeparator()
-        self.addAction(self.proc_set_priority_action)
+        self.addAction(self.proc_set_priority_menu.menuAction())
         self.addAction(self.proc_set_affinity_action)
         self.addSeparator()
         self.addAction(self.proc_properties_action)
@@ -499,6 +535,7 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
         self.tm_options_menu_show_scale = QAction(CWTM_TaskManagerMainWindow)
         self.tm_options_menu_show_scale.setObjectName(u"tm_options_menu_show_scale")
         self.tm_options_menu_show_scale.setCheckable(True)
+        self.tm_options_menu_show_scale.setChecked(True)
 
         self.statusbar = QStatusBar(CWTM_TaskManagerMainWindow)
         self.statusbar.setObjectName(u"statusbar")

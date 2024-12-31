@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (
 
 from ..core_properties import (
     CWTM_ApplicationsTabTableColumns,
+    CWTM_ProcessesTabTableColumns,
     CWTM_TableWidgetItemProperties,
     CWTM_GlobalUpdateIntervals,
     CWTM_TabWidgetColumnEnum
@@ -42,14 +43,33 @@ class CWTM_ApplicationsTab(CWTM_TableWidgetController):
         self.parent.app_t_task_list_table.customContextMenuRequested.connect(
             self.process_custom_applications_context_menu_request)
 
-        self.parent.app_t_switch_to_button.clicked.connect(
-            self.process_signal_app_t_switch_to_button)
+        self.custom_applications_context_menu = CWTM_ApplicationsTabCustomContextMenu(
+            parent=self.parent)
         self.parent.app_t_end_task_button.clicked.connect(
             self.process_signal_app_t_end_task_button)
         self.parent.app_t_new_task_button.clicked.connect(
             self.process_signal_app_t_new_task_button)
         self.parent.tm_file_menu_new_task_run.triggered.connect(
             self.process_signal_app_t_new_task_button)
+        self.custom_applications_context_menu.app_t_table_tile_end_task_action.triggered.connect(
+            self.process_signal_app_t_end_task_button)
+        self.custom_applications_context_menu.app_t_table_go_to_process_action.triggered.connect(
+            self.process_context_menu_action_go_to_process)
+
+    def process_context_menu_action_go_to_process(self):
+        selected_application_pid = self.get_current_selected_item_from_column(
+            self.parent.app_t_task_list_table, 
+            CWTM_ApplicationsTabTableColumns.APP_T_TASK_LIST_TABLE_PID)
+
+        process_tab_row = self.find_row_from_column_value(
+            self.parent.proc_t_proc_list_table, 
+            CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_PID,
+            selected_application_pid)
+
+        if process_tab_row > 0:
+            self.parent.task_manager_tab_widget.setCurrentIndex(
+                CWTM_TabWidgetColumnEnum.TASK_MANAGER_PROCESSES_TAB)
+            self.parent.proc_t_proc_list_table.selectRow(process_tab_row)
 
     def process_custom_applications_context_menu_request(self, position):
         current_selected_item = self.parent.app_t_task_list_table.itemAt(position)
@@ -57,19 +77,13 @@ class CWTM_ApplicationsTab(CWTM_TableWidgetController):
         if current_selected_item is None:
             return
 
-        custom_applications_context_menu = CWTM_ApplicationsTabCustomContextMenu(parent=self.parent)
-        custom_applications_context_menu.exec_(
+        self.custom_applications_context_menu.exec_(
             self.parent.app_t_task_list_table.mapToGlobal(position))
 
     def process_signal_app_t_new_task_button(self):
         new_task_dialog = CWTM_TaskManagerNewTaskDialog(parent=self.parent)
         new_task_dialog.exec_()
     
-    def process_signal_app_t_switch_to_button(self):
-        return NotImplemented
-    
-    @CWTM_ErrorMessageDialog.show_error_dialog_on_error(
-        "You do not have the required permissions to kill this process.")
     def process_signal_app_t_end_task_button(self, *_):
         selected_application_pid = CWTM_TableWidgetController.get_current_selected_item_from_column(
             self.parent.app_t_task_list_table,
