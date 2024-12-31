@@ -4,7 +4,16 @@ import functools
 from . import sys_utils
 from .core_properties import (
     CWTM_TabWidgetColumnEnum,
-    CWTM_GlobalUpdateIntervals
+    CWTM_GlobalUpdateIntervals,
+    CWTM_NetworkInterfaceUsageFrame,
+    CWTM_ProcessInformationFrame,
+    CWTM_ApplicationInformationFrame,
+    CWTM_PerformanceStatusBarLabelsFrame,
+    CWTM_PerformanceGraphCPUUsageFrame,
+    CWTM_PerformanceSystemMemoryLabelsFrame,
+    CWTM_PerformanceGraphicalWidgetsFrame,
+    CWTM_ServiceInformationFrame,
+    CWTM_UsersSystemInformationFrame
 )
 from .qt_components import (
     CWTM_TimeoutIntervalChangeSignal,
@@ -25,15 +34,15 @@ class CWTM_NetworkingInterfaceRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
     disconnected interfaces, and calculates the bytes sent and received per interval.
 
     Attributes:
-        ni_sig_usage_frame (pyqtSignal): Signal emitted with NIC usage data.
-            - str: Network interface name.
-            - float: Sent bytes per interval.
-            - float: Received bytes per interval.
+        ni_sig_usage_frame (pyqtSignal[CWTM_NetworkInterfaceUsageFrame]): Signal emitted with NIC usage data.
+            - i_net_name (str): Network interface name.
+            - i_net_bytes_sent (float): Sent bytes per interval.
+            - i_net_bytes_received (float): Received bytes per interval.
         ni_sig_disconnect_nic (pyqtSignal): Signal emitted when a network interface is disconnected.
             - str: Network interface name.
     """
 
-    ni_sig_usage_frame: pyqtSignal = pyqtSignal(str, float, float)
+    ni_sig_usage_frame: pyqtSignal = pyqtSignal(CWTM_NetworkInterfaceUsageFrame)
     ni_sig_disconnect_nic: pyqtSignal = pyqtSignal(str)
 
     def __init__(self, timeout_interval: int, *args: list, **kwargs: dict) -> None:
@@ -103,8 +112,10 @@ class CWTM_NetworkingInterfaceRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
             recv_bytes_per_interval: float = (
                 counters.bytes_recv - last_counters.bytes_recv
             ) / (self.timeout_interval / 1000)
+            usage_frame_object: CWTM_NetworkInterfaceUsageFrame = CWTM_NetworkInterfaceUsageFrame(
+                nic, sent_bytes_per_interval, recv_bytes_per_interval)
 
-            self.ni_sig_usage_frame.emit(nic, sent_bytes_per_interval, recv_bytes_per_interval)
+            self.ni_sig_usage_frame.emit(usage_frame_object)
             self.last_data[nic]: psutil._common.snetio = counters
 
 
@@ -116,7 +127,7 @@ class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_I
 
     Attributes:
         proc_sig_processes_info (pyqtSignal): Signal emitted with a list of running GTK process info.
-            - list: List of running process information.
+            - list[CWTM_ProcessInformationFrame]: List of running process information.
     """
 
     proc_sig_processes_info: pyqtSignal = pyqtSignal(list)
@@ -152,7 +163,8 @@ class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_I
         if not force_run and not self._is_authorized: # CWTM_InformationRetrievalAuthorization
             return
         
-        *gtk_running_processes, = sys_utils.get_all_running_processes_info()
+        gtk_running_processes: list[CWTM_ProcessInformationFrame] = \
+            [CWTM_ProcessInformationFrame(*process) for process in sys_utils.get_all_running_processes_info()]
         self.proc_sig_processes_info.emit(gtk_running_processes)
 
 
@@ -202,7 +214,9 @@ class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWT
             return
         
         gtk_running_apps: list = sys_utils.get_all_running_applications_names()
-        gtk_running_apps_and_icons: list = sys_utils.get_all_running_applications(gtk_running_apps)
+        gtk_running_apps_and_icons: list[CWTM_ApplicationInformationFrame] = \
+            [CWTM_ApplicationInformationFrame(*gtk_application) \
+            for gtk_application in sys_utils.get_all_running_applications(gtk_running_apps)]
         self.app_sig_applications_info.emit(gtk_running_apps_and_icons)
 
 
@@ -241,12 +255,12 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM
     """
 
     perf_sig_memory_labels_info = pyqtSignal(psutil._pslinux.svmem)
-    perf_sig_status_bar_labels_info = pyqtSignal(int, float, float)
-    perf_sig_cpu_usage_history_graphs_info = pyqtSignal(list, list)  # percpu or all cpu
+    perf_sig_status_bar_labels_info = pyqtSignal(CWTM_PerformanceStatusBarLabelsFrame)
+    perf_sig_cpu_usage_history_graphs_info = pyqtSignal(CWTM_PerformanceGraphCPUUsageFrame)  # percpu or all cpu
     perf_sig_kernel_mem_labels_info = pyqtSignal(psutil._common.sswap)
-    perf_sig_sys_mem_labels_info = pyqtSignal(int, int, int, str, str)
+    perf_sig_sys_mem_labels_info = pyqtSignal(CWTM_PerformanceSystemMemoryLabelsFrame)
 
-    perf_sig_graphical_widgets_info = pyqtSignal(float, float, float, float, float)
+    perf_sig_graphical_widgets_info = pyqtSignal(CWTM_PerformanceGraphicalWidgetsFrame)
 
     perf_sig_request_per_cpu_status_change = pyqtSignal(bool)
 
@@ -304,11 +318,10 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM
             sys_utils.convert_proc_mem_b_to_mb(commit_mem_total)[:-2]
         ))
         total_system_uptime: str = sys_utils.format_seconds_to_timestamp(sys_utils.get_total_uptime_in_seconds())
-
-        self.perf_sig_sys_mem_labels_info.emit(
+        system_memory_labels_frame = CWTM_PerformanceSystemMemoryLabelsFrame(
             n_file_descriptors, n_sys_threads, n_sys_processes,
-            total_system_uptime, total_system_mem_commit
-        )
+            total_system_uptime, total_system_mem_commit)
+        self.perf_sig_sys_mem_labels_info.emit(system_memory_labels_frame)
 
     def get_cpu_usage_history_graphs(self, cpu_usage: float, kernel_usage: float) -> tuple[list, list]:
         """
@@ -339,7 +352,7 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM
         """
         current_cpu_usage: float = psutil.cpu_percent()
         kernel_cpu_time: float = psutil.cpu_times_percent().system
-        current_cpu_graph_usage, current_cpu_kernel_graph_usage = self.get_cpu_usage_history_graphs(
+        current_user_cpu_graph_usage, current_cpu_kernel_graph_usage = self.get_cpu_usage_history_graphs(
             current_cpu_usage, kernel_cpu_time)
 
         *total_iter_processes, = psutil.process_iter()
@@ -349,15 +362,18 @@ class CWTM_PerformanceInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM
         memory_total, _ = sys_utils.get_memory_size_info(current_memory_info.total)
         memory_used, _ = sys_utils.get_memory_size_info(current_memory_info.used)
 
-        self.perf_sig_graphical_widgets_info.emit(
+        status_bar_labels_frame = CWTM_PerformanceStatusBarLabelsFrame(
+            len(total_iter_processes), current_memory_usage, current_cpu_usage)
+        cpu_usage_frame = CWTM_PerformanceGraphCPUUsageFrame(
+            current_user_cpu_graph_usage, current_cpu_kernel_graph_usage)
+        graphical_widgets_frame = CWTM_PerformanceGraphicalWidgetsFrame(
             current_cpu_usage, kernel_cpu_time,
-            current_memory_usage, memory_used, memory_total,
-        )
+            current_memory_usage, memory_used, memory_total)
 
-        self.perf_sig_cpu_usage_history_graphs_info.emit(current_cpu_graph_usage, current_cpu_kernel_graph_usage)
-        self.perf_sig_status_bar_labels_info.emit(
-            len(total_iter_processes), current_memory_usage, current_cpu_usage
-        )
+        self.perf_sig_graphical_widgets_info.emit(graphical_widgets_frame)
+
+        self.perf_sig_cpu_usage_history_graphs_info.emit(cpu_usage_frame)
+        self.perf_sig_status_bar_labels_info.emit(status_bar_labels_frame)
 
         if not self._is_authorized:
             return
@@ -379,7 +395,7 @@ class CWTM_ServicesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_In
         svc_sig_all_system_services (pyqtSignal): Signal emitted with a list of registered system services.
             - list: List of service names, PID, description, and status.
     """
-    svc_sig_all_system_services = pyqtSignal(list)
+    svc_sig_all_system_services: pyqtSignal = pyqtSignal(list)
 
     def __init__(self, timeout_interval: int, *args: dict, **kwargs: dict) -> None:
         """
@@ -407,7 +423,7 @@ class CWTM_ServicesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_In
         if not force_run and not self._is_authorized:
             return
 
-        *system_all_services, = sys_utils.get_all_system_services()
+        system_all_services = [CWTM_ServiceInformationFrame(*service) for service in sys_utils.get_all_system_services()]
         self.svc_sig_all_system_services.emit(system_all_services)
 
 class CWTM_UsersInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_InformationRetrievalAuthorization):
@@ -427,5 +443,6 @@ class CWTM_UsersInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_Infor
             return
 
         *system_user_details, = sys_utils.get_all_user_accounts_details()
+        system_user_details_data = [CWTM_UsersSystemInformationFrame(*user) for user in system_user_details]
         *user_gtk_icons, = sys_utils.get_user_account_type_icon(system_user_details)
-        self.users_sig_user_account_info.emit(system_user_details, user_gtk_icons)
+        self.users_sig_user_account_info.emit(system_user_details_data, user_gtk_icons)

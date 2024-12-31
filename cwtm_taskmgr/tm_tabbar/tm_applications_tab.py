@@ -15,7 +15,8 @@ from ..core_properties import (
     CWTM_ProcessesTabTableColumns,
     CWTM_TableWidgetItemProperties,
     CWTM_GlobalUpdateIntervals,
-    CWTM_TabWidgetColumnEnum
+    CWTM_TabWidgetColumnEnum,
+    CWTM_ApplicationInformationFrame
 )
 from ..qt_components import (
     CWTM_TableWidgetController, 
@@ -102,7 +103,7 @@ class CWTM_ApplicationsTab(CWTM_TableWidgetController):
         )
         confirmation_dialog.exec_()
 
-    def update_applications_page(self, gtk_running_apps_icons):
+    def update_applications_page(self, gtk_running_apps_icons: list[CWTM_ApplicationInformationFrame]) -> None:
         current_selected_item = self.get_current_selected_item_from_column(
             self.parent.app_t_task_list_table,
             CWTM_ApplicationsTabTableColumns.APP_T_TASK_LIST_TABLE_PID
@@ -110,15 +111,16 @@ class CWTM_ApplicationsTab(CWTM_TableWidgetController):
         
         self.parent.app_t_task_list_table.setRowCount(0)
         
-        for gtk_app_name, gtk_app_pid, gtk_app_icon in gtk_running_apps_icons:
-            if not gtk_app_name:
+        for gtk_application in gtk_running_apps_icons:
+            if not gtk_application.gtk_app_name:
                 continue
 
             self.append_row_to_table(
                 self.parent.app_t_task_list_table, CWTM_ApplicationsTabTableColumns,
-                CWTM_TableWidgetItemProperties(item_label=gtk_app_name, item_icon=gtk_app_icon),
+                CWTM_TableWidgetItemProperties(
+                    item_label=gtk_application.gtk_app_name, item_icon=gtk_application.gtk_app_icon),
                 CWTM_TableWidgetItemProperties(item_label="Running"), # maybe change later
-                CWTM_TableWidgetItemProperties(item_label=str(gtk_app_pid)) # for private use, maybe also change later
+                CWTM_TableWidgetItemProperties(item_label=str(gtk_application.gtk_app_pid)) # for private use, maybe also change later
             )
 
         if current_selected_item is not None:

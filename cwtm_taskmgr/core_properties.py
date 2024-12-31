@@ -1,4 +1,5 @@
 import enum
+import psutil
 import dataclasses
 
 from . import sys_utils
@@ -24,12 +25,18 @@ class CWTM_ResourceLevelBarParameters:
 
 
 @dataclasses.dataclass
+class CWTM_NetworkInterfaceUsageFrame:
+    i_net_name:             str
+    i_net_bytes_sent:       float
+    i_net_bytes_received:   float
+
+@dataclasses.dataclass
 class CWTM_NetworkInterfaceGraphProperties:
     i_net_graph:            PlotWidget
     i_net_groupbox:         QGroupBox
     i_net_sent_data_x:      list
     i_net_sent_data_y:      list
-    i_net_recv_data_x :     list
+    i_net_recv_data_x:      list
     i_net_recv_data_y:      list
     i_net_total_data_x:     list
     i_net_total_data_y:     list
@@ -37,6 +44,72 @@ class CWTM_NetworkInterfaceGraphProperties:
     i_net_recv_plot_item:   PlotDataItem.PlotDataItem
     i_net_total_plot_item:  PlotDataItem.PlotDataItem
     i_net_full_name:        str                     = ""
+
+
+@dataclasses.dataclass
+class CWTM_ProcessInformationFrame:
+    p_name:                 str
+    p_pid:                  int
+    p_username:             str
+    p_cpu_usage:            float
+    p_memory_usage:         psutil._pslinux.pmem
+    p_description:          list[str] | None
+    p_exe:                  str
+
+
+@dataclasses.dataclass
+class CWTM_ApplicationInformationFrame:
+    gtk_app_name:           str | None
+    gtk_app_pid:            sys_utils.Gtk.Image
+    gtk_app_icon:           int
+
+
+@dataclasses.dataclass
+class CWTM_PerformanceStatusBarLabelsFrame:
+    n_processes:            int
+    v_mem_percent:          float
+    cpu_usage:              float
+
+
+@dataclasses.dataclass
+class CWTM_PerformanceGraphCPUUsageFrame:
+    user_cpu_usage:         list[int]
+    kernel_cpu_usage:       list[int]
+
+
+@dataclasses.dataclass
+class CWTM_PerformanceSystemMemoryLabelsFrame:
+    n_file_descriptors:     int
+    n_sys_threads:          int
+    n_sys_processes:        int
+    total_sys_uptime:       str
+    total_sys_mem_commit:   str
+
+
+@dataclasses.dataclass
+class CWTM_PerformanceGraphicalWidgetsFrame:
+    current_cpu_usage:      float
+    kernel_cpu_time:        float
+    current_memory_usage:   float
+    memory_used:            float
+    memory_total:           float
+
+
+@dataclasses.dataclass
+class CWTM_ServiceInformationFrame:
+    svc_name:               str
+    svc_pid:                int
+    svc_desc:               str
+    svc_status:             str
+
+
+@dataclasses.dataclass
+class CWTM_UsersSystemInformationFrame:
+    u_user_name:            str
+    u_user_uid:             int
+    u_is_logged_in:         bool
+    u_real_name:            str
+    u_home_dir:             str
 
 
 @dataclasses.dataclass

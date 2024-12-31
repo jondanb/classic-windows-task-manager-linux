@@ -9,7 +9,8 @@ from ..core_properties import (
     CWTM_ServicesTabTableColumns,
     CWTM_TableWidgetItemProperties,
     CWTM_TabWidgetColumnEnum,
-    CWTM_GlobalUpdateIntervals
+    CWTM_GlobalUpdateIntervals,
+    CWTM_ProcessInformationFrame
 )
 from ..qt_components import (
     CWTM_TableWidgetController, 
@@ -122,7 +123,7 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
         confirmation_dialog.exec_()
         
     #slot
-    def update_processes_page(self, gtk_running_processes):
+    def update_processes_page(self, gtk_running_processes: list[CWTM_ProcessInformationFrame]) -> None:
         current_selected_item = self.get_current_selected_item_from_column(
             self.parent.proc_t_proc_list_table,
             CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_PID
@@ -130,24 +131,25 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
         self.parent.proc_t_proc_list_table.setRowCount(0)
         self.parent.proc_t_proc_list_table.setSortingEnabled(False)
 
-        for (p_name, p_pid, p_username, \
-                p_cpu, p_mem, p_desc, p_exe) in gtk_running_processes:
+        for process_information in gtk_running_processes:
             proc_memory_mb = sys_utils.convert_proc_mem_b_to_mb(
-                p_mem.rss, include_unit_label=False)
-            proc_desc = shlex.join(p_desc if p_desc is not None else [])
+                process_information.p_memory_usage.rss, include_unit_label=False)
+            proc_desc = shlex.join(
+                process_information.p_description if process_information.p_description is not None else [])
             
             self.append_row_to_table(
                 self.parent.proc_t_proc_list_table, CWTM_ProcessesTabTableColumns,
-                CWTM_TableWidgetItemProperties(item_label=p_name, item_tool_tip=p_name),
-                CWTM_TableWidgetItemProperties(item_label=str(p_pid), 
+                CWTM_TableWidgetItemProperties(
+                    item_label=process_information.p_name, item_tool_tip=process_information.p_name),
+                CWTM_TableWidgetItemProperties(item_label=str(process_information.p_pid), 
                     item_type=CWTM_QNumericTableWidgetItem),
-                CWTM_TableWidgetItemProperties(item_label=p_username),
-                CWTM_TableWidgetItemProperties(item_label=str(p_cpu), 
+                CWTM_TableWidgetItemProperties(item_label=process_information.p_username),
+                CWTM_TableWidgetItemProperties(item_label=str(process_information.p_cpu_usage), 
                     item_type=CWTM_QNumericTableWidgetItem),
                 CWTM_TableWidgetItemProperties(item_label=proc_memory_mb,
                     item_type=CWTM_QNumericTableWidgetItem, item_unit="MB"),
                 CWTM_TableWidgetItemProperties(item_label=proc_desc, item_tool_tip=proc_desc),
-                CWTM_TableWidgetItemProperties(item_label=p_exe) # hidden
+                CWTM_TableWidgetItemProperties(item_label=process_information.p_exe) # hidden
             )
         self.parent.proc_t_proc_list_table.setSortingEnabled(True)
 

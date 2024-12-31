@@ -6,7 +6,8 @@ from ..core_properties import (
     CWTM_UsersTabTableColumns,
     CWTM_TableWidgetItemProperties,
     CWTM_GlobalUpdateIntervals,
-    CWTM_TabWidgetColumnEnum
+    CWTM_TabWidgetColumnEnum,
+    CWTM_UsersSystemInformationFrame
 )
 from ..qt_components import CWTM_TableWidgetController
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
@@ -47,22 +48,21 @@ class CWTM_UsersTab(CWTM_TableWidgetController):
         custom_applications_context_menu.exec_(
             self.parent.users_t_users_list_table.mapToGlobal(position))
             
-    def update_users_page(self, system_user_details: list, user_gtk_icons: list):
+    def update_users_page(self, system_user_details: list[CWTM_UsersSystemInformationFrame], user_gtk_icons: list) -> None:
         self.parent.users_t_users_list_table.setRowCount(0)
 
-        for user_gtk_icon, (u_user_name, u_user_uid, u_is_logged_in,
-             u_real_name, u_home_dir) in zip(user_gtk_icons, system_user_details):
-            is_logged_in_label = "Active" if u_is_logged_in else "Disconnected"
+        for user_gtk_icon, user_information in zip(user_gtk_icons, system_user_details):
+            is_logged_in_label = "Active" if user_information.u_is_logged_in else "Disconnected"
 
             self.append_row_to_table(
                 self.parent.users_t_users_list_table, CWTM_UsersTabTableColumns,
-                CWTM_TableWidgetItemProperties(item_label=u_user_name, 
-                    item_icon=user_gtk_icon),
-                CWTM_TableWidgetItemProperties(item_label=str(u_user_uid), 
-                    item_type=CWTM_QNumericTableWidgetItem),
+                CWTM_TableWidgetItemProperties(
+                    item_label=user_information.u_user_name, item_icon=user_gtk_icon),
+                CWTM_TableWidgetItemProperties(
+                    item_label=str(user_information.u_user_uid), item_type=CWTM_QNumericTableWidgetItem),
                 CWTM_TableWidgetItemProperties(item_label=is_logged_in_label),
-                CWTM_TableWidgetItemProperties(item_label=u_real_name),
-                CWTM_TableWidgetItemProperties(item_label=u_home_dir)
+                CWTM_TableWidgetItemProperties(item_label=user_information.u_real_name),
+                CWTM_TableWidgetItemProperties(item_label=user_information.u_home_dir)
             ) 
 
     @pyqtSlot()

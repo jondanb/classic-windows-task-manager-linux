@@ -175,7 +175,7 @@ def get_all_system_services():
     service_units = l_manager.ListUnits()
 
     for (svc_name, svc_desc, svc_load_status, svc_running_status,
-         svc_health_status, _, svc_path, _, _ , _) in service_units:
+         _, _, svc_path, _, _ , _) in service_units:
         if svc_name.endswith(".service"):
             svc_pid = get_pid_from_service_obj_path(l_bus, svc_path)
             yield (svc_name, svc_pid, svc_desc, svc_running_status)

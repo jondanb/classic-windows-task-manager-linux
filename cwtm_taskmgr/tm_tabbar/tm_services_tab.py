@@ -9,7 +9,8 @@ from ..core_properties import (
     CWTM_ProcessesTabTableColumns,
     CWTM_TableWidgetItemProperties,
     CWTM_GlobalUpdateIntervals,
-    CWTM_TabWidgetColumnEnum
+    CWTM_TabWidgetColumnEnum,
+    CWTM_ServiceInformationFrame
 )
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
 from ..thread_workers import CWTM_ServicesInfoRetrievalWorker
@@ -67,19 +68,20 @@ class CWTM_ServicesTab(CWTM_TableWidgetController):
         self.custom_services_context_menu.exec_(
             self.parent.svc_t_services_list_table.mapToGlobal(position))
 
-    def update_services_page(self, system_all_services: list) -> None:
+    def update_services_page(self, system_all_services: list[CWTM_ServiceInformationFrame]) -> None:
         self.parent.svc_t_services_list_table.setRowCount(0)
         self.parent.svc_t_services_list_table.setSortingEnabled(False)
 
-        for (svc_name, svc_pid, svc_desc, svc_status) \
-            in system_all_services:
+        for system_service in system_all_services:
             self.append_row_to_table(
                 self.parent.svc_t_services_list_table, CWTM_ServicesTabTableColumns,
-                CWTM_TableWidgetItemProperties(item_label=svc_name, item_tool_tip=svc_name),
-                CWTM_TableWidgetItemProperties(item_label=str(svc_pid), 
+                CWTM_TableWidgetItemProperties(
+                    item_label=system_service.svc_name, item_tool_tip=system_service.svc_name),
+                CWTM_TableWidgetItemProperties(item_label=str(system_service.svc_pid), 
                     item_type=CWTM_QNumericTableWidgetItem),
-                CWTM_TableWidgetItemProperties(item_label=svc_desc, item_tool_tip=svc_desc),
-                CWTM_TableWidgetItemProperties(svc_status.upper())
+                CWTM_TableWidgetItemProperties(
+                    item_label=system_service.svc_desc, item_tool_tip=system_service.svc_desc),
+                CWTM_TableWidgetItemProperties(system_service.svc_status.upper())
             )
 
         self.parent.svc_t_services_list_table.setSortingEnabled(True)

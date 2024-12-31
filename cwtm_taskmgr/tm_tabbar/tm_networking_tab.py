@@ -12,7 +12,8 @@ from ..core_properties import (
     CWTM_NetworkingBytesLabelsColours,
     CWTM_NetworkInterfaceGraphProperties,
     CWTM_TableWidgetItemProperties,
-    CWTM_GlobalUpdateIntervals
+    CWTM_GlobalUpdateIntervals,
+    CWTM_NetworkInterfaceUsageFrame
 )
 from ..qt_widgets import CWTM_ResourceGraphWidget
 from ..thread_workers import CWTM_NetworkingInterfaceRetrievalWorker
@@ -108,25 +109,26 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
             if not self.parent.tm_view_menu_nas_bytes_total.isChecked():
                 n_interface.i_net_total_plot_item.clear()
 
-    def update_networking_page(self, n_interface, n_b_sent, n_b_recv):
-        if n_interface not in self.NETWORK_INTERFACE_GRAPHS:
+    def update_networking_page(self, network_usage_frame: CWTM_NetworkInterfaceUsageFrame):
+        if (n_interface := network_usage_frame.i_net_name) not in self.NETWORK_INTERFACE_GRAPHS:
             self.register_network_interface(n_interface)
 
         network_interface_graph = self.NETWORK_INTERFACE_GRAPHS[n_interface]
         
         network_interface_graph.i_net_graph.update_plot(
             network_interface_graph.i_net_sent_plot_item, 
-            n_b_sent if self.parent.tm_view_menu_nas_bytes_sent.isChecked() else 0,
+            network_usage_frame.i_net_bytes_sent if self.parent.tm_view_menu_nas_bytes_sent.isChecked() else 0,
             network_interface_graph.i_net_sent_data_x, network_interface_graph.i_net_sent_data_y
         )
         network_interface_graph.i_net_graph.update_plot(
             network_interface_graph.i_net_recv_plot_item, 
-            n_b_recv if self.parent.tm_view_menu_nas_bytes_received.isChecked() else 0,
+            network_usage_frame.i_net_bytes_received if self.parent.tm_view_menu_nas_bytes_received.isChecked() else 0,
             network_interface_graph.i_net_recv_data_x, network_interface_graph.i_net_recv_data_y
         )
         network_interface_graph.i_net_graph.update_plot(
             network_interface_graph.i_net_total_plot_item, 
-            n_b_recv + n_b_sent if self.parent.tm_view_menu_nas_bytes_total.isChecked() else 0,
+            network_usage_frame.i_net_bytes_received + network_usage_frame.i_net_bytes_sent \
+                if self.parent.tm_view_menu_nas_bytes_total.isChecked() else 0,
             network_interface_graph.i_net_total_data_x, network_interface_graph.i_net_total_data_y
         )
 
@@ -138,8 +140,11 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
             self.parent.net_t_network_list_table.setRowCount(0)
 
         self.set_network_interface_table_information(
-            network_interface_graph.i_net_graph, n_b_sent, n_b_recv, 
-            n_interface, network_interface_graph.i_net_full_name
+            network_interface_graph.i_net_graph, 
+            network_usage_frame.i_net_bytes_sent, 
+            network_usage_frame.i_net_bytes_received, 
+            n_interface, 
+            network_interface_graph.i_net_full_name
         )
 
     def set_network_interface_table_information(
