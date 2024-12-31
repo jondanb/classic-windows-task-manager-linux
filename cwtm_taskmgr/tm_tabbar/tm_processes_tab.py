@@ -1,3 +1,4 @@
+import os
 import enum
 import shlex
 import functools
@@ -12,7 +13,8 @@ from ..core_properties import (
 from ..qt_components import (
     CWTM_TableWidgetController, 
     CWTM_TaskManagerConfirmationDialog,
-    CWTM_GlobalUpdateIntervalHandler
+    CWTM_GlobalUpdateIntervalHandler,
+    CWTM_ErrorMessageDialog
 )
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
 from ..thread_workers import CWTM_ProcessesInfoRetrievalWorker
@@ -42,24 +44,39 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
             self.process_signal_proc_t_end_process_button)
         self.parent.proc_t_proc_list_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.parent.proc_t_proc_list_table.customContextMenuRequested.connect(
-            self.process_custom_applications_context_menu_request)
+            self.process_custom_process_context_menu_request)
+        self.custom_applications_context_menu = CWTM_ProcessesTabCustomContextMenu(
+            parent=self.parent)
+        self.custom_applications_context_menu.proc_open_file_location_action.triggered.connect(
+            self.process_context_menu_action_open_file_location)
+        self.custom_applications_context_menu.proc_end_process_action.triggered.connect(
+            self.process_signal_proc_t_end_process_button)
+        self.custom_applications_context_menu.proc_end_process_tree_action.triggered.connect(
+            functools.partial(self.process_signal_proc_t_end_process_button, True))
 
-    def process_custom_applications_context_menu_request(self, position):
+    def process_context_menu_action_open_file_location(self):
+        current_selected_process_executable = self.get_current_selected_item_from_column(
+            self.parent.proc_t_proc_list_table, 
+            CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_EXECUTABLE)
+
+        executable_path_folder = os.path.dirname(current_selected_process_executable)
+        sys_utils.execute_system_uri_command(executable_path_folder)
+
+    def process_custom_process_context_menu_request(self, position):
         current_selected_item = self.parent.proc_t_proc_list_table.itemAt(position)
         
         if current_selected_item is None:
             return
 
-        custom_applications_context_menu = CWTM_ProcessesTabCustomContextMenu(parent=self.parent)
-        custom_applications_context_menu.exec_(
+        self.custom_applications_context_menu.exec_(
             self.parent.proc_t_proc_list_table.mapToGlobal(position))
 
-    def process_signal_proc_t_end_process_button(self):
-        selected_process_pid = CWTM_TableWidgetController.get_current_selected_item_from_column(
+    def process_signal_proc_t_end_process_button(self, end_process_tree=False):
+        selected_process_pid = self.get_current_selected_item_from_column(
             self.parent.proc_t_proc_list_table,
             CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_PID
         )
-        selected_process_name = CWTM_TableWidgetController.get_current_selected_item_from_column(
+        selected_process_name = self.get_current_selected_item_from_column(
             self.parent.proc_t_proc_list_table,
             CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_IMAGE_NAME
         )
@@ -68,7 +85,8 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
             return
 
         confirmation_dialog = CWTM_TaskManagerConfirmationDialog(
-            parent=self.parent, proc_name=selected_process_name, proc_pid=int(selected_process_pid)
+            parent=self.parent, proc_name=selected_process_name, 
+            proc_pid=int(selected_process_pid), end_proc_tree=end_process_tree
         )
         confirmation_dialog.exec_()
         

@@ -35,9 +35,9 @@ class CWTM_ServicesTab(CWTM_TableWidgetController):
 
         self.parent.svc_t_services_list_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.parent.svc_t_services_list_table.customContextMenuRequested.connect(
-            self.process_custom_applications_context_menu_request)
+            self.process_custom_services_context_menu_request)
 
-    def process_custom_applications_context_menu_request(self, position):
+    def process_custom_services_context_menu_request(self, position):
         current_selected_item = self.parent.svc_t_services_list_table.itemAt(position)
         
         if current_selected_item is None:
@@ -71,8 +71,8 @@ class CWTM_ServicesTab(CWTM_TableWidgetController):
 
     def update_thread_worker_info_retrieval_authorization(self, index: int) -> None:
         """
-        Authorizes the processes thread worker to emit system process information to the slot
-        `update_processes_page`
+        Authorizes the services thread worker to emit system service information to the slot
+        `update_services_page`
 
         Arguments:
             - index: the current index of the tab widget

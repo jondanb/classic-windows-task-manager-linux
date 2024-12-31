@@ -5,7 +5,6 @@ import dbus
 import shlex
 import shutil
 import psutil
-import traceback
 import subprocess
 
 gi.require_version("Gtk", "3.0")
@@ -15,7 +14,6 @@ gi.require_version("AccountsService", "1.0")
 from gi.repository import Gio, Gtk, AccountsService, GLib
 
 from PyQt5.QtGui import QIcon, QImage, QPixmap
-from PyQt5.QtWidgets import QMessageBox
 
 
 SYSTEM_NETWORK_INTERFACE_TYPE_MAP = {
@@ -123,7 +121,6 @@ def execute_system_uri_command(command):
         return subprocess.call(shlex.split(command))
     return subprocess.call(["xdg-open"] + shlex.split(command))
 
-
 def show_file_properties(filepath):
     session_bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
 
@@ -154,6 +151,17 @@ def gtk_image_to_qicon(gtk_image):
     qpixmap = QPixmap.fromImage(qimage)
     qicon = QIcon(qpixmap)
     return qicon
+
+def set_nice_of_process(pid: int, nice: int):
+    """
+    Sets the niceness of a process by its PID
+
+    Arguments:
+        - pid (int): The process ID of the process to set niceness
+        - nice (int): The niceness to set the process
+    """
+    process = psutil.Process(pid)
+    process.set_nice(nice)
 
 def get_all_system_services():
     l_bus = dbus.SystemBus()
@@ -197,31 +205,14 @@ def get_user_account_type_icon(all_user_info):
             image = Gtk.Image.new_from_pixbuf(pixbuf)
             yield image
 
-def show_error_message(error_message, exception_object):
-    formatted_traceback = "".join(traceback.format_exception(
-        exception_object, exception_object, exception_object.__traceback__
-    ))
-    formatted_exception_only = "".join(traceback.format_exception_only(
-        exception_object
-    ))
-
-    error_message_dialog = QMessageBox()
-    error_message_dialog.setIcon(QMessageBox.Critical)
-    error_message_dialog.setText(error_message)
-    error_message_dialog.setInformativeText(formatted_exception_only)
-    error_message_dialog.setDetailedText(formatted_traceback)
-    error_message_dialog.setWindowTitle("Error")
-    error_message_dialog.exec_()
-
-def end_process_by_pid(pid):
+def end_process_by_pid(pid, *, end_process_tree=False):
     selected_process = psutil.Process(pid)
 
-    try:
-        selected_process.terminate()
-    except psutil.AccessDenied as exc:
-        show_error_message(
-            "You do not have the required permissions to kill this process.", exc
-        )
+    if end_process_tree:
+        for child_process in selected_process.children(recursive=True):
+            child_process.kill()
+
+    selected_process.terminate()
 
 def check_if_network_interface_is_connected(interface_name):
     interface_stats = psutil.net_if_stats()

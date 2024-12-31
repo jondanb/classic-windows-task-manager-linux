@@ -1,5 +1,6 @@
 
 import functools
+import traceback
 
 from . import sys_utils
 from .qt_widgets import CWTM_QNumericTableWidgetItem
@@ -31,28 +32,77 @@ from PyQt5.QtCore import (
     pyqtSignal, pyqtSlot, 
     QTimer
 )
+from PyQt5.QtWidgets import QMessageBox
+
+
+class CWTM_ErrorMessageDialog(QMessageBox):
+    def __init__(self, error_message, exception):
+        super().__init__()
+
+        formatted_traceback = "".join(traceback.format_exception(
+            exception, exception, exception.__traceback__
+        ))
+        formatted_exception_only = "".join(traceback.format_exception_only(
+            exception
+        ))
+
+        self.setIcon(QMessageBox.Critical)
+        self.setText(error_message)
+        self.setInformativeText(formatted_exception_only)
+        self.setDetailedText(formatted_traceback)
+        self.setWindowTitle("Error")
+        self.setStandardButtons(QMessageBox.Ok)
+        self.setWindowModality(Qt.ApplicationModal)
+
+    def show_error_dialog(self):
+        self.exec_()
+
+    @staticmethod
+    def show_error_dialog_on_error(error_message):
+        """
+        Decorator to show an error dialog with the specified error_message
+        when an exception occurs in the decorated function.
+
+        :param error_message: The main error message to display in the dialog.
+        """
+        def decorator(function):
+            @functools.wraps(function)
+            def wrapper(self, *args, **kwargs):
+                try:
+                    return function(self, *args, **kwargs)
+                except Exception as e:
+                    dialog = CWTM_ErrorMessageDialog(error_message, e)
+                    dialog.show_error_dialog()
+            return wrapper
+        return decorator
 
 
 class CWTM_TaskManagerConfirmationDialog(Ui_CWTMTaskManagerConfirmationDialog):
-    def __init__(self, *args, proc_name, proc_pid, **kwargs):
+    def __init__(self, *args, proc_name, proc_pid, end_proc_tree=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
 
         self.proc_name = proc_name
         self.proc_pid = proc_pid
+        self.end_proc_tree = end_proc_tree
 
         self.set_process_name(self.proc_name)
 
         self.cancel_button.clicked.connect(self.close)
         self.confirm_button.clicked.connect(self.close)
-        self.confirm_button.clicked.connect(
-            functools.partial(sys_utils.end_process_by_pid, proc_pid)
-        )
+        self.confirm_button.clicked.connect(self.end_process_by_pid)
 
     def set_process_name(self, process_name):
         self.end_process_title_label.setText(
             f"Do you want to end \"{process_name}\"?"
         )
+
+    @pyqtSlot(bool)
+    @CWTM_ErrorMessageDialog.show_error_dialog_on_error(
+        "You do not have the required permissions to kill this process.")
+    def end_process_by_pid(self, _):
+        sys_utils.end_process_by_pid(
+            self.proc_pid, end_process_tree=self.end_proc_tree)
 
 
 class CWTM_TaskManagerNewTaskDialog(Ui_CWTM_TaskManagerNewTaskDialog):
@@ -185,22 +235,22 @@ class CWTM_TimeoutIntervalChangeSignal(QObject):
     
     @classmethod
     def thread_worker_timeout_interval_loop(cls, *, no_timeout_pause_check=False):
-        def thread_worker_decorator_function(frame_function):
+        def decorator(frame_function):
             @functools.wraps(frame_function)
-            def information_retrieval_function_wrapper(self, *args: dict, disable_loop: bool=False, **kwargs: dict) -> None:
+            def wrapper(self, *args: dict, disable_loop: bool=False, **kwargs: dict) -> None:
                 if disable_loop:
                     frame_function(self, *args, **kwargs)
                 elif (
                     not no_timeout_pause_check and
                     self.timeout_interval == CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_PAUSED):
                     QTimer.singleShot(cls.TIMEOUT_INTERVAL_CHECK_PAUSE_UPDATE, functools.partial(
-                        information_retrieval_function_wrapper, self, *args, **kwargs))
+                        wrapper, self, *args, **kwargs))
                 else:
                     frame_function(self, *args, **kwargs)
                     QTimer.singleShot(self.timeout_interval, functools.partial(
-                        information_retrieval_function_wrapper, self, *args, **kwargs))
-            return information_retrieval_function_wrapper
-        return thread_worker_decorator_function
+                        wrapper, self, *args, **kwargs))
+            return wrapper
+        return decorator
 
 
 class CWTM_InformationRetrievalAuthorization:

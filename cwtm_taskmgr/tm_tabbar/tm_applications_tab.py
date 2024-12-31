@@ -20,7 +20,8 @@ from ..qt_components import (
     CWTM_TableWidgetController, 
     CWTM_TaskManagerConfirmationDialog,
     CWTM_GlobalUpdateIntervalHandler,
-    CWTM_TaskManagerNewTaskDialog
+    CWTM_TaskManagerNewTaskDialog,
+    CWTM_ErrorMessageDialog
 )
 from ..thread_workers import CWTM_ApplicationsInfoRetrievalWorker
 from cwtm_taskmgr_ui.cwtm_taskmgr_ui import CWTM_ApplicationsTabCustomContextMenu
@@ -67,7 +68,9 @@ class CWTM_ApplicationsTab(CWTM_TableWidgetController):
     def process_signal_app_t_switch_to_button(self):
         return NotImplemented
     
-    def process_signal_app_t_end_task_button(self):
+    @CWTM_ErrorMessageDialog.show_error_dialog_on_error(
+        "You do not have the required permissions to kill this process.")
+    def process_signal_app_t_end_task_button(self, *_):
         selected_application_pid = CWTM_TableWidgetController.get_current_selected_item_from_column(
             self.parent.app_t_task_list_table,
             CWTM_ApplicationsTabTableColumns.APP_T_TASK_LIST_TABLE_PID
@@ -116,8 +119,8 @@ class CWTM_ApplicationsTab(CWTM_TableWidgetController):
 
     def update_thread_worker_info_retrieval_authorization(self, index: int) -> None:
         """
-        Authorizes the processes thread worker to emit system process information to the slot
-        `update_processes_page`
+        Authorizes the applications thread worker to emit system application information to the slot
+        `update_applications_page`
 
         Arguments:
             - index: the current index of the tab widget

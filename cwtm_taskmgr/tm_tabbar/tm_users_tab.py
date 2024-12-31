@@ -32,12 +32,12 @@ class CWTM_UsersTab(CWTM_TableWidgetController):
 
         self.parent.users_t_users_list_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.parent.users_t_users_list_table.customContextMenuRequested.connect(
-            self.process_custom_applications_context_menu_request)
+            self.process_custom_users_context_menu_request)
 
         self.parent.users_t_logoff_button.setDisabled(True) # Not Implemented
         self.parent.users_t_send_message_button.setDisabled(True) # Not Implemented
 
-    def process_custom_applications_context_menu_request(self, position):
+    def process_custom_users_context_menu_request(self, position):
         current_selected_item = self.parent.users_t_users_list_table.itemAt(position)
         
         if current_selected_item is None:
@@ -71,8 +71,8 @@ class CWTM_UsersTab(CWTM_TableWidgetController):
 
     def update_thread_worker_info_retrieval_authorization(self, index: int) -> None:
         """
-        Authorizes the processes thread worker to emit system process information to the slot
-        `update_processes_page`
+        Authorizes the users thread worker to emit system user information to the slot
+        `update_users_page`
 
         Arguments:
             - index: the current index of the tab widget
