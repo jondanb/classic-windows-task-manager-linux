@@ -10,7 +10,9 @@ from ..core_properties import (
     CWTM_TableWidgetItemProperties,
     CWTM_TabWidgetColumnEnum,
     CWTM_GlobalUpdateIntervals,
-    CWTM_ProcessInformationFrame
+    CWTM_ProcessInformationFrame,
+    CWTM_PriorityNicenessLevels,
+    CWTM_PriorityNicenessRanges
 )
 from ..qt_components import (
     CWTM_TableWidgetController, 
@@ -22,15 +24,19 @@ from ..qt_widgets import CWTM_QNumericTableWidgetItem
 from ..thread_workers import CWTM_ProcessesInfoRetrievalWorker
 
 from PyQt5.QtCore import (
-    Qt, QTimer,
+    Qt, QTimer, QObject,
     pyqtSignal, pyqtSlot,
     QThread
 )
+from PyQt5.QtWidgets import QAction
+
 from cwtm_taskmgr_ui.cwtm_taskmgr_ui import CWTM_ProcessesTabCustomContextMenu
 
 
-class CWTM_ProcessesTab(CWTM_TableWidgetController):
-    def __init__(self, parent):
+class CWTM_ProcessesTab(QObject, CWTM_TableWidgetController):
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.parent = parent
 
         self.PROC_T_PROC_LIST_TABLE_UPDATE_FREQUENCY = \
@@ -58,8 +64,11 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
         self.custom_processes_context_menu.proc_properties_action.triggered.connect(
             self.process_context_menu_action_properties)
         self.custom_processes_context_menu.proc_go_to_service_action.triggered.connect(
-            self.process_context_menu_action_go_to_service
-            )
+            self.process_context_menu_action_go_to_service)
+        self.custom_processes_context_menu.proc_set_priority_menu_action_group.triggered.connect(
+            self.process_context_menu_action_set_priority)
+        self.custom_processes_context_menu.proc_set_priority_menu.aboutToShow.connect(
+            self.initialize_context_menu_action_priority_level)
 
     def process_context_menu_action_open_file_location(self):
         current_selected_process_executable = self.get_current_selected_item_from_column(
@@ -94,12 +103,34 @@ class CWTM_ProcessesTab(CWTM_TableWidgetController):
                 CWTM_TabWidgetColumnEnum.TASK_MANAGER_SERVICES_TAB)
             self.parent.svc_t_services_list_table.selectRow(service_tab_row)
 
+    @pyqtSlot(QAction)
+    @CWTM_ErrorMessageDialog.show_error_dialog_on_error(
+        "You do not have the required permissions to set the priority of this process.\n"
+        "This may be because you are setting a high priority to a process without root privileges.")
+    def process_context_menu_action_set_priority(self, action: QAction) -> None:
+        selected_process_pid = self.get_current_selected_item_from_column(
+            self.parent.proc_t_proc_list_table, 
+            CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_PID)
+
+        sys_utils.set_nice_of_process(int(selected_process_pid), action.niceness_level)
+
+    def initialize_context_menu_action_priority_level(self) -> None:
+        selected_process_pid = self.get_current_selected_item_from_column(
+            self.parent.proc_t_proc_list_table,
+            CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_PID
+        )
+        process_niceness = sys_utils.get_nice_of_process(int(selected_process_pid))
+
+        self.custom_processes_context_menu.set_priority_action_group_checked_from_niceness(
+            process_niceness)
+
+
     def process_custom_process_context_menu_request(self, position):
         current_selected_item = self.parent.proc_t_proc_list_table.itemAt(position)
         
         if current_selected_item is None:
             return
-
+    
         self.custom_processes_context_menu.exec_(
             self.parent.proc_t_proc_list_table.mapToGlobal(position))
 

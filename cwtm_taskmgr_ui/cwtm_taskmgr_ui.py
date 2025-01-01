@@ -13,6 +13,10 @@ from PyQt5.QtGui import *  # type: ignore
 from PyQt5.QtWidgets import *  # type: ignore
 
 from resources import resources
+from cwtm_taskmgr.core_properties import (
+    CWTM_PriorityNicenessRanges,
+    CWTM_PriorityNicenessLevels
+)
 
 
 class CWTM_ApplicationsTabCustomContextMenu(QMenu):
@@ -88,6 +92,13 @@ class CWTM_ProcessesTabCustomContextMenu(QMenu):
 
         self.proc_set_priority_normal.setChecked(True)
 
+        self.proc_set_priority_realtime.niceness_level = CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_REALTIME
+        self.proc_set_priority_high.niceness_level = CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_HIGH
+        self.proc_set_priority_above_normal.niceness_level = CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_ABOVE_NORMAL
+        self.proc_set_priority_normal.niceness_level = CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_NORMAL
+        self.proc_set_priority_below_normal.niceness_level = CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_BELOW_NORMAL
+        self.proc_set_priority_low.niceness_level = CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_LOW
+
         self.proc_set_priority_menu.addAction(self.proc_set_priority_realtime)
         self.proc_set_priority_menu.addAction(self.proc_set_priority_high)
         self.proc_set_priority_menu.addAction(self.proc_set_priority_above_normal)
@@ -127,6 +138,20 @@ class CWTM_ProcessesTabCustomContextMenu(QMenu):
         self.addSeparator()
         self.addAction(self.proc_properties_action)
         self.addAction(self.proc_go_to_service_action)
+
+    def set_priority_action_group_checked_from_niceness(self, process_niceness):
+        if process_niceness in CWTM_PriorityNicenessRanges.PRIORITY_RANGE_REALTIME:
+            self.proc_set_priority_realtime.setChecked(True)
+        elif process_niceness in CWTM_PriorityNicenessRanges.PRIORITY_RANGE_HIGH:
+            self.proc_set_priority_high.setChecked(True)
+        elif process_niceness in CWTM_PriorityNicenessRanges.PRIORITY_RANGE_ABOVE_NORMAL:
+            self.proc_set_priority_above_normal.setChecked(True)
+        elif process_niceness in CWTM_PriorityNicenessRanges.PRIORITY_RANGE_NORMAL:
+            self.proc_set_priority_normal.setChecked(True)
+        elif process_niceness in CWTM_PriorityNicenessRanges.PRIORITY_RANGE_BELOW_NORMAL:
+            self.proc_set_priority_below_normal.setChecked(True)
+        else: # CWTM_PriorityNicenessRanges.PRIORITY_RANGE_LOW
+            self.proc_set_priority_low.setChecked(True)
 
 
 class CWTM_ServicesTabCustomContextMenu(QMenu):

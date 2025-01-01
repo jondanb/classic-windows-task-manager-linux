@@ -48,7 +48,8 @@ class CWTM_UsersTab(CWTM_TableWidgetController):
         custom_applications_context_menu.exec_(
             self.parent.users_t_users_list_table.mapToGlobal(position))
             
-    def update_users_page(self, system_user_details: list[CWTM_UsersSystemInformationFrame], user_gtk_icons: list) -> None:
+    def update_users_page(
+        self, system_user_details: list[CWTM_UsersSystemInformationFrame], user_gtk_icons: list) -> None:
         self.parent.users_t_users_list_table.setRowCount(0)
 
         for user_gtk_icon, user_information in zip(user_gtk_icons, system_user_details):

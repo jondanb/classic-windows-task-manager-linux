@@ -210,7 +210,8 @@ class CWTM_PerformanceTab(CWTM_TableWidgetController):
         )
         memory_usage_history_layout.addWidget(self.memory_grid_widget)
 
-    def update_system_memory_labels(self, system_memory_labels: CWTM_PerformanceSystemMemoryLabelsFrame) -> None:
+    def update_system_memory_labels(
+        self, system_memory_labels: CWTM_PerformanceSystemMemoryLabelsFrame) -> None:
         self.parent.perf_system_handles_value.setText(
             str(system_memory_labels.n_file_descriptors))
         self.parent.perf_system_threads_value.setText(

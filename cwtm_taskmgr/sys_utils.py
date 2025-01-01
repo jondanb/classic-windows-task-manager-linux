@@ -152,7 +152,7 @@ def gtk_image_to_qicon(gtk_image):
     qicon = QIcon(qpixmap)
     return qicon
 
-def set_nice_of_process(pid: int, nice: int):
+def set_nice_of_process(pid: int, nice: int) -> None:
     """
     Sets the niceness of a process by its PID
 
@@ -161,7 +161,17 @@ def set_nice_of_process(pid: int, nice: int):
         - nice (int): The niceness to set the process
     """
     process = psutil.Process(pid)
-    process.set_nice(nice)
+    process.nice(nice)
+
+def get_nice_of_process(pid: int) -> int:
+    """
+    Gets the niceness of a process by its PID
+
+    Arguments:
+        - pid (int): The process ID of the process to get niceness
+    """
+    process = psutil.Process(pid)
+    return process.nice()
 
 def get_all_system_services():
     l_bus = dbus.SystemBus()

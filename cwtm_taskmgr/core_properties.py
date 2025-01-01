@@ -212,6 +212,36 @@ class CWTM_GlobalUpdateIntervals(enum.IntEnum):
     GLOBAL_UPDATE_INTERVAL_PAUSED                   = -1
     
 
+class CWTM_PriorityNicenessLevels(enum.IntEnum):
+    PRIORITY_LEVEL_LOW                              = 19
+    PRIORITY_LEVEL_BELOW_NORMAL                     = 14
+    PRIORITY_LEVEL_NORMAL                           = 0
+    PRIORITY_LEVEL_ABOVE_NORMAL                     = -7
+    PRIORITY_LEVEL_HIGH                             = -15
+    PRIORITY_LEVEL_REALTIME                         = -20
+
+
+class CWTM_PriorityNicenessRanges: # May change ranges at a later time
+    PRIORITY_RANGE_REALTIME = range(
+        CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_REALTIME - 1, 
+        CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_HIGH + 1)
+    PRIORITY_RANGE_HIGH = range(
+        CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_HIGH, 
+        CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_ABOVE_NORMAL + 1)
+    PRIORITY_RANGE_ABOVE_NORMAL = range(
+        CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_ABOVE_NORMAL, 
+        CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_NORMAL - 1)
+    PRIORITY_RANGE_NORMAL = range(
+        CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_NORMAL, 
+        CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_BELOW_NORMAL - 1)
+    PRIORITY_RANGE_BELOW_NORMAL = range(
+        CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_BELOW_NORMAL, 
+        CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_LOW - 1)
+    PRIORITY_RANGE_LOW = range(
+        CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_LOW,
+        CWTM_PriorityNicenessLevels.PRIORITY_LEVEL_LOW - 1)
+
+
 class CWTM_ResourceBarLevelColours:
     BAR_COLOUR_CPU_USAGE_TIME_FILLED                = QColor(0, 255, 0) # green
     BAR_COLOUR_CPU_USAGE_TIME_EMPTY                 = QColor(0, 100, 0) # dark green
