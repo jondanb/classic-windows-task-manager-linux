@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CWTM_CPUAffinitySelectorDialog</class>
+ <widget class="QDialog" name="CWTM_CPUAffinitySelectorDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>350</width>
+    <height>360</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>350</width>
+    <height>360</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>350</width>
+    <height>360</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QListWidget" name="check_box_list_widget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>60</y>
+     <width>331</width>
+     <height>251</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>&lt;All Processors&gt;</string>
+    </property>
+    <property name="checkState">
+     <enum>Unchecked</enum>
+    </property>
+    <property name="flags">
+     <set>ItemIsUserCheckable|ItemIsEnabled</set>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="process_affinity_label">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>20</y>
+     <width>321</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Which processors are allowed to run for &quot;PROCESS_NAME&quot;?</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="ok_button">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>320</y>
+     <width>80</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>OK</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="cancel_button">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>320</y>
+     <width>80</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Cancel</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

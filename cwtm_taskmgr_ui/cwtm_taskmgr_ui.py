@@ -72,6 +72,9 @@ class CWTM_ProcessesTabCustomContextMenu(QMenu):
         self.proc_debug_action = QAction("       Debug")
         self.proc_uac_virtualization_action = QAction("       UAC Virtualization")
         self.proc_create_dump_file_action = QAction("       Create Dump File")
+        self.proc_set_affinity_action = QAction("       Set Affinity")
+        self.proc_properties_action = QAction("       Properties")
+        self.proc_go_to_service_action = QAction("       Go To Service(s)")
 
         self.proc_set_priority_menu = QMenu("       Set Priority")
         self.proc_set_priority_menu_action_group = QActionGroup(self.proc_set_priority_menu)
@@ -114,10 +117,6 @@ class CWTM_ProcessesTabCustomContextMenu(QMenu):
         self.proc_set_priority_menu_action_group.addAction(self.proc_set_priority_low)
 
         self.proc_set_priority_menu_action_group.setExclusive(True)
-
-        self.proc_set_affinity_action = QAction("       Set Affinity")
-        self.proc_properties_action = QAction("       Properties")
-        self.proc_go_to_service_action = QAction("       Go To Service(s)")
 
         # Disabled unimplemented actions
         self.proc_debug_action.setDisabled(True)  # Not Implemented

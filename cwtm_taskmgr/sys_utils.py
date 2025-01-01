@@ -295,3 +295,6 @@ def get_memory_size_info(size_bytes):
         return round(size_bytes / (1024**3), 2), 'GB'
     else:
         return round(size_bytes / (1024**4), 2), 'TB'
+
+def truncate_process_name(text, max_length=7, suffix="..."):
+    return f"{text[:max_length]}{suffix}" if len(text) > max_length else text

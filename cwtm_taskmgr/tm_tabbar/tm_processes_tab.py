@@ -29,7 +29,8 @@ from ..qt_components import (
     CWTM_TableWidgetController, 
     CWTM_TaskManagerConfirmationDialog,
     CWTM_GlobalUpdateIntervalHandler,
-    CWTM_ErrorMessageDialog
+    CWTM_ErrorMessageDialog,
+    CWTM_TaskManagerCPUAffinitySelectorDialog
 )
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
 from ..thread_workers import CWTM_ProcessesInfoRetrievalWorker
@@ -55,8 +56,10 @@ class CWTM_ProcessesTab(QObject, CWTM_TableWidgetController):
         self.parent.proc_t_proc_list_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.parent.proc_t_proc_list_table.customContextMenuRequested.connect(
             self.process_custom_process_context_menu_request)
+
         self.custom_processes_context_menu = CWTM_ProcessesTabCustomContextMenu(
             parent=self.parent)
+
         self.custom_processes_context_menu.proc_open_file_location_action.triggered.connect(
             self.process_context_menu_action_open_file_location)
         self.custom_processes_context_menu.proc_end_process_action.triggered.connect(
@@ -71,6 +74,8 @@ class CWTM_ProcessesTab(QObject, CWTM_TableWidgetController):
             self.process_context_menu_action_set_priority)
         self.custom_processes_context_menu.proc_set_priority_menu.aboutToShow.connect(
             self.initialize_context_menu_action_priority_level)
+        self.custom_processes_context_menu.proc_set_affinity_action.triggered.connect(
+            self.process_context_menu_action_set_affinity)
 
     def process_context_menu_action_open_file_location(self):
         current_selected_process_executable = self.get_current_selected_item_from_column(
@@ -89,6 +94,21 @@ class CWTM_ProcessesTab(QObject, CWTM_TableWidgetController):
             return
 
         sys_utils.show_file_properties(current_selected_process_executable)
+
+    @pyqtSlot(bool)
+    def process_context_menu_action_set_affinity(self, checked: bool=False) -> None:
+        selected_process_pid = self.get_current_selected_item_from_column(
+            self.parent.proc_t_proc_list_table,
+            CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_PID
+        )
+        selected_process_name = self.get_current_selected_item_from_column(
+            self.parent.proc_t_proc_list_table,
+            CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_IMAGE_NAME
+        )
+
+        cpu_affinity_selector_dialog = CWTM_TaskManagerCPUAffinitySelectorDialog(
+            proc_name=selected_process_name, proc_pid=int(selected_process_pid))
+        cpu_affinity_selector_dialog.exec_()
 
     def process_context_menu_action_go_to_service(self):
         selected_process_pid = self.get_current_selected_item_from_column(

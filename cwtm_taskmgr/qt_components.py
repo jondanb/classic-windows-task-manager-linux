@@ -1,4 +1,4 @@
-
+import os
 import functools
 import traceback
 
@@ -17,7 +17,7 @@ from PyQt5.QtCore import (
     QObject
 )
 
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QMessageBox, QListWidgetItem
 
 from . import sys_utils
 from .qt_widgets import CWTM_QNumericTableWidgetItem
@@ -35,6 +35,9 @@ from cwtm_taskmgr_ui.cwtm_taskmgr_confirmation_dialog_ui import (
 )
 from cwtm_taskmgr_ui.cwtm_taskmgr_new_task_dialog_ui import (
     Ui_CWTM_TaskManagerNewTaskDialog
+)
+from cwtm_taskmgr_ui.cwtm_taskmgr_cpu_affinity_selector import (
+    Ui_CWTM_CPUAffinitySelectorDialog
 )
 
 
@@ -80,6 +83,66 @@ class CWTM_ErrorMessageDialog(QMessageBox):
         return decorator
 
 
+class CWTM_TaskManagerCPUAffinitySelectorDialog(Ui_CWTM_CPUAffinitySelectorDialog):
+    def __init__(self, *args, proc_name, proc_pid, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setupUi(self)
+
+        self.proc_name = proc_name
+        self.proc_pid = proc_pid
+
+        self.set_process_name(self.proc_name)
+        self.setup_cpu_affinity_cores()
+
+        self.cancel_button.clicked.connect(self.close)
+        self.ok_button.clicked.connect(self.set_cpu_affinity)
+        self.check_box_list_widget.itemChanged.connect(
+            self.handle_all_processors_item)
+
+    def set_process_name(self, process_name):
+        self.process_affinity_label.setText(
+            f"Which processors are allowed to run for \"{process_name}\"?")
+
+    def setup_cpu_affinity_cores(self):
+        cpu_count = os.cpu_count()
+        process_affinity = list(os.sched_getaffinity(self.proc_pid))
+
+        if cpu_count == len(process_affinity):
+            self.check_box_list_widget.item(0).setCheckState(Qt.Checked)
+
+        for cpu_core_number in range(cpu_count):
+            self.register_cpu_core(cpu_core_number, cpu_core_number in process_affinity)
+
+    def register_cpu_core(self, core_number: int, core_enabled: bool = False):
+        cpu_core_list_item = QListWidgetItem(self.check_box_list_widget)
+        cpu_core_list_item.setCheckState(Qt.Checked if core_enabled else Qt.Unchecked)
+        cpu_core_list_item.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+        cpu_core_list_item.setText(f"CPU {core_number}")
+
+    def handle_all_processors_item(self, item):
+        if item.data(Qt.UserRole) == "all_processors":
+            state = item.checkState()
+            for i in range(1, self.check_box_list_widget.count()):
+                self.check_box_list_widget.item(i).setCheckState(state)
+
+    @pyqtSlot(bool)
+    @CWTM_ErrorMessageDialog.show_error_dialog_on_error(
+        "You do not have the required permissions to set affinity for this process.")
+    def set_cpu_affinity(self, checked: bool=False):
+        selected_cpus = []
+        for index in range(1, self.check_box_list_widget.count()):  # Skip the "<All Processors>" item
+            item = self.check_box_list_widget.item(index)
+            if item.checkState() == Qt.Checked:
+                selected_cpus.append(index - 1)  # Subtract 1 because of the "<All Processors>" item
+
+        if not selected_cpus:  # If no CPU is selected, show a warning
+            QMessageBox.warning(self, "Warning", "At least one CPU must be selected.")
+            return
+
+        os.sched_setaffinity(self.proc_pid, selected_cpus)
+        self.close()
+
+
 class CWTM_TaskManagerConfirmationDialog(Ui_CWTMTaskManagerConfirmationDialog):
     def __init__(self, *args, proc_name, proc_pid, end_proc_tree=False, **kwargs):
         super().__init__(*args, **kwargs)
@@ -96,8 +159,9 @@ class CWTM_TaskManagerConfirmationDialog(Ui_CWTMTaskManagerConfirmationDialog):
         self.confirm_button.clicked.connect(self.end_process_by_pid)
 
     def set_process_name(self, process_name):
+        truncate_process_name
         self.end_process_title_label.setText(
-            f"Do you want to end \"{process_name}\"?"
+            f"Do you want to end \"{proc_name_wrapped}\"?"
         )
 
     @pyqtSlot(bool)
@@ -114,7 +178,7 @@ class CWTM_TaskManagerNewTaskDialog(Ui_CWTM_TaskManagerNewTaskDialog):
         self.setupUi(self)
 
         self.cancel_button.clicked.connect(self.close)
-        #self.ok_button.clicked.connect(self.close)
+        self.ok_button.clicked.connect(self.close)
         self.ok_button.clicked.connect(self.execute_system_command)
         self.browse_button.clicked.connect(self.handle_browse_command)
 
