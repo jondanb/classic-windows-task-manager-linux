@@ -37,8 +37,21 @@ class CWTM_ServicesTab(QObject, CWTM_TableWidgetController):
         self.parent.svc_t_services_list_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.parent.svc_t_services_list_table.customContextMenuRequested.connect(
             self.process_custom_services_context_menu_request)
+
         self.custom_services_context_menu.svcs_go_to_process_action.triggered.connect(
             self.process_context_menu_action_go_to_process)
+        self.custom_services_context_menu.aboutToShow.connect(
+            self.set_enabled_service_context_menu)
+
+    @pyqtSlot()
+    def set_enabled_service_context_menu(self):
+        selected_service_pid = self.get_current_selected_item_from_column(
+            self.parent.svc_t_services_list_table, 
+            CWTM_ServicesTabTableColumns.SVC_T_SERVICES_LIST_TABLE_PID)
+
+        self.custom_services_context_menu.svcs_start_service_action.setDisabled(not selected_service_pid)
+        self.custom_services_context_menu.svcs_stop_service_action.setDisabled(not selected_service_pid)
+        self.custom_services_context_menu.svcs_go_to_process_action.setDisabled(not selected_service_pid)
 
     def process_context_menu_action_go_to_process(self):
         selected_service_pid = self.get_current_selected_item_from_column(
@@ -69,11 +82,13 @@ class CWTM_ServicesTab(QObject, CWTM_TableWidgetController):
         self.parent.svc_t_services_list_table.setSortingEnabled(False)
 
         for system_service in system_all_services:
+            service_pid_display = str(system_service.svc_pid) \
+                if system_service.svc_status == "active" else ""
             self.append_row_to_table(
                 self.parent.svc_t_services_list_table, CWTM_ServicesTabTableColumns,
                 CWTM_TableWidgetItemProperties(
                     item_label=system_service.svc_name, item_tool_tip=system_service.svc_name),
-                CWTM_TableWidgetItemProperties(item_label=str(system_service.svc_pid), 
+                CWTM_TableWidgetItemProperties(item_label=service_pid_display, 
                     item_type=CWTM_QNumericTableWidgetItem),
                 CWTM_TableWidgetItemProperties(
                     item_label=system_service.svc_desc, item_tool_tip=system_service.svc_desc),
