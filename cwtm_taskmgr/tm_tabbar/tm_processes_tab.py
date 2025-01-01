@@ -1,7 +1,18 @@
 import os
-import enum
 import shlex
 import functools
+
+from PyQt5.QtCore import (
+    Qt, 
+    QTimer, 
+    QObject,
+    pyqtSignal, 
+    pyqtSlot,
+    QThread
+)
+from PyQt5.QtWidgets import QAction
+
+from cwtm_taskmgr_ui.cwtm_taskmgr_ui import CWTM_ProcessesTabCustomContextMenu
 
 from .. import sys_utils
 from ..core_properties import (
@@ -22,15 +33,6 @@ from ..qt_components import (
 )
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
 from ..thread_workers import CWTM_ProcessesInfoRetrievalWorker
-
-from PyQt5.QtCore import (
-    Qt, QTimer, QObject,
-    pyqtSignal, pyqtSlot,
-    QThread
-)
-from PyQt5.QtWidgets import QAction
-
-from cwtm_taskmgr_ui.cwtm_taskmgr_ui import CWTM_ProcessesTabCustomContextMenu
 
 
 class CWTM_ProcessesTab(QObject, CWTM_TableWidgetController):

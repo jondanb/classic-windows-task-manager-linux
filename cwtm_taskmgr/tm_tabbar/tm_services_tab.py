@@ -1,8 +1,13 @@
-import dbus
-import enum
-import functools
+from PyQt5.QtCore import (
+    Qt,
+    pyqtSignal,
+    pyqtSlot,
+    QThread,
+    QObject
+)
 
-from .. import sys_utils
+from cwtm_taskmgr_ui.cwtm_taskmgr_ui import CWTM_ServicesTabCustomContextMenu
+
 from ..qt_components import CWTM_TableWidgetController
 from ..core_properties import (
     CWTM_ServicesTabTableColumns,
@@ -16,19 +21,10 @@ from ..qt_widgets import CWTM_QNumericTableWidgetItem
 from ..thread_workers import CWTM_ServicesInfoRetrievalWorker
 
 
-from PyQt5.QtCore import (
-    Qt,
-    QTimer,
-    pyqtSignal,
-    pyqtSlot,
-    QThread
-)
-from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
-from cwtm_taskmgr_ui.cwtm_taskmgr_ui import CWTM_ServicesTabCustomContextMenu
+class CWTM_ServicesTab(QObject, CWTM_TableWidgetController):
+    def __init__(self, *args, parent, **kwargs):
+        super().__init__(*args, parent=parent, **kwargs)
 
-
-class CWTM_ServicesTab(CWTM_TableWidgetController):
-    def __init__(self, parent):
         self.parent = parent
 
         self.SVC_T_SERVICES_LIST_TABLE_COLUMN_RATIO = (0.25, 0.1, 0.50, 0.15)

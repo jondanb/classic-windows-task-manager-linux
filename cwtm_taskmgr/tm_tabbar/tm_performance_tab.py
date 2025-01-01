@@ -3,6 +3,10 @@ import math
 import psutil
 import pyqtgraph
 
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout
+from PyQt5.QtCore import Qt, QThread, pyqtSlot, QObject
+from PyQt5.QtGui import QColor
+
 from .. import sys_utils
 from ..qt_widgets import (
     CWTM_ResourceLevelBarWidget,
@@ -24,16 +28,11 @@ from ..core_properties import (
 )
 from ..thread_workers import CWTM_PerformanceInfoRetrievalWorker
 
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QApplication
-from PyQt5.QtCore import (
-    Qt, QTimer, 
-    QThread, pyqtSlot
-)
-from PyQt5.QtGui import QColor
 
+class CWTM_PerformanceTab(QObject, CWTM_TableWidgetController):
+    def __init__(self, *args, parent, **kwargs):
+        super().__init__(*args, parent=parent, **kwargs)
 
-class CWTM_PerformanceTab(CWTM_TableWidgetController):
-    def __init__(self, parent):
         self.parent = parent
 
         self.PERF_RESOURCE_USAGE_HISTORY_UPDATE_FREQUENCY = \
@@ -55,6 +54,13 @@ class CWTM_PerformanceTab(CWTM_TableWidgetController):
         )
 
         self.show_kernel_times = False
+
+        self.parent.tm_view_menu_cpu_one_graph_all_cpus.triggered.connect(
+            self.switch_to_all_cpu_graphing)
+        self.parent.tm_view_menu_cpu_one_graph_per_cpu.triggered.connect(
+            self.switch_to_per_cpu_graphing)
+        self.parent.tm_view_menu_show_kernel_times.triggered.connect(
+            self.update_show_kernel_times_setting)
 
     def setup_performance_tab_bars(self):
         cpu_resource_bar_parameters = CWTM_ResourceLevelBarParameters(
@@ -97,14 +103,6 @@ class CWTM_PerformanceTab(CWTM_TableWidgetController):
         )
 
         memory_usage_bar_layout.addWidget(self.memory_bar_widget)
-
-    def setup_performance_tab_menu_bar_slots(self):
-        self.parent.tm_view_menu_cpu_one_graph_all_cpus.triggered.connect(
-            self.switch_to_all_cpu_graphing)
-        self.parent.tm_view_menu_cpu_one_graph_per_cpu.triggered.connect(
-            self.switch_to_per_cpu_graphing)
-        self.parent.tm_view_menu_show_kernel_times.triggered.connect(
-            self.update_show_kernel_times_setting)
 
     def update_show_kernel_times_setting(self):
         if self.show_kernel_times:

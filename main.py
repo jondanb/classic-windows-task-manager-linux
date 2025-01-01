@@ -10,7 +10,7 @@ from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QIcon, QImage, QPixmap, QFont, QFontDatabase
 
 from cwtm_taskmgr_ui.cwtm_taskmgr_ui import Ui_CWTM_TaskManagerMainWindow
-from cwtm_taskmgr.qt_components import CWTM_MenuBarSignalHandler
+from cwtm_taskmgr.qt_components import CWTM_MenuBarTabVisibilityHandler
 
 from cwtm_taskmgr.tm_tabbar import (
     tm_applications_tab,
@@ -28,14 +28,14 @@ class CWTM_TaskManager(Ui_CWTM_TaskManagerMainWindow):
         self.setupUi(self)
         self.old_style = old_style
 
-        self.applications_tab = tm_applications_tab.CWTM_ApplicationsTab(self)
-        self.processes_tab = tm_processes_tab.CWTM_ProcessesTab(self)
-        self.performance_tab = tm_performance_tab.CWTM_PerformanceTab(self)
-        self.services_tab = tm_services_tab.CWTM_ServicesTab(self)
-        self.users_tab = tm_users_tab.CWTM_UsersTab(self)
-        self.networking_tab = tm_networking_tab.CWTM_NetworkingTab(self)
+        self.applications_tab = tm_applications_tab.CWTM_ApplicationsTab(parent=self)
+        self.processes_tab = tm_processes_tab.CWTM_ProcessesTab(parent=self)
+        self.performance_tab = tm_performance_tab.CWTM_PerformanceTab(parent=self)
+        self.services_tab = tm_services_tab.CWTM_ServicesTab(parent=self)
+        self.users_tab = tm_users_tab.CWTM_UsersTab(parent=self)
+        self.networking_tab = tm_networking_tab.CWTM_NetworkingTab(parent=self)
         
-        self.menubar_handler = CWTM_MenuBarSignalHandler(self)
+        self.menubar_handler = CWTM_MenuBarTabVisibilityHandler(parent=self)
 
         # Applications Tab
         self.applications_tab.setup_tab_page_table_widget(
@@ -54,7 +54,6 @@ class CWTM_TaskManager(Ui_CWTM_TaskManagerMainWindow):
         # Performance Tab
         self.performance_tab.setup_performance_tab_bars()
         self.performance_tab.setup_performance_tab_graphs()
-        self.performance_tab.setup_performance_tab_menu_bar_slots()
         self.performance_tab.start_performance_page_updater_thread()
 
         # Services Tab
@@ -76,7 +75,6 @@ class CWTM_TaskManager(Ui_CWTM_TaskManagerMainWindow):
             QHeaderView.Stretch
         )
         self.networking_tab.setup_system_networking_interfaces()
-        self.networking_tab.setup_performance_tab_menu_bar_slots()
         self.networking_tab.start_networking_page_updater_thread()
 
         # Menu Bar

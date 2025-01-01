@@ -1,14 +1,11 @@
-import enum
-
 from PyQt5.QtCore import (
-    Qt, QTimer, 
+    Qt, 
     pyqtSignal, 
-    QThread
+    QThread,
+    QObject
 )
-from PyQt5.QtWidgets import (
-    QTableWidgetItem, QHeaderView, 
-    QMenu, QAction
-)
+
+from cwtm_taskmgr_ui.cwtm_taskmgr_ui import CWTM_ApplicationsTabCustomContextMenu
 
 from ..core_properties import (
     CWTM_ApplicationsTabTableColumns,
@@ -26,11 +23,12 @@ from ..qt_components import (
     CWTM_ErrorMessageDialog
 )
 from ..thread_workers import CWTM_ApplicationsInfoRetrievalWorker
-from cwtm_taskmgr_ui.cwtm_taskmgr_ui import CWTM_ApplicationsTabCustomContextMenu
 
 
-class CWTM_ApplicationsTab(CWTM_TableWidgetController):
-    def __init__(self, parent):
+class CWTM_ApplicationsTab(QObject, CWTM_TableWidgetController):
+    def __init__(self, *args, parent, **kwargs):
+        super().__init__(*args, parent=parent, **kwargs)
+        
         self.parent = parent
 
         self.APP_T_TASK_LIST_TABLE_COLUMN_RATIO = (0.85, 0.15)

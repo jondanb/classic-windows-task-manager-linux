@@ -1,7 +1,11 @@
-import enum
-import functools
+from PyQt5.QtCore import (
+    Qt,
+    pyqtSignal,
+    pyqtSlot,
+    QThread,
+    QObject
+)
 
-from .. import sys_utils
 from ..core_properties import (
     CWTM_UsersTabTableColumns,
     CWTM_TableWidgetItemProperties,
@@ -13,19 +17,13 @@ from ..qt_components import CWTM_TableWidgetController
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
 from ..thread_workers import CWTM_UsersInfoRetrievalWorker
 
-from PyQt5.QtCore import (
-    Qt,
-    QTimer,
-    pyqtSignal,
-    pyqtSlot,
-    QThread
-)
-from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
 from cwtm_taskmgr_ui.cwtm_taskmgr_ui import CWTM_UsersTabCustomContextMenu
 
 
-class CWTM_UsersTab(CWTM_TableWidgetController):
-    def __init__(self, parent):
+class CWTM_UsersTab(QObject, CWTM_TableWidgetController):
+    def __init__(self, *args, parent, **kwargs):
+        super().__init__(*args, parent=parent, **kwargs)
+        
         self.parent = parent
 
         self.USERS_T_USERS_LIST_TABLE_UPDATE_FREQUENCY = \

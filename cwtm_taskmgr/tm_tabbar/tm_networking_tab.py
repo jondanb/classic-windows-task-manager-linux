@@ -1,6 +1,7 @@
 import psutil
-import functools
 import pyqtgraph
+
+from PyQt5.QtCore import  Qt, pyqtSignal, QThread, QObject
 
 from .. import sys_utils
 from ..qt_components import (
@@ -18,16 +19,12 @@ from ..core_properties import (
 from ..qt_widgets import CWTM_ResourceGraphWidget
 from ..thread_workers import CWTM_NetworkingInterfaceRetrievalWorker
 
-from PyQt5.QtCore import (
-    Qt, QTimer,
-    pyqtSignal,
-    QThread, QObject
-)
-from PyQt5.QtWidgets import QTableWidgetItem, QGroupBox
 
 
-class CWTM_NetworkingTab(CWTM_TableWidgetController):
-    def __init__(self, parent):
+class CWTM_NetworkingTab(QObject, CWTM_TableWidgetController):
+    def __init__(self, *args, parent, **kwargs):
+        super().__init__(*args, parent=parent, **kwargs)
+
         self.parent = parent
         
         self.NETWORK_INTERFACE_GRAPHS = {}
@@ -38,7 +35,6 @@ class CWTM_NetworkingTab(CWTM_TableWidgetController):
         self.NET_T_NETWORK_USAGE_GRID_SIZE = 8 # 200:8 ratio
         self.NET_T_NETWORK_USAGE_X_RANGE = 200 # 200:8 ratio 
 
-    def setup_performance_tab_menu_bar_slots(self):
         self.parent.tm_view_menu_nas_bytes_sent.triggered.connect(
             self.clear_all_disabled_networking_byte_line)
         self.parent.tm_view_menu_nas_bytes_received.triggered.connect(

@@ -2,6 +2,23 @@
 import functools
 import traceback
 
+from PyQt5.QtWidgets import (
+    QTableWidget, 
+    QHeaderView, 
+    QAbstractItemView,
+    QGroupBox,
+    QVBoxLayout
+)
+from PyQt5.QtCore import (
+    Qt, 
+    pyqtSignal, 
+    pyqtSlot, 
+    QTimer, 
+    QObject
+)
+
+from PyQt5.QtWidgets import QMessageBox
+
 from . import sys_utils
 from .qt_widgets import CWTM_QNumericTableWidgetItem
 from .core_properties import (
@@ -19,20 +36,6 @@ from cwtm_taskmgr_ui.cwtm_taskmgr_confirmation_dialog_ui import (
 from cwtm_taskmgr_ui.cwtm_taskmgr_new_task_dialog_ui import (
     Ui_CWTM_TaskManagerNewTaskDialog
 )
-
-from PyQt5.QtWidgets import (
-    QTableWidget, 
-    QHeaderView, 
-    QAbstractItemView,
-    QGroupBox,
-    QVBoxLayout
-)
-from PyQt5.QtCore import (
-    Qt, QObject,
-    pyqtSignal, pyqtSlot, 
-    QTimer
-)
-from PyQt5.QtWidgets import QMessageBox
 
 
 class CWTM_ErrorMessageDialog(QMessageBox):
@@ -299,8 +302,10 @@ class CWTM_GlobalUpdateIntervalHandler:
         self.thread_worker.sig_change_timeout_interval.emit(update_interval)
 
 
-class CWTM_MenuBarSignalHandler:
-    def __init__(self, parent):
+class CWTM_MenuBarTabVisibilityHandler(QObject):
+    def __init__(self, *args, parent, **kwargs):
+        super().__init__(*args, parent=parent, **kwargs)
+
         self.parent = parent
         self.default_tab = CWTM_TabWidgetColumnEnum.TASK_MANAGER_APPLICATIONS_TAB
 
