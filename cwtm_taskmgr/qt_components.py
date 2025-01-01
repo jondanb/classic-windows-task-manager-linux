@@ -100,8 +100,9 @@ class CWTM_TaskManagerCPUAffinitySelectorDialog(Ui_CWTM_CPUAffinitySelectorDialo
             self.handle_all_processors_item)
 
     def set_process_name(self, process_name):
+        proc_wrapped_name = sys_utils.truncate_process_name(process_name, max_length=15)
         self.process_affinity_label.setText(
-            f"Which processors are allowed to run for \"{process_name}\"?")
+            f"Which processors are allowed to run for \"{proc_wrapped_name}\"?")
 
     def setup_cpu_affinity_cores(self):
         cpu_count = os.cpu_count()
@@ -159,9 +160,9 @@ class CWTM_TaskManagerConfirmationDialog(Ui_CWTMTaskManagerConfirmationDialog):
         self.confirm_button.clicked.connect(self.end_process_by_pid)
 
     def set_process_name(self, process_name):
-        truncate_process_name
+        proc_wrapped_name = sys_utils.truncate_process_name(process_name, max_length=20)
         self.end_process_title_label.setText(
-            f"Do you want to end \"{proc_name_wrapped}\"?"
+            f"Do you want to end \"{proc_wrapped_name}\"?"
         )
 
     @pyqtSlot(bool)
