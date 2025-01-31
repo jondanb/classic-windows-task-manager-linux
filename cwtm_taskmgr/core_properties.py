@@ -101,7 +101,6 @@ class CWTM_ServiceInformationFrame:
     svc_pid:                int
     svc_desc:               str
     svc_status:             str
-    svc_exec:               str
 
 
 @dataclasses.dataclass
@@ -135,8 +134,7 @@ class CWTM_ApplicationsTabTableColumns(enum.IntEnum):
     APP_T_TASK_LIST_TABLE_TASK                      = 0
     APP_T_TASK_LIST_TABLE_STATUS                    = enum.auto()
 
-    _APP_T_TASK_LIST_TABLE_PID                       = enum.auto() # hidden
-
+    _APP_T_TASK_LIST_TABLE_PID                      = enum.auto() # hidden
 
 class CWTM_ProcessesTabTableColumns(enum.IntEnum):
     PROC_T_PROC_LIST_TABLE_IMAGE_NAME               = 0
@@ -153,8 +151,6 @@ class CWTM_ServicesTabTableColumns(enum.IntEnum):
     SVC_T_SERVICES_LIST_TABLE_PID                   = enum.auto()
     SVC_T_SERVICES_LIST_TABLE_DESCRIPTION           = enum.auto()
     SVC_T_SERVICES_LIST_TABLE_STATUS                = enum.auto()
-
-    _SVC_T_SERVICES_LIST_TABLE_EXEC                 = enum.auto() # hidden
 
 
 class CWTM_NetworkingTabTableColumns(enum.IntEnum):

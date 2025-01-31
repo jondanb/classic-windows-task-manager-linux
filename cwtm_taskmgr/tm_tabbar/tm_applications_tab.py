@@ -35,9 +35,6 @@ class CWTM_ApplicationsTab(QObject, CWTM_TableWidgetController):
         self.APP_T_TASK_LIST_TABLE_UPDATE_FREQUENCY = \
             CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_NORMAL
 
-        self.parent.app_t_task_list_table.setColumnHidden(
-            CWTM_ApplicationsTabTableColumns._APP_T_TASK_LIST_TABLE_PID, True
-        ) # maybe change later???
         self.parent.app_t_task_list_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.parent.app_t_task_list_table.customContextMenuRequested.connect(
             self.process_custom_applications_context_menu_request)

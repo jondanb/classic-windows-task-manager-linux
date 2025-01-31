@@ -37,10 +37,6 @@ class CWTM_ServicesTab(QObject, CWTM_TableWidgetController):
         self.SVC_T_SERVICES_LIST_TABLE_UPDATE_FREQUENCY = \
             CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_LOW # 4 seconds
 
-        self.parent.svc_t_services_list_table.setColumnHidden(
-            CWTM_ServicesTabTableColumns._SVC_T_SERVICES_LIST_TABLE_EXEC, True
-        ) # maybe change later as well???
-
         self.custom_services_context_menu = CWTM_ServicesTabCustomContextMenu(
             parent=self.parent)
 
@@ -130,7 +126,6 @@ class CWTM_ServicesTab(QObject, CWTM_TableWidgetController):
                 CWTM_TableWidgetItemProperties(
                     item_label=system_service.svc_desc, item_tool_tip=system_service.svc_desc),
                 CWTM_TableWidgetItemProperties(system_service.svc_status.upper()),
-                CWTM_TableWidgetItemProperties(system_service.svc_exec)
             )
 
         self.parent.svc_t_services_list_table.setSortingEnabled(True)
