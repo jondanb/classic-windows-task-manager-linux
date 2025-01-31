@@ -184,11 +184,11 @@ def get_all_system_services():
 
     service_units = l_manager.ListUnits()
 
-    for (svc_name, svc_desc, svc_load_status, svc_running_status,
+    for (svc_name, svc_desc, _, svc_running_status,
          _, _, svc_path, _, _ , _) in service_units:
         if svc_name.endswith(".service"):
             svc_pid = get_pid_from_service_obj_path(l_bus, svc_path)
-            yield (svc_name, svc_pid, svc_desc, svc_running_status)
+            yield (svc_name, svc_pid, svc_desc, svc_running_status, svc_path)
 
 def get_all_user_accounts_details():
     manager = AccountsService.UserManager.get_default()
@@ -244,6 +244,20 @@ def get_pid_from_service_obj_path(bus, service_obj_path):
     )
 
     return service_pid
+
+def request_service_stop_by_name(service_name):
+    bus = dbus.SystemBus()
+    systemd = bus.get_object('org.freedesktop.systemd1', '/org/freedesktop/systemd1')
+    manager = dbus.Interface(systemd, 'org.freedesktop.systemd1.Manager')
+
+    job = manager.StopUnit(service_name, 'replace')
+
+def request_service_start_by_name(service_name):
+    bus = dbus.SystemBus()
+    systemd = bus.get_object('org.freedesktop.systemd1', '/org/freedesktop/systemd1')
+    manager = dbus.Interface(systemd, 'org.freedesktop.systemd1.Manager')
+    
+    job = manager.StartUnit(service_name, 'replace')
 
 def get_network_interface_link_speed(network_interface: str) -> str:
     nmcli_interface_output = subprocess.check_output(

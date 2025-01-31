@@ -36,7 +36,7 @@ class CWTM_ApplicationsTab(QObject, CWTM_TableWidgetController):
             CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_NORMAL
 
         self.parent.app_t_task_list_table.setColumnHidden(
-            CWTM_ApplicationsTabTableColumns.APP_T_TASK_LIST_TABLE_PID, True
+            CWTM_ApplicationsTabTableColumns._APP_T_TASK_LIST_TABLE_PID, True
         ) # maybe change later???
         self.parent.app_t_task_list_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.parent.app_t_task_list_table.customContextMenuRequested.connect(
@@ -58,7 +58,7 @@ class CWTM_ApplicationsTab(QObject, CWTM_TableWidgetController):
     def process_context_menu_action_go_to_process(self):
         selected_application_pid = self.get_current_selected_item_from_column(
             self.parent.app_t_task_list_table, 
-            CWTM_ApplicationsTabTableColumns.APP_T_TASK_LIST_TABLE_PID)
+            CWTM_ApplicationsTabTableColumns._APP_T_TASK_LIST_TABLE_PID)
 
         process_tab_row = self.find_row_from_column_value(
             self.parent.proc_t_proc_list_table, 
@@ -86,7 +86,7 @@ class CWTM_ApplicationsTab(QObject, CWTM_TableWidgetController):
     def process_signal_app_t_end_task_button(self, *_):
         selected_application_pid = CWTM_TableWidgetController.get_current_selected_item_from_column(
             self.parent.app_t_task_list_table,
-            CWTM_ApplicationsTabTableColumns.APP_T_TASK_LIST_TABLE_PID
+            CWTM_ApplicationsTabTableColumns._APP_T_TASK_LIST_TABLE_PID
         )
         selected_application_name = CWTM_TableWidgetController.get_current_selected_item_from_column(
             self.parent.app_t_task_list_table,
@@ -104,7 +104,7 @@ class CWTM_ApplicationsTab(QObject, CWTM_TableWidgetController):
     def update_applications_page(self, gtk_running_apps_icons: list[CWTM_ApplicationInformationFrame]) -> None:
         current_selected_item = self.get_current_selected_item_from_column(
             self.parent.app_t_task_list_table,
-            CWTM_ApplicationsTabTableColumns.APP_T_TASK_LIST_TABLE_PID
+            CWTM_ApplicationsTabTableColumns._APP_T_TASK_LIST_TABLE_PID
         )
         
         self.parent.app_t_task_list_table.setRowCount(0)
@@ -124,7 +124,7 @@ class CWTM_ApplicationsTab(QObject, CWTM_TableWidgetController):
         if current_selected_item is not None:
             self.reselect_item_from_value(
                 self.parent.app_t_task_list_table,
-                CWTM_ApplicationsTabTableColumns.APP_T_TASK_LIST_TABLE_PID,
+                CWTM_ApplicationsTabTableColumns._APP_T_TASK_LIST_TABLE_PID,
                 current_selected_item
             )
 

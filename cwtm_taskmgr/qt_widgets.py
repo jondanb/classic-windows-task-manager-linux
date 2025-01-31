@@ -1,16 +1,10 @@
-import functools
 import pyqtgraph as pg
 
-from .core_properties import CWTM_ResourceBarLevelColours
-
-from PyQt5.QtWidgets import (
-    QWidget, QTableWidgetItem
-)
-from PyQt5.QtGui import (
-    QPainter, QColor,
-    QPen, QBrush, QFont
-)
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QTableWidgetItem
+from PyQt5.QtGui import QPainter, QColor, QPen, QBrush
+
+from .core_properties import CWTM_ResourceBarLevelColours
 
 
 class CWTM_ResourceGraphWidget(pg.PlotWidget):
@@ -70,14 +64,11 @@ class CWTM_ResourceGraphWidget(pg.PlotWidget):
         min_y, max_y = self.viewRange()[1]
         min_y = 0 if min_y < 0 else min_y
         if 0 <= max_y <= 32:
-            return # too small for change
+            return []  # or handle appropriately
         
-        #print(min_y, max_y)
         interval = (max_y - min_y) / n_ticks
-        ticks = [(min_y, str(min_y))]
-        for i in range(1, n_ticks + 1):
-            tick_value = min_y + i * interval
-            yield tick_value
+        ticks = [min_y + i * interval for i in range(n_ticks + 1)]
+        return ticks
             
     def update_plot(self, plot_item, new_value, total_data_x, total_data_y):
         total_data_y.append(new_value)
@@ -119,30 +110,23 @@ class CWTM_ResourceLevelBarWidget(QWidget):
         painter = QPainter(self)
         painter.fillRect(self.rect(), QColor(0, 0, 0))
 
-        self.draw_resource_bar_levels(
-            painter, self.x_offset_progress_bar_1, 
-            self.primary_resource_value,
-            self.primary_bar_colour_filled,
-            self.primary_bar_colour_empty)
-        self.draw_resource_bar_levels(
-            painter, self.x_offset_progress_bar_2,
-            self.primary_resource_value,
-            self.primary_bar_colour_filled,
-            self.primary_bar_colour_empty)
+        # Draw primary resource bars
+        for x_offset in [self.x_offset_progress_bar_1, self.x_offset_progress_bar_2]:
+            self.draw_resource_bar_levels(
+                painter, x_offset, 
+                self.primary_resource_value,
+                self.primary_bar_colour_filled,
+                self.primary_bar_colour_empty)
 
+        # Draw secondary resource bars if available
         if self.secondary_bar_colour_filled is not None:
-            self.draw_resource_bar_levels(
-                painter, self.x_offset_progress_bar_1, 
-                self.secondary_resource_value,
-                self.secondary_bar_colour_filled,
-                self.secondary_bar_colour_empty,
-                draw_empty_bars=False)
-            self.draw_resource_bar_levels(
-                painter, self.x_offset_progress_bar_2,
-                self.secondary_resource_value,
-                self.secondary_bar_colour_filled,
-                self.secondary_bar_colour_empty,
-                draw_empty_bars=False)
+            for x_offset in [self.x_offset_progress_bar_1, self.x_offset_progress_bar_2]:
+                self.draw_resource_bar_levels(
+                    painter, x_offset, 
+                    self.secondary_resource_value,
+                    self.secondary_bar_colour_filled,
+                    self.secondary_bar_colour_empty,
+                    draw_empty_bars=False)
 
         painter.setPen(self.primary_bar_colour_filled)
         painter.setBrush(self.primary_bar_colour_filled)
@@ -155,26 +139,36 @@ class CWTM_ResourceLevelBarWidget(QWidget):
 
 
     def draw_resource_bar_levels(
-        self, painter, current_x_offset, resource_value,
-        bar_colour_filled, bar_colour_empty, *, draw_empty_bars=True):
-        filled_bars = int((resource_value / self.total_space) \
-                          * self.bar_parameters.total_bars)
-        total_current_bars = self.bar_parameters.total_bars \
-            if draw_empty_bars else filled_bars
-        
+        self,  painter: QPainter, current_x_offset: int, resource_value: float, 
+        bar_colour_filled: QColor, bar_colour_empty: QColor, *, draw_empty_bars: bool = True) -> None:
+        filled_bars = int((resource_value / self.total_space) * self.bar_parameters.total_bars)
+        total_current_bars = self.bar_parameters.total_bars if draw_empty_bars else filled_bars
+
+        brush_filled = QBrush(bar_colour_filled)
+        pen_filled = QPen(bar_colour_filled)
+        brush_empty = QBrush(bar_colour_empty)
+        pen_empty = QPen(bar_colour_empty)
+
         for i in range(total_current_bars):
-            color = bar_colour_filled if i < filled_bars else bar_colour_empty
-            brush, pen = QBrush(color), QPen(color)
-            
+            if i < filled_bars:
+                brush, pen = brush_filled, pen_filled
+            else:
+                brush, pen = brush_empty, pen_empty
+
             painter.setBrush(brush)
             painter.setPen(pen)
 
-            rect_y = self.bar_parameters.y_offset \
-                     + (self.bar_parameters.total_bars - 1 - i) \
-                     * (self.bar_parameters.bar_height + self.bar_parameters.spacing)
-            painter.drawRect(current_x_offset, rect_y,
-                             self.bar_parameters.bar_width,
-                             self.bar_parameters.bar_height)
+            rect_y = (
+                self.bar_parameters.y_offset 
+                + (self.bar_parameters.total_bars - 1 - i) 
+                * (self.bar_parameters.bar_height + self.bar_parameters.spacing)
+            )
+            painter.drawRect(
+                current_x_offset, 
+                rect_y,
+                self.bar_parameters.bar_width,
+                self.bar_parameters.bar_height
+            )
 
         painter.setPen(bar_colour_filled)
 
@@ -198,7 +192,6 @@ class CWTM_QNumericTableWidgetItem(QTableWidgetItem):
         super().__init__(value + " " + label)  # Store the string representation
         self.value = float(value) if value else -1
         # Store the numeric value for comparisons
-
 
     def __lt__(self, other):
         return self.value < other.value  # Direct comparison with the numeric value

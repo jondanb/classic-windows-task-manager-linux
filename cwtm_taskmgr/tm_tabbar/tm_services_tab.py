@@ -3,12 +3,18 @@ from PyQt5.QtCore import (
     pyqtSignal,
     pyqtSlot,
     QThread,
-    QObject
+    QObject,
 )
+from PyQt5.QtWidgets import QAction
 
 from cwtm_taskmgr_ui.cwtm_taskmgr_ui import CWTM_ServicesTabCustomContextMenu
 
-from ..qt_components import CWTM_TableWidgetController
+from .. import sys_utils
+from ..qt_components import (
+    CWTM_TableWidgetController,
+    CWTM_ErrorMessageDialog,
+    CWTM_TaskManagerConfirmationDialog
+)
 from ..core_properties import (
     CWTM_ServicesTabTableColumns,
     CWTM_ProcessesTabTableColumns,
@@ -31,6 +37,10 @@ class CWTM_ServicesTab(QObject, CWTM_TableWidgetController):
         self.SVC_T_SERVICES_LIST_TABLE_UPDATE_FREQUENCY = \
             CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_LOW # 4 seconds
 
+        self.parent.svc_t_services_list_table.setColumnHidden(
+            CWTM_ServicesTabTableColumns._SVC_T_SERVICES_LIST_TABLE_EXEC, True
+        ) # maybe change later as well???
+
         self.custom_services_context_menu = CWTM_ServicesTabCustomContextMenu(
             parent=self.parent)
 
@@ -40,18 +50,45 @@ class CWTM_ServicesTab(QObject, CWTM_TableWidgetController):
 
         self.custom_services_context_menu.svcs_go_to_process_action.triggered.connect(
             self.process_context_menu_action_go_to_process)
+        self.custom_services_context_menu.svcs_stop_service_action.triggered.connect(
+            self.process_context_menu_action_stop_service)
+        self.custom_services_context_menu.svcs_start_service_action.triggered.connect(
+            self.process_context_menu_action_start_service)
         self.custom_services_context_menu.aboutToShow.connect(
             self.set_enabled_service_context_menu)
 
     @pyqtSlot()
     def set_enabled_service_context_menu(self):
-        selected_service_pid = self.get_current_selected_item_from_column(
+        selected_service_status = self.get_current_selected_item_from_column(
             self.parent.svc_t_services_list_table, 
-            CWTM_ServicesTabTableColumns.SVC_T_SERVICES_LIST_TABLE_PID)
+            CWTM_ServicesTabTableColumns.SVC_T_SERVICES_LIST_TABLE_STATUS)
+        service_is_active = selected_service_status == "ACTIVE"
 
-        self.custom_services_context_menu.svcs_start_service_action.setDisabled(not selected_service_pid)
-        self.custom_services_context_menu.svcs_stop_service_action.setDisabled(not selected_service_pid)
-        self.custom_services_context_menu.svcs_go_to_process_action.setDisabled(not selected_service_pid)
+        self.custom_services_context_menu.svcs_start_service_action.setDisabled(service_is_active)
+        self.custom_services_context_menu.svcs_stop_service_action.setDisabled(not service_is_active)
+        self.custom_services_context_menu.svcs_go_to_process_action.setDisabled(not service_is_active)
+
+    @pyqtSlot(bool)
+    @CWTM_ErrorMessageDialog.show_error_dialog_on_error(
+        "You do not have the permission to stop this service")
+    def process_context_menu_action_stop_service(self, triggered: bool=False) -> None:
+        selected_service_name = self.get_current_selected_item_from_column(
+            self.parent.svc_t_services_list_table,
+            CWTM_ServicesTabTableColumns.SVC_T_SERVICES_LIST_TABLE_NAME
+        )
+
+        sys_utils.request_service_stop_by_name(selected_service_name)
+        self.update_refresh_services_page_svcs()
+
+    @pyqtSlot(bool)
+    def process_context_menu_action_start_service(self, triggered: bool=False) -> None:
+        selected_service_name = self.get_current_selected_item_from_column(
+            self.parent.svc_t_services_list_table,
+            CWTM_ServicesTabTableColumns.SVC_T_SERVICES_LIST_TABLE_NAME
+        )
+
+        sys_utils.request_service_start_by_name(selected_service_name)
+        self.update_refresh_services_page_svcs()
 
     def process_context_menu_action_go_to_process(self):
         selected_service_pid = self.get_current_selected_item_from_column(
@@ -92,7 +129,8 @@ class CWTM_ServicesTab(QObject, CWTM_TableWidgetController):
                     item_type=CWTM_QNumericTableWidgetItem),
                 CWTM_TableWidgetItemProperties(
                     item_label=system_service.svc_desc, item_tool_tip=system_service.svc_desc),
-                CWTM_TableWidgetItemProperties(system_service.svc_status.upper())
+                CWTM_TableWidgetItemProperties(system_service.svc_status.upper()),
+                CWTM_TableWidgetItemProperties(system_service.svc_exec)
             )
 
         self.parent.svc_t_services_list_table.setSortingEnabled(True)
