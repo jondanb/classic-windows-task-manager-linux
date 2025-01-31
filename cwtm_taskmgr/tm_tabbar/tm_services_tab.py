@@ -58,7 +58,7 @@ class CWTM_ServicesTab(QObject, CWTM_TableWidgetController):
         selected_service_status = self.get_current_selected_item_from_column(
             self.parent.svc_t_services_list_table, 
             CWTM_ServicesTabTableColumns.SVC_T_SERVICES_LIST_TABLE_STATUS)
-        service_is_active = selected_service_status == "ACTIVE"
+        service_is_active = selected_service_status in ("ACTIVE", "ACTIVATING")
 
         self.custom_services_context_menu.svcs_start_service_action.setDisabled(service_is_active)
         self.custom_services_context_menu.svcs_stop_service_action.setDisabled(not service_is_active)

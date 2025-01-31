@@ -272,8 +272,8 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
         self.services_tab = QWidget()
         self.services_tab.setObjectName(u"services_tab")
         self.svc_t_services_list_table = QTableWidget(self.services_tab)
-        if (self.svc_t_services_list_table.columnCount() < 5):
-            self.svc_t_services_list_table.setColumnCount(5)
+        if (self.svc_t_services_list_table.columnCount() < 4):
+            self.svc_t_services_list_table.setColumnCount(4)
         __qtablewidgetitem8 = QTableWidgetItem()
         self.svc_t_services_list_table.setHorizontalHeaderItem(0, __qtablewidgetitem8)
         __qtablewidgetitem9 = QTableWidgetItem()
@@ -282,9 +282,6 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
         self.svc_t_services_list_table.setHorizontalHeaderItem(2, __qtablewidgetitem10)
         __qtablewidgetitem11 = QTableWidgetItem()
         self.svc_t_services_list_table.setHorizontalHeaderItem(3, __qtablewidgetitem11)
-        __qtablewidgetitem_svc_t_exec = QTableWidgetItem()
-        self.svc_t_services_list_table.setHorizontalHeaderItem(4, __qtablewidgetitem_svc_t_exec)
-
         self.svc_t_services_list_table.setObjectName(u"svc_t_services_list_table")
         self.svc_t_services_list_table.setGeometry(QRect(0, 0, 510, 441))
         self.svc_t_services_button = QToolButton(self.services_tab)
@@ -705,9 +702,6 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
         ___qtablewidgetitem10.setText(QCoreApplication.translate("CWTM_TaskManagerMainWindow", u"Description", None));
         ___qtablewidgetitem11 = self.svc_t_services_list_table.horizontalHeaderItem(3)
         ___qtablewidgetitem11.setText(QCoreApplication.translate("CWTM_TaskManagerMainWindow", u"Status", None));
-        ___qtablewidgetitem_svc_t_exec_c = self.svc_t_services_list_table.horizontalHeaderItem(4)
-        ___qtablewidgetitem_svc_t_exec_c.setText(QCoreApplication.translate("CWTM_TaskManagerMainWindow", u"Executable", None));
-
         self.svc_t_services_button.setText(QCoreApplication.translate("CWTM_TaskManagerMainWindow", u"Services", None))
         self.task_manager_tab_widget.setTabText(self.task_manager_tab_widget.indexOf(self.services_tab), QCoreApplication.translate("CWTM_TaskManagerMainWindow", u"Services", None))
         self.perf_cpu_usage.setTitle(QCoreApplication.translate("CWTM_TaskManagerMainWindow", u"CPU Usage", None))
