@@ -77,11 +77,16 @@ class CWTM_ServicesTab(QObject, CWTM_TableWidgetController):
         self.update_refresh_services_page_svcs()
 
     @pyqtSlot(bool)
+    @CWTM_ErrorMessageDialog.show_error_dialog_on_error(
+        "An unexpected error has occurred when attempting to start a service.")
     def process_context_menu_action_start_service(self, triggered: bool=False) -> None:
         selected_service_name = self.get_current_selected_item_from_column(
             self.parent.svc_t_services_list_table,
             CWTM_ServicesTabTableColumns.SVC_T_SERVICES_LIST_TABLE_NAME
         )
+
+        if selected_service_name is None:
+            return
 
         sys_utils.request_service_start_by_name(selected_service_name)
         self.update_refresh_services_page_svcs()
