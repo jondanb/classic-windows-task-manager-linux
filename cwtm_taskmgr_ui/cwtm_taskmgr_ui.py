@@ -494,6 +494,8 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
         self.tm_options_menu_always_on_top = QAction(CWTM_TaskManagerMainWindow)
         self.tm_options_menu_always_on_top.setObjectName(u"tm_options_menu_always_on_top")
         self.tm_options_menu_always_on_top.setCheckable(True)
+        self.tm_options_menu_always_on_top.triggered.connect(self.set_window_always_on_top)
+
         self.tm_options_menu_minimize_on_use = QAction(CWTM_TaskManagerMainWindow)
         self.tm_options_menu_minimize_on_use.setObjectName(u"tm_options_menu_minimize_on_use")
         self.tm_options_menu_minimize_on_use.setCheckable(True)
@@ -768,6 +770,18 @@ class Ui_CWTM_TaskManagerMainWindow(QMainWindow):
         self.task_manager_windows_menu.setTitle(QCoreApplication.translate("CWTM_TaskManagerMainWindow", u"Windows", None))
         self.task_manager_help_menu.setTitle(QCoreApplication.translate("CWTM_TaskManagerMainWindow", u"Help", None))
     # retranslateUi
+
+    @pyqtSlot(bool)
+    def set_window_always_on_top(self, checked):
+        flags = self.windowFlags()
+        
+        if checked:
+            flags |= Qt.WindowStaysOnTopHint
+        else:
+            flags &= ~Qt.WindowStaysOnTopHint
+        
+        self.setWindowFlags(flags)
+        self.show()
 
 
 class VLine(QFrame):
