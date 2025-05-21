@@ -1,8 +1,7 @@
 
 # Classic Windows Task Manager Linux
 
-This is a project designed to remake the Windows 7 era task manager on Linux. 
-This project was written and tested on both KDE 5 and KDE 6.
+Recreates the familiar look and feel of Windows 7’s Task Manager on KDE 5/6, giving you quick access to Applications, Processes, Performance, Networking, Services, and Users in one unified interface. While it doesn’t implement every single feature of the original, it supports live PyQtGraph charts, D-Bus and AccountsService integration, and is fully themeable via Qt5 styles (qt5ct/Kvantum).
 
 <a href="./screenshots/performance_tab.png">
     <img src="./screenshots/performance_tab.png" alt="Performance Tab" width="400">
@@ -40,7 +39,7 @@ sudo pacman -S \
 ### Installing Dependencies with PiP
 ```
 pip install --upgrade pip
-pip install PyQt5 pyqtgraph psutil dbus-python PyGObject
+pip install -r requirements.txt
 ```
 
 ## Running the Program

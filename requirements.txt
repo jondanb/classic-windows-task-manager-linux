@@ -1,1 +1,5 @@
-pip
+PyQt5
+pyqtgraph
+psutil
+dbus-python
+PyGObject
