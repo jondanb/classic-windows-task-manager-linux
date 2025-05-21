@@ -21,7 +21,7 @@ from ..core_properties import (
     CWTM_TableWidgetItemProperties,
     CWTM_TabWidgetColumnEnum,
     CWTM_GlobalUpdateIntervals,
-    CWTM_ProcessInformationFrame,
+    CWTM_ProcessInformationPacket,
     CWTM_PriorityNicenessLevels,
     CWTM_PriorityNicenessRanges
 )
@@ -176,7 +176,7 @@ class CWTM_ProcessesTab(QObject, CWTM_TableWidgetController):
         confirmation_dialog.exec_()
         
     #slot
-    def update_processes_page(self, gtk_running_processes: list[CWTM_ProcessInformationFrame]) -> None:
+    def update_processes_page(self, gtk_running_processes: list[CWTM_ProcessInformationPacket]) -> None:
         current_selected_item = self.get_current_selected_item_from_column(
             self.parent.proc_t_proc_list_table,
             CWTM_ProcessesTabTableColumns.PROC_T_PROC_LIST_TABLE_PID

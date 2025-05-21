@@ -14,7 +14,7 @@ from ..core_properties import (
     CWTM_NetworkInterfaceGraphProperties,
     CWTM_TableWidgetItemProperties,
     CWTM_GlobalUpdateIntervals,
-    CWTM_NetworkInterfaceUsageFrame
+    CWTM_NetworkInterfaceUsagePacket
 )
 from ..qt_widgets import CWTM_ResourceGraphWidget
 from ..thread_workers import CWTM_NetworkingInterfaceRetrievalWorker
@@ -105,7 +105,7 @@ class CWTM_NetworkingTab(QObject, CWTM_TableWidgetController):
             if not self.parent.tm_view_menu_nas_bytes_total.isChecked():
                 n_interface.i_net_total_plot_item.clear()
 
-    def update_networking_page(self, network_usage_frame: CWTM_NetworkInterfaceUsageFrame):
+    def update_networking_page(self, network_usage_frame: CWTM_NetworkInterfaceUsagePacket):
         if (n_interface := network_usage_frame.i_net_name) not in self.NETWORK_INTERFACE_GRAPHS:
             self.register_network_interface(n_interface)
 

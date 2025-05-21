@@ -11,7 +11,7 @@ from ..core_properties import (
     CWTM_TableWidgetItemProperties,
     CWTM_GlobalUpdateIntervals,
     CWTM_TabWidgetColumnEnum,
-    CWTM_UsersSystemInformationFrame
+    CWTM_UsersSystemInformationPacket
 )
 from ..qt_components import CWTM_TableWidgetController
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
@@ -47,7 +47,7 @@ class CWTM_UsersTab(QObject, CWTM_TableWidgetController):
             self.parent.users_t_users_list_table.mapToGlobal(position))
             
     def update_users_page(
-        self, system_user_details: list[CWTM_UsersSystemInformationFrame], user_gtk_icons: list) -> None:
+        self, system_user_details: list[CWTM_UsersSystemInformationPacket], user_gtk_icons: list) -> None:
         self.parent.users_t_users_list_table.setRowCount(0)
 
         for user_gtk_icon, user_information in zip(user_gtk_icons, system_user_details):

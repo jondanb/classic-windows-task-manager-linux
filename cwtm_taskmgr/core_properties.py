@@ -25,12 +25,6 @@ class CWTM_ResourceLevelBarParameters:
 
 
 @dataclasses.dataclass
-class CWTM_NetworkInterfaceUsageFrame:
-    i_net_name:             str
-    i_net_bytes_sent:       float
-    i_net_bytes_received:   float
-
-@dataclasses.dataclass
 class CWTM_NetworkInterfaceGraphProperties:
     i_net_graph:            PlotWidget
     i_net_groupbox:         QGroupBox
@@ -45,9 +39,16 @@ class CWTM_NetworkInterfaceGraphProperties:
     i_net_total_plot_item:  PlotDataItem.PlotDataItem
     i_net_full_name:        str                     = ""
 
+		
+@dataclasses.dataclass
+class CWTM_NetworkInterfaceUsagePacket:
+    i_net_name:             str
+    i_net_bytes_sent:       float
+    i_net_bytes_received:   float
+
 
 @dataclasses.dataclass
-class CWTM_ProcessInformationFrame:
+class CWTM_ProcessInformationPacket:
     p_name:                 str
     p_pid:                  int
     p_username:             str
@@ -58,27 +59,27 @@ class CWTM_ProcessInformationFrame:
 
 
 @dataclasses.dataclass
-class CWTM_ApplicationInformationFrame:
+class CWTM_ApplicationInformationPacket:
     gtk_app_name:           str | None
     gtk_app_pid:            sys_utils.Gtk.Image
     gtk_app_icon:           int
 
 
 @dataclasses.dataclass
-class CWTM_PerformanceStatusBarLabelsFrame:
+class CWTM_PerformanceStatusBarLabelsPacket:
     n_processes:            int
     v_mem_percent:          float
     cpu_usage:              float
 
 
 @dataclasses.dataclass
-class CWTM_PerformanceGraphCPUUsageFrame:
+class CWTM_PerformanceGraphCPUUsagePacket:
     user_cpu_usage:         list[int]
     kernel_cpu_usage:       list[int]
 
 
 @dataclasses.dataclass
-class CWTM_PerformanceSystemMemoryLabelsFrame:
+class CWTM_PerformanceSystemMemoryLabelsPacket:
     n_file_descriptors:     int
     n_sys_threads:          int
     n_sys_processes:        int
@@ -87,7 +88,7 @@ class CWTM_PerformanceSystemMemoryLabelsFrame:
 
 
 @dataclasses.dataclass
-class CWTM_PerformanceGraphicalWidgetsFrame:
+class CWTM_PerformanceGraphicalWidgetsPacket:
     current_cpu_usage:      float
     kernel_cpu_time:        float
     current_memory_usage:   float
@@ -96,7 +97,7 @@ class CWTM_PerformanceGraphicalWidgetsFrame:
 
 
 @dataclasses.dataclass
-class CWTM_ServiceInformationFrame:
+class CWTM_ServiceInformationPacket:
     svc_name:               str
     svc_pid:                int
     svc_desc:               str
@@ -104,7 +105,7 @@ class CWTM_ServiceInformationFrame:
 
 
 @dataclasses.dataclass
-class CWTM_UsersSystemInformationFrame:
+class CWTM_UsersSystemInformationPacket:
     u_user_name:            str
     u_user_uid:             int
     u_is_logged_in:         bool
@@ -119,6 +120,19 @@ class CWTM_TableWidgetItemProperties:
     item_icon:              sys_utils.Gtk.Image     = None
     item_tool_tip:          str                     = None
     item_unit:              str                     = ""
+		
+
+@dataclasses.dataclass
+class CWTM_CPUUsageHistoryGraphProperties:
+    cpu_grid_widget: 		int
+    cpu_grid_usage_data_x:	int
+    cpu_grid_usage_data_y:	int
+    cpu_grid_kernel_usage_data_x: int
+    cpu_grid_kernel_usage_data_y: int
+    cpu_grid_usage_plot_pen:int
+    cpu_grid_kernel_usage_plot_pen:int
+    cpu_grid_usage_plot_item:int
+    cpu_grid_kernel_usage_plot_item:int
 
 
 class CWTM_TabWidgetColumnEnum(enum.IntEnum):

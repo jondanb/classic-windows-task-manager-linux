@@ -21,7 +21,7 @@ from ..core_properties import (
     CWTM_TableWidgetItemProperties,
     CWTM_GlobalUpdateIntervals,
     CWTM_TabWidgetColumnEnum,
-    CWTM_ServiceInformationFrame
+    CWTM_ServiceInformationPacket
 )
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
 from ..thread_workers import CWTM_ServicesInfoRetrievalWorker
@@ -115,7 +115,7 @@ class CWTM_ServicesTab(QObject, CWTM_TableWidgetController):
         self.custom_services_context_menu.exec_(
             self.parent.svc_t_services_list_table.mapToGlobal(position))
 
-    def update_services_page(self, system_all_services: list[CWTM_ServiceInformationFrame]) -> None:
+    def update_services_page(self, system_all_services: list[CWTM_ServiceInformationPacket]) -> None:
         self.parent.svc_t_services_list_table.setRowCount(0)
         self.parent.svc_t_services_list_table.setSortingEnabled(False)
 

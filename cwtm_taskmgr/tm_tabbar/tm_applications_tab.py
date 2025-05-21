@@ -13,7 +13,7 @@ from ..core_properties import (
     CWTM_TableWidgetItemProperties,
     CWTM_GlobalUpdateIntervals,
     CWTM_TabWidgetColumnEnum,
-    CWTM_ApplicationInformationFrame
+    CWTM_ApplicationInformationPacket
 )
 from ..qt_components import (
     CWTM_TableWidgetController, 
@@ -101,7 +101,7 @@ class CWTM_ApplicationsTab(QObject, CWTM_TableWidgetController):
         )
         confirmation_dialog.exec_()
 
-    def update_applications_page(self, gtk_running_apps_icons: list[CWTM_ApplicationInformationFrame]) -> None:
+    def update_applications_page(self, gtk_running_apps_icons: list[CWTM_ApplicationInformationPacket]) -> None:
         current_selected_item = self.get_current_selected_item_from_column(
             self.parent.app_t_task_list_table,
             CWTM_ApplicationsTabTableColumns._APP_T_TASK_LIST_TABLE_PID

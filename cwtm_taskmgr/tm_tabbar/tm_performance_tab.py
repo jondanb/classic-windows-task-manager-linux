@@ -18,13 +18,14 @@ from ..qt_components import (
 )
 from ..core_properties import (
     CWTM_ResourceLevelBarParameters,
+    CWTM_CPUUsageHistoryGraphProperties,
     CWTM_GlobalUpdateIntervals,
     CWTM_ResourceBarLevelColours,
     CWTM_TabWidgetColumnEnum,
-    CWTM_PerformanceStatusBarLabelsFrame,
-    CWTM_PerformanceGraphCPUUsageFrame,
-    CWTM_PerformanceSystemMemoryLabelsFrame,
-    CWTM_PerformanceGraphicalWidgetsFrame
+    CWTM_PerformanceStatusBarLabelsPacket,
+    CWTM_PerformanceGraphCPUUsagePacket,
+    CWTM_PerformanceSystemMemoryLabelsPacket,
+    CWTM_PerformanceGraphicalWidgetsPacket
 )
 from ..thread_workers import CWTM_PerformanceInfoRetrievalWorker
 
@@ -111,9 +112,7 @@ class CWTM_PerformanceTab(QObject, CWTM_TableWidgetController):
 
     def clear_kernel_time_resource_graph_lines(self):
         for registered_cpu in self.PERF_CPU_USAGE_HISTORY_GRAPHS:
-            (_, _, _, _, _, _, _, _, 
-                cpu_grid_kernel_usage_plot_item) = registered_cpu
-            cpu_grid_kernel_usage_plot_item.clear()
+            registered_cpu.cpu_grid_kernel_usage_plot_item.clear()
 
     def update_refresh_performance_page(self):
         self.performance_page_worker.get_all_resource_usage_loop(disable_loop=True)
@@ -143,14 +142,16 @@ class CWTM_PerformanceTab(QObject, CWTM_TableWidgetController):
             cpu_grid_kernel_usage_data_x, cpu_grid_kernel_usage_data_y,
             pen=cpu_grid_kernel_usage_plot_pen
         )
-
-        self.PERF_CPU_USAGE_HISTORY_GRAPHS.append((
-            cpu_grid_widget, 
+		
+        cpu_usage_history_graph_properties = CWTM_CPUUsageHistoryGraphProperties(*(
+			cpu_grid_widget, 
             cpu_grid_usage_data_x, cpu_grid_usage_data_y,
             cpu_grid_kernel_usage_data_x, cpu_grid_kernel_usage_data_y,
             cpu_grid_usage_plot_pen, cpu_grid_kernel_usage_plot_pen, 
             cpu_grid_usage_plot_item, cpu_grid_kernel_usage_plot_item
-        ))
+        ))										 
+
+        self.PERF_CPU_USAGE_HISTORY_GRAPHS.append(cpu_usage_history_graph_properties)
 
         return cpu_grid_widget
 
@@ -209,7 +210,7 @@ class CWTM_PerformanceTab(QObject, CWTM_TableWidgetController):
         memory_usage_history_layout.addWidget(self.memory_grid_widget)
 
     def update_system_memory_labels(
-        self, system_memory_labels: CWTM_PerformanceSystemMemoryLabelsFrame) -> None:
+        self, system_memory_labels: CWTM_PerformanceSystemMemoryLabelsPacket) -> None:
         self.parent.perf_system_handles_value.setText(
             str(system_memory_labels.n_file_descriptors))
         self.parent.perf_system_threads_value.setText(
@@ -251,7 +252,7 @@ class CWTM_PerformanceTab(QObject, CWTM_TableWidgetController):
         self.parent.perf_physical_mem_free_value.setText(
             memory_free_no_label_mb)
 
-    def update_status_bar_labels(self, status_bar_lables: CWTM_PerformanceStatusBarLabelsFrame) -> None:        
+    def update_status_bar_labels(self, status_bar_lables: CWTM_PerformanceStatusBarLabelsPacket) -> None:        
         self.parent.status_bar_processes_label.setText(
             f"Processes: {status_bar_lables.n_processes}")
         self.parent.status_bar_cpu_usage_label.setText(
@@ -259,27 +260,25 @@ class CWTM_PerformanceTab(QObject, CWTM_TableWidgetController):
         self.parent.status_bar_physical_memory_label.setText(
             f"Physical Memory: {status_bar_lables.v_mem_percent}%")
 
-    def update_cpu_usage_history_graphs(self, current_system_cpu_usage: CWTM_PerformanceGraphCPUUsageFrame) -> None:
+    def update_cpu_usage_history_graphs(self, current_system_cpu_usage: CWTM_PerformanceGraphCPUUsagePacket) -> None:
         for cpu_core, (cpu_usage, kernel_cpu_usage) in enumerate(zip(
                 current_system_cpu_usage.user_cpu_usage,
                 current_system_cpu_usage.kernel_cpu_usage)):
-            (cpu_grid_widget, 
-                cpu_grid_usage_data_x, cpu_grid_usage_data_y,
-                cpu_grid_kernel_usage_data_x, cpu_grid_kernel_usage_data_y,
-                cpu_grid_usage_plot_pen, cpu_grid_kernel_usage_plot_pen, 
-                cpu_grid_usage_plot_item, cpu_grid_kernel_usage_plot_item
-            ) = self.PERF_CPU_USAGE_HISTORY_GRAPHS[cpu_core]
+			
+            cpu_usage_history_graph_properties = self.PERF_CPU_USAGE_HISTORY_GRAPHS[cpu_core]
 
-            cpu_grid_widget.update_plot(
-                cpu_grid_usage_plot_item, cpu_usage,
-                cpu_grid_usage_data_x, cpu_grid_usage_data_y)
+            cpu_usage_history_graph_properties.cpu_grid_widget.update_plot(
+                cpu_usage_history_graph_properties.cpu_grid_usage_plot_item, cpu_usage,
+                cpu_usage_history_graph_properties.cpu_grid_usage_data_x, 
+				cpu_usage_history_graph_properties.cpu_grid_usage_data_y)
 
-            cpu_grid_widget.update_plot(
-                cpu_grid_kernel_usage_plot_item, 
+            cpu_usage_history_graph_properties.cpu_grid_widget.update_plot(
+                cpu_usage_history_graph_properties.cpu_grid_kernel_usage_plot_item, 
                 kernel_cpu_usage if self.show_kernel_times else 0,
-                cpu_grid_kernel_usage_data_x, cpu_grid_kernel_usage_data_y)
+                cpu_usage_history_graph_properties.cpu_grid_kernel_usage_data_x, 
+				cpu_usage_history_graph_properties.cpu_grid_kernel_usage_data_y)
 
-    def update_graphical_widgets(self, graphical_widgets_resources: CWTM_PerformanceGraphicalWidgetsFrame) -> None:
+    def update_graphical_widgets(self, graphical_widgets_resources: CWTM_PerformanceGraphicalWidgetsPacket) -> None:
         current_kernel_usage = graphical_widgets_resources.kernel_cpu_time \
             if self.show_kernel_times else 0
         self.cpu_bar_widget.set_resource_value(
