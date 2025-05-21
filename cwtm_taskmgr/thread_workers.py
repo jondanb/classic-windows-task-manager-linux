@@ -1,6 +1,16 @@
 import psutil
 import functools
 
+from PyQt5.QtCore import (
+    pyqtSignal, 
+    pyqtSlot, 
+    Qt,
+    QTimer, 
+    QThread, 
+    QObject
+)
+from PyQt5.QtWidgets import QTabWidget
+
 from . import sys_utils
 from .core_properties import (
     CWTM_TabWidgetColumnEnum,
@@ -19,12 +29,6 @@ from .qt_components import (
     CWTM_TimeoutIntervalChangeSignal,
     CWTM_InformationRetrievalAuthorization
 )
-
-from PyQt5.QtCore import (
-    pyqtSignal, pyqtSlot, Qt,
-    QTimer, QThread, QObject
-)
-from PyQt5.QtWidgets import QTabWidget
 
 
 class CWTM_NetworkingInterfaceRetrievalWorker(CWTM_TimeoutIntervalChangeSignal):
@@ -151,7 +155,7 @@ class CWTM_ProcessesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_I
         self.get_all_gtk_running_processes_info_loop()
 
     @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop()
-    def get_all_gtk_running_processes_info_loop(self, *, force_run: bool = False) -> None:
+    def get_all_gtk_running_processes_info_loop(self, *, force_run: bool=False) -> None:
         """
         Retrieves information about all running GTK processes and emits the process info signal.
         If the current tab is not the task manager processes tab, the method does not perform the 
@@ -200,7 +204,7 @@ class CWTM_ApplicationsInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWT
         self.get_all_gtk_running_applications_info_loop()
 
     @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop()
-    def get_all_gtk_running_applications_info_loop(self, *, force_run: bool = False) -> None:
+    def get_all_gtk_running_applications_info_loop(self, *, force_run: bool=False) -> None:
         """
         Retrieves information about all running GTK applications, including their names and icons,
         and emits the application info signal. If the current tab is not the applications tab or if
@@ -414,7 +418,7 @@ class CWTM_ServicesInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_In
         self.get_all_services_information_loop()
 
     @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop(no_timeout_pause_check=True)
-    def get_all_services_information_loop(self, *, force_run: bool = False) -> None:
+    def get_all_services_information_loop(self, *, force_run: bool=False) -> None:
         """
         Retrieves all the registered system services, including their name, their PID, their service description,
         and their status whether they are active or inactive. This data is emitted through a signal only if the tab
@@ -438,7 +442,7 @@ class CWTM_UsersInfoRetrievalWorker(CWTM_TimeoutIntervalChangeSignal, CWTM_Infor
         self.get_all_users_information_loop()
 
     @CWTM_TimeoutIntervalChangeSignal.thread_worker_timeout_interval_loop(no_timeout_pause_check=True)
-    def get_all_users_information_loop(self, *, force_run: bool = False):
+    def get_all_users_information_loop(self, *, force_run: bool=False):
         if not force_run and not self._is_authorized:
             return
 

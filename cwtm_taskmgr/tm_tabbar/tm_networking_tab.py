@@ -1,12 +1,19 @@
 import psutil
 import pyqtgraph
 
-from PyQt5.QtCore import  Qt, pyqtSignal, QThread, QObject
+from PyQt5.QtCore import  (
+    Qt, 
+    pyqtSignal, 
+    pyqtSlot,
+    QThread, 
+    QObject
+)
 
 from .. import sys_utils
 from ..qt_components import (
     CWTM_TableWidgetController,
-    CWTM_GlobalUpdateIntervalHandler
+    CWTM_GlobalUpdateIntervalHandler,
+    CWTM_TableWidgetUpdateInitializer
 )
 from ..core_properties import (
     CWTM_NetworkingTabTableColumns,
@@ -20,37 +27,57 @@ from ..qt_widgets import CWTM_ResourceGraphWidget
 from ..thread_workers import CWTM_NetworkingInterfaceRetrievalWorker
 
 
-
 class CWTM_NetworkingTab(QObject, CWTM_TableWidgetController):
-    def __init__(self, *args, parent, **kwargs):
+    def __init__(self, *args: list, parent: QObject, **kwargs: dict) -> None:
+        """
+        Initializes the networking tab for the task manager. This function sets up all the properties for
+        the networking tab including the:
+            - The update interval speed based on the enum properties of CWTM_GlobalUpdateIntervals.
+            - The graphical networking widgets sizes and properties.
+
+        Arguments:
+            - args and kwargs: any arbitrary extra argument/keywork arguments to be passed into the
+                main superclass. (QObject)
+            - parent (QObject): Initialize the class with the parent as a property the superclass. 
+        """
         super().__init__(*args, parent=parent, **kwargs)
 
-        self.parent = parent
+        self.parent: QObject = parent
         
-        self.NETWORK_INTERFACE_GRAPHS = {}
-        self.NETWORK_INTERFACE_LINK_SPEEDS = {}
+        self.NETWORK_INTERFACE_GRAPHS: dict[str, CWTM_NetworkInterfaceGraphProperties] = {}
+        self.NETWORK_INTERFACE_LINK_SPEEDS: dict[str, str] = {}
 
-        self.NET_T_NETWORKING_LIST_TABLE_UPDATE_FREQUENCY = \
+        self.NET_T_NETWORKING_LIST_TABLE_UPDATE_FREQUENCY: CWTM_GlobalUpdateIntervals = \
             CWTM_GlobalUpdateIntervals.GLOBAL_UPDATE_INTERVAL_NORMAL
-        self.NET_T_NETWORK_USAGE_GRID_SIZE = 8 # 200:8 ratio
-        self.NET_T_NETWORK_USAGE_X_RANGE = 200 # 200:8 ratio 
+        self.NET_T_NETWORK_USAGE_GRID_SIZE: int = 8 # 200:8 ratio
+        self.NET_T_NETWORK_USAGE_X_RANGE: int = 200 # 200:8 ratio 
 
         self.parent.tm_view_menu_nas_bytes_sent.triggered.connect(
-            self.clear_all_disabled_networking_byte_line)
+            self.clear_all_disabled_networking_byte_lines)
         self.parent.tm_view_menu_nas_bytes_received.triggered.connect(
-            self.clear_all_disabled_networking_byte_line)
+            self.clear_all_disabled_networking_byte_lines)
         self.parent.tm_view_menu_nas_bytes_total.triggered.connect(
-            self.clear_all_disabled_networking_byte_line)
+            self.clear_all_disabled_networking_byte_lines)
         self.parent.tm_options_menu_show_scale.triggered.connect(
             self.hide_all_network_graph_scales)
 
-    def setup_system_networking_interfaces(self):
+    def setup_system_networking_interfaces(self) -> None:
+        """
+        Sets up and registers each network interface on the machine.
+        """
         system_networking_interfaces = psutil.net_if_addrs().items()
 
         for interface_name, interface_info in system_networking_interfaces:
             self.register_network_interface(interface_name)
 
+    @pyqtSlot(bool)
     def hide_all_network_graph_scales(self, checked: bool) -> None:
+        """
+        Hides each network interface usage scale (KB/S, MB/S) (left axis)
+
+        Arguments:
+            - checked (bool): If the hide scale checkbox is checked
+        """
         for n_inteface in self.NETWORK_INTERFACE_GRAPHS.values():
             graph_plot_item = n_inteface.i_net_graph.getPlotItem()
             if not checked:
@@ -58,45 +85,71 @@ class CWTM_NetworkingTab(QObject, CWTM_TableWidgetController):
             else:
                 graph_plot_item.showAxis("left")
 
-    def register_network_interface(self, interface_name):
-        interface_full_name = sys_utils.get_interface_type_full_name(
-                interface_name
-            ) + f" ({interface_name})" # Local Area Connection (lo)
+    def register_network_interface(self, interface_name: str) -> None:
+        """
+        Registers a network interface based on its interface name. This function is responsible for adding
+        a resource graphical widget which represents the passed network interface usage to the list of global
+        registered network interfaces (NETWORK_INTERFACE_GRAPHS, NETWORK_INTERFACE_LINK_SPEEDS).
 
-        network_interface_graph = self._network_create_interface_resource_graph(
-            interface_full_name)
-        network_interface_graph.i_net_full_name = interface_full_name
+        Arguments:
+            - interface_name (str): The short interface name (e.g lo, eth0, wlo1, docker0)
+        """
+        interface_full_name: str = sys_utils.get_interface_type_full_name(
+                interface_name
+            ) + f" ({interface_name})" # e.g: Local Area Connection (lo)
+
+        network_interface_graph: CWTM_NetworkInterfaceGraphProperties = \
+            self._network_create_interface_resource_graph(interface_full_name)
+        network_interface_graph.i_net_full_name: str = interface_full_name
         
-        self.NETWORK_INTERFACE_GRAPHS[interface_name] = network_interface_graph
-        self.NETWORK_INTERFACE_LINK_SPEEDS[interface_name] = sys_utils.get_network_interface_link_speed(
+        self.NETWORK_INTERFACE_GRAPHS[interface_name]: CWTM_NetworkInterfaceGraphProperties = network_interface_graph
+        self.NETWORK_INTERFACE_LINK_SPEEDS[interface_name]: str = sys_utils.get_network_interface_link_speed(
             interface_name)
 
         self.parent.net_t_vbox_layout.addWidget(network_interface_graph.i_net_groupbox)
         self.update_networking_page_net_list_table(interface_full_name)
 
-    def unregister_disconnected_network_interface(self, interface_name):
-        network_interface_graph = self.NETWORK_INTERFACE_GRAPHS[interface_name]
+    @pyqtSlot(str)
+    def unregister_disconnected_network_interface(self, interface_name: str) -> None:
+        """
+        Unregisters a network interface based on its interface name. This function is responsible for removing the
+        registered network interface from the list of global registered network interfaces and then removing their
+        corresponding resource graphical widget from the QVBoxLayout.
+
+        Arguments:
+            - interface_name (str): The short interface name (e.g lo, eth0, wlo1, docker0)
+        """
+        network_interface_graph: CWTM_NetworkInterfaceGraphProperties = self.NETWORK_INTERFACE_GRAPHS[interface_name]
         self.parent.net_t_vbox_layout.removeWidget(network_interface_graph.i_net_groupbox)
         self.refresh_networking_page_net_list_table()
 
         del self.NETWORK_INTERFACE_GRAPHS[interface_name]
         del self.NETWORK_INTERFACE_LINK_SPEEDS[interface_name]
 
-    def update_refresh_networking_page_resource_graphs(self):
-        self.networking_interface_retrieval_worker.get_networking_interface_usage_loop(disable_loop=True)
+    def refresh_networking_page_net_list_table(self) -> None:
+        """
+        Refreshes the registered network interface information table consisting of their:
+            - Interface Name
+            - Network Utilization
+            - Link Speed
+            - Network State (Connected or Disconnected)
 
-    def refresh_networking_page_net_list_table(self):
-        self.parent.net_t_network_list_table.setRowCount(0)
-        system_networking_interfaces = psutil.net_if_addrs().items()
+        """
+        with CWTM_TableWidgetUpdateInitializer(self.parent.net_t_network_list_table):
+            system_networking_interfaces: tuple[str, list] = psutil.net_if_addrs().items()
 
-        for interface_name, interface_info in system_networking_interfaces:
-            interface_full_name = sys_utils.get_interface_type_full_name(
-                interface_name
-            ) + f" ({interface_name})" # Local Area Connection (lo)
+            for interface_name, interface_info in system_networking_interfaces:
+                interface_full_name: str = sys_utils.get_interface_type_full_name(
+                    interface_name
+                ) + f" ({interface_name})" # Local Area Connection (lo)
 
-            self.update_networking_page_net_list_table(interface_full_name)
+                self.update_networking_page_net_list_table(interface_full_name)
 
-    def clear_all_disabled_networking_byte_line(self):
+    @pyqtSlot()
+    def clear_all_disabled_networking_byte_lines(self) -> None:
+        """
+        Clears the byte lines for each network interface graph based on their checked value
+        """
         for n_interface in self.NETWORK_INTERFACE_GRAPHS.values():
             if not self.parent.tm_view_menu_nas_bytes_sent.isChecked():
                 n_interface.i_net_sent_plot_item.clear()
@@ -105,11 +158,18 @@ class CWTM_NetworkingTab(QObject, CWTM_TableWidgetController):
             if not self.parent.tm_view_menu_nas_bytes_total.isChecked():
                 n_interface.i_net_total_plot_item.clear()
 
+    @pyqtSlot(CWTM_NetworkInterfaceUsagePacket)
     def update_networking_page(self, network_usage_frame: CWTM_NetworkInterfaceUsagePacket):
+        """
+
+        Arguments:
+            - network_usage_frame (CWTM_NetworkInterfaceUsagePacket): 
+                Contains network usage data (bytes recv, bytes sent...) for a network interface.
+        """
         if (n_interface := network_usage_frame.i_net_name) not in self.NETWORK_INTERFACE_GRAPHS:
             self.register_network_interface(n_interface)
 
-        network_interface_graph = self.NETWORK_INTERFACE_GRAPHS[n_interface]
+        network_interface_graph: CWTM_NetworkInterfaceGraphProperties = self.NETWORK_INTERFACE_GRAPHS[n_interface]
         
         network_interface_graph.i_net_graph.update_plot(
             network_interface_graph.i_net_sent_plot_item, 
@@ -194,7 +254,7 @@ class CWTM_NetworkingTab(QObject, CWTM_TableWidgetController):
             CWTM_TableWidgetItemProperties(item_label=network_state)
         )
 
-    def _network_create_interface_resource_graph(self, interface_full_name):
+    def _network_create_interface_resource_graph(self, interface_full_name: str) -> CWTM_NetworkInterfaceGraphProperties:
         interface_net_graph = CWTM_ResourceGraphWidget(
             grid_color='g', percentage=False, show_left_values=True,
             dotted_grid_lines=self.parent.old_style,
@@ -232,6 +292,9 @@ class CWTM_NetworkingTab(QObject, CWTM_TableWidgetController):
             net_grid_usage_total_data_x, net_grid_usage_total_data_y,
             net_grid_usage_sent_plot_item, net_grid_usage_recv_plot_item,
             net_grid_usage_total_plot_item)
+
+    def update_refresh_networking_page_resource_graphs(self):
+        self.networking_interface_retrieval_worker.get_networking_interface_usage_loop(disable_loop=True)
 
     def start_networking_page_updater_thread(self):
         self.networking_interface_retrieval_thread = QThread()

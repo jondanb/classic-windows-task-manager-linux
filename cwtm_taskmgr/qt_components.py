@@ -16,7 +16,6 @@ from PyQt5.QtCore import (
     QTimer, 
     QObject
 )
-
 from PyQt5.QtWidgets import QMessageBox, QListWidgetItem
 
 from . import sys_utils
@@ -165,10 +164,10 @@ class CWTM_TaskManagerConfirmationDialog(Ui_CWTMTaskManagerConfirmationDialog):
             f"Do you want to end \"{proc_wrapped_name}\"?"
         )
 
-    @pyqtSlot(bool)
+    @pyqtSlot()
     @CWTM_ErrorMessageDialog.show_error_dialog_on_error(
         "You do not have the required permissions to kill this process.")
-    def end_process_by_pid(self, _):
+    def end_process_by_pid(self):
         sys_utils.end_process_by_pid(
             self.proc_pid, end_process_tree=self.end_proc_tree)
 
@@ -190,6 +189,24 @@ class CWTM_TaskManagerNewTaskDialog(Ui_CWTM_TaskManagerNewTaskDialog):
 
     def handle_browse_command(self):
         return NotImplemented
+
+
+class CWTM_TableWidgetUpdateInitializer:
+    def __init__(self, table_widget, *, initialize_sorting=False):
+        self.table_widget = table_widget
+        self.initialize_sorting = initialize_sorting
+
+    def __enter__(self):
+        self.table_widget.setRowCount(0)
+
+        if self.initialize_sorting:
+            self.table_widget.setSortingEnabled(False)
+
+        return self.table_widget
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.initialize_sorting:
+            self.table_widget.setSortingEnabled(True)
 
 
 class CWTM_TableWidgetController:

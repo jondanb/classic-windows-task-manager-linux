@@ -13,7 +13,8 @@ from .. import sys_utils
 from ..qt_components import (
     CWTM_TableWidgetController,
     CWTM_ErrorMessageDialog,
-    CWTM_TaskManagerConfirmationDialog
+    CWTM_TaskManagerConfirmationDialog,
+    CWTM_TableWidgetUpdateInitializer
 )
 from ..core_properties import (
     CWTM_ServicesTabTableColumns,
@@ -116,24 +117,20 @@ class CWTM_ServicesTab(QObject, CWTM_TableWidgetController):
             self.parent.svc_t_services_list_table.mapToGlobal(position))
 
     def update_services_page(self, system_all_services: list[CWTM_ServiceInformationPacket]) -> None:
-        self.parent.svc_t_services_list_table.setRowCount(0)
-        self.parent.svc_t_services_list_table.setSortingEnabled(False)
-
-        for system_service in system_all_services:
-            service_pid_display = str(system_service.svc_pid) \
-                if system_service.svc_status == "active" else ""
-            self.append_row_to_table(
-                self.parent.svc_t_services_list_table, CWTM_ServicesTabTableColumns,
-                CWTM_TableWidgetItemProperties(
-                    item_label=system_service.svc_name, item_tool_tip=system_service.svc_name),
-                CWTM_TableWidgetItemProperties(item_label=service_pid_display, 
-                    item_type=CWTM_QNumericTableWidgetItem),
-                CWTM_TableWidgetItemProperties(
-                    item_label=system_service.svc_desc, item_tool_tip=system_service.svc_desc),
-                CWTM_TableWidgetItemProperties(system_service.svc_status.upper()),
-            )
-
-        self.parent.svc_t_services_list_table.setSortingEnabled(True)
+        with CWTM_TableWidgetUpdateInitializer(self.parent.svc_t_services_list_table, initialize_sorting=True):
+            for system_service in system_all_services:
+                service_pid_display = str(system_service.svc_pid) \
+                    if system_service.svc_status == "active" else ""
+                self.append_row_to_table(
+                    self.parent.svc_t_services_list_table, CWTM_ServicesTabTableColumns,
+                    CWTM_TableWidgetItemProperties(
+                        item_label=system_service.svc_name, item_tool_tip=system_service.svc_name),
+                    CWTM_TableWidgetItemProperties(item_label=service_pid_display, 
+                        item_type=CWTM_QNumericTableWidgetItem),
+                    CWTM_TableWidgetItemProperties(
+                        item_label=system_service.svc_desc, item_tool_tip=system_service.svc_desc),
+                    CWTM_TableWidgetItemProperties(system_service.svc_status.upper()),
+                )
 
     @pyqtSlot()
     def update_refresh_services_page_svcs(self):

@@ -13,7 +13,10 @@ from ..core_properties import (
     CWTM_TabWidgetColumnEnum,
     CWTM_UsersSystemInformationPacket
 )
-from ..qt_components import CWTM_TableWidgetController
+from ..qt_components import (
+    CWTM_TableWidgetController,
+    CWTM_TableWidgetUpdateInitializer
+)
 from ..qt_widgets import CWTM_QNumericTableWidgetItem
 from ..thread_workers import CWTM_UsersInfoRetrievalWorker
 
@@ -48,21 +51,20 @@ class CWTM_UsersTab(QObject, CWTM_TableWidgetController):
             
     def update_users_page(
         self, system_user_details: list[CWTM_UsersSystemInformationPacket], user_gtk_icons: list) -> None:
-        self.parent.users_t_users_list_table.setRowCount(0)
+        with CWTM_TableWidgetUpdateInitializer(self.parent.users_t_users_list_table):
+            for user_gtk_icon, user_information in zip(user_gtk_icons, system_user_details):
+                is_logged_in_label = "Active" if user_information.u_is_logged_in else "Disconnected"
 
-        for user_gtk_icon, user_information in zip(user_gtk_icons, system_user_details):
-            is_logged_in_label = "Active" if user_information.u_is_logged_in else "Disconnected"
-
-            self.append_row_to_table(
-                self.parent.users_t_users_list_table, CWTM_UsersTabTableColumns,
-                CWTM_TableWidgetItemProperties(
-                    item_label=user_information.u_user_name, item_icon=user_gtk_icon),
-                CWTM_TableWidgetItemProperties(
-                    item_label=str(user_information.u_user_uid), item_type=CWTM_QNumericTableWidgetItem),
-                CWTM_TableWidgetItemProperties(item_label=is_logged_in_label),
-                CWTM_TableWidgetItemProperties(item_label=user_information.u_real_name),
-                CWTM_TableWidgetItemProperties(item_label=user_information.u_home_dir)
-            ) 
+                self.append_row_to_table(
+                    self.parent.users_t_users_list_table, CWTM_UsersTabTableColumns,
+                    CWTM_TableWidgetItemProperties(
+                        item_label=user_information.u_user_name, item_icon=user_gtk_icon),
+                    CWTM_TableWidgetItemProperties(
+                        item_label=str(user_information.u_user_uid), item_type=CWTM_QNumericTableWidgetItem),
+                    CWTM_TableWidgetItemProperties(item_label=is_logged_in_label),
+                    CWTM_TableWidgetItemProperties(item_label=user_information.u_real_name),
+                    CWTM_TableWidgetItemProperties(item_label=user_information.u_home_dir)
+                ) 
 
     @pyqtSlot()
     def update_refresh_user_page_usrs(self):

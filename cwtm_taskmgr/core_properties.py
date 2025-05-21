@@ -5,7 +5,7 @@ import dataclasses
 from . import sys_utils
 
 from PyQt5.QtWidgets import QTableWidgetItem, QGroupBox
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QPen
 
 from pyqtgraph.graphicsItems import PlotDataItem
 from pyqtgraph import PlotWidget
@@ -39,7 +39,29 @@ class CWTM_NetworkInterfaceGraphProperties:
     i_net_total_plot_item:  PlotDataItem.PlotDataItem
     i_net_full_name:        str                     = ""
 
-		
+
+@dataclasses.dataclass
+class CWTM_PerformanceResourceGraphWidgetProperties:
+    g_widget_object:        PlotWidget
+    g_usage_data_x:         list
+    g_usage_data_y:         list
+    g_krnl_usage_data_x:    list
+    g_krnl_usage_data_y:    list
+    g_usage_plot_pen:       QPen
+    g_krnl_usage_plot_pen:  QPen
+    g_usage_plot_item:      PlotDataItem.PlotDataItem
+    g_krnl_usage_plot_item: PlotDataItem.PlotDataItem
+
+
+@dataclasses.dataclass
+class CWTM_TableWidgetItemProperties:
+    item_label:             str
+    item_type:              QTableWidgetItem        = QTableWidgetItem
+    item_icon:              sys_utils.Gtk.Image     = None
+    item_tool_tip:          str                     = None
+    item_unit:              str                     = ""
+
+
 @dataclasses.dataclass
 class CWTM_NetworkInterfaceUsagePacket:
     i_net_name:             str
@@ -113,28 +135,6 @@ class CWTM_UsersSystemInformationPacket:
     u_home_dir:             str
 
 
-@dataclasses.dataclass
-class CWTM_TableWidgetItemProperties:
-    item_label:             str
-    item_type:              QTableWidgetItem        = QTableWidgetItem
-    item_icon:              sys_utils.Gtk.Image     = None
-    item_tool_tip:          str                     = None
-    item_unit:              str                     = ""
-		
-
-@dataclasses.dataclass
-class CWTM_CPUUsageHistoryGraphProperties:
-    cpu_grid_widget: 		int
-    cpu_grid_usage_data_x:	int
-    cpu_grid_usage_data_y:	int
-    cpu_grid_kernel_usage_data_x: int
-    cpu_grid_kernel_usage_data_y: int
-    cpu_grid_usage_plot_pen:int
-    cpu_grid_kernel_usage_plot_pen:int
-    cpu_grid_usage_plot_item:int
-    cpu_grid_kernel_usage_plot_item:int
-
-
 class CWTM_TabWidgetColumnEnum(enum.IntEnum):
     TASK_MANAGER_APPLICATIONS_TAB                   = 0
     TASK_MANAGER_PROCESSES_TAB                      = enum.auto()
@@ -157,7 +157,8 @@ class CWTM_ProcessesTabTableColumns(enum.IntEnum):
     PROC_T_PROC_LIST_TABLE_CPU                      = enum.auto()
     PROC_T_PROC_LIST_TABLE_MEMORY                   = enum.auto()
     PROC_T_PROC_LIST_TABLE_DESCRIPTION              = enum.auto()
-    PROC_T_PROC_LIST_TABLE_EXECUTABLE               = enum.auto() # hidden
+    
+    _PROC_T_PROC_LIST_TABLE_EXECUTABLE               = enum.auto() # hidden
 
 
 class CWTM_ServicesTabTableColumns(enum.IntEnum):
